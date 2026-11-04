@@ -370,24 +370,26 @@ kbd{font:400 .78em var(--mono);padding:.05em .4em;border:1px solid currentColor;
 .f-shots.n1 button:first-child,.f-shots.n2 button:first-child{grid-row:auto}
 
 /* ── Persian ornament: eslimi vines, girih bands, lunettes ── */
-.orn-side{position:fixed;top:0;bottom:0;width:56px;z-index:20;pointer-events:none;background:var(--orn-side) repeat-y top center/56px 112px;filter:drop-shadow(0 0 3px rgba(34,243,255,.7)) drop-shadow(0 0 8px rgba(255,43,214,.35));opacity:.85;transition:opacity .25s,filter .25s}
+.orn-side{position:fixed;top:0;bottom:0;width:56px;z-index:20;pointer-events:none;background:var(--orn-side) repeat-y top center/56px 112px;opacity:.82;transition:opacity .25s}
 .orn-l{left:max(0px,env(safe-area-inset-left))}
 .orn-r{right:max(0px,env(safe-area-inset-right));transform:scaleX(-1)}
 .orn-side::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 0 42%,#fff 50%,transparent 58% 100%) 0 0/100% 300%;-webkit-mask:var(--orn-side) repeat-y top center/56px 112px;mask:var(--orn-side) repeat-y top center/56px 112px;animation:ornrun 6s linear infinite}
 @media (max-width:760px){.orn-side::after{mask-size:16px 32px;-webkit-mask-size:16px 32px}}
 @keyframes ornrun{from{background-position:0 100%}to{background-position:0 -200%}}
-.orn-side.kick{opacity:1;filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 12px rgba(34,243,255,.9)) drop-shadow(0 0 22px rgba(255,43,214,.5));transition:none}
+.orn-side.kick{opacity:1;transition:none}
 #main{padding-left:max(76px,env(safe-area-inset-left));padding-right:max(76px,env(safe-area-inset-right))}
 #hud{border-bottom:0}
-#hud::after{content:"";position:absolute;left:0;right:0;bottom:-11px;height:22px;background:var(--orn-band) repeat-x center/48px 22px;filter:drop-shadow(0 0 4px rgba(255,43,214,.6));pointer-events:none;opacity:.9}
+#hud::after{content:"";position:absolute;left:0;right:0;bottom:-11px;height:22px;background:var(--orn-band) repeat-x center/48px 22px;pointer-events:none;opacity:.9}
 #ticker{border-top:0}
-#ticker::before{content:"";position:absolute;left:0;right:0;top:-11px;height:22px;background:var(--orn-band) repeat-x center/48px 22px;filter:drop-shadow(0 0 4px rgba(34,243,255,.6));pointer-events:none}
+#ticker::before{content:"";position:absolute;left:0;right:0;top:-11px;height:22px;background:var(--orn-band) repeat-x center/48px 22px;pointer-events:none}
 .orn-div{display:flex;align-items:center;gap:14px;margin:0 auto 34px;max-width:900px}
-.orn-div span{flex:1;height:22px;background:var(--orn-band) repeat-x center/48px 22px;filter:drop-shadow(0 0 4px rgba(255,201,77,.6))}
-.orn-div i{width:104px;height:104px;flex:none;background:var(--orn-toranj) center/contain no-repeat;filter:drop-shadow(0 0 6px rgba(34,243,255,.8)) drop-shadow(0 0 14px rgba(255,43,214,.45));animation:toranj 40s linear infinite}
-.orn-div.kick i{filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 16px rgba(34,243,255,1)) drop-shadow(0 0 26px rgba(255,43,214,.7))}
+.orn-div span{flex:1;height:22px;background:var(--orn-band) repeat-x center/48px 22px}
+.orn-div i{width:104px;height:104px;flex:none;background:var(--orn-toranj) center/contain no-repeat;will-change:transform;animation:toranj 40s linear infinite}
+.orn-div i::after{content:"";position:absolute;inset:18%;border-radius:50%;background:radial-gradient(rgba(34,243,255,.45),transparent 70%);opacity:0;transition:opacity .25s}
+.orn-div i{position:relative}
+.orn-div.kick i::after{opacity:1;transition:none}
 @keyframes toranj{to{transform:rotate(360deg)}}
-.orn-c{position:absolute;width:64px;height:64px;pointer-events:none;background:var(--orn-corner) center/contain no-repeat;filter:drop-shadow(0 0 4px rgba(34,243,255,.7));z-index:2}
+.orn-c{position:absolute;width:64px;height:64px;pointer-events:none;background:var(--orn-corner) center/contain no-repeat;z-index:2}
 .orn-c.tl{top:4px;left:4px}.orn-c.tr{top:4px;right:4px;transform:scaleX(-1)}.orn-c.bl{bottom:4px;left:4px;transform:scaleY(-1)}.orn-c.br{bottom:4px;right:4px;transform:scale(-1)}
 .boot-in{position:relative;padding:44px 40px}
 .ov-panel{position:relative}
@@ -408,3 +410,11 @@ kbd{font:400 .78em var(--mono);padding:.05em .4em;border:1px solid currentColor;
 }
 @media (prefers-reduced-motion:reduce){.orn-side::after,.orn-div i{animation:none}}
 @media print{.orn-side,.orn-div,.orn-c{display:none!important}}
+
+/* phones: same look, less work. The vine's running light is skipped (it is 16px wide there),
+   the kick flare uses opacity only, and fixed layers get their own compositor layer. */
+.orn-side,#city,#fx,#hud,#ticker{will-change:transform}
+@media (pointer:coarse),(max-width:760px){
+  .orn-side::after{display:none}
+  #fx{mix-blend-mode:normal}
+}

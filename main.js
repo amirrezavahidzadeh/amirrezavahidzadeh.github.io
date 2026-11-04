@@ -140,10 +140,14 @@ window.AV_START = (C) => {
   };
   const cabCv = $$('.cab canvas').map(cv => ({ cv, g: cv.getContext('2d'), c: cab(cv.closest('.cab').dataset.id) }));
   let at = 0;
+  // only animate cabinet screens that are on screen; phones get 20 fps attract mode
+  const LOWA = matchMedia('(pointer: coarse)').matches || innerWidth < 760, seen = new Set();
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? seen.add(e.target) : seen.delete(e.target))) : null;
+  cabCv.forEach(x => io ? io.observe(x.cv) : seen.add(x.cv));
   (function aloop(ts) {
-    if (ts - at > 33 && $('#ov').hidden) {
+    if (ts - at > (LOWA ? 50 : 33) && $('#ov').hidden && seen.size) {
       at = ts; const t = RM ? 0 : ts / 1000;
-      cabCv.forEach(({ cv, g, c }) => { g.clearRect(0, 0, 240, 140); g.save(); ATTR[c.id](g, 240, 140, t, c.c); g.restore(); g.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < 140; y += 3) g.fillRect(0, y, 240, 1); });
+      cabCv.forEach(({ cv, g, c }) => { if (!seen.has(cv)) return; g.clearRect(0, 0, 240, 140); g.save(); ATTR[c.id](g, 240, 140, t, c.c); g.restore(); g.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < 140; y += 3) g.fillRect(0, y, 240, 1); });
     }
     requestAnimationFrame(aloop);
   })(0);

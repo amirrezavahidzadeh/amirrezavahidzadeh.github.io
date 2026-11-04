@@ -119,9 +119,12 @@ window.CITY = (() => {
   }
 
   let last = performance.now(), phase = 0;
-  let skip = 0;
+  // phones and small screens: draw the city at ~30 fps (the beat clock still ticks every frame)
+  const LOW = matchMedia('(pointer: coarse)').matches || innerWidth < 760 || (navigator.hardwareConcurrency || 8) <= 4;
+  let skip = 0, fxDirty = true;
   function frame(ts) {
     if (document.body.classList.contains('ov-open') && (skip = (skip + 1) % 4)) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
+    if (LOW && ts - last < 30) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
     const dt = Math.min(.05, (ts - last) / 1000); last = ts;
     if (window.SND) SND.tick();
     const p = window.SND ? SND.pulse : 0, sp = window.SND && SND.spectrum();
@@ -190,6 +193,9 @@ window.CITY = (() => {
     cx.stroke(); cx.restore();
 
     // fx layer: ripples and the cursor trail
+    const fxBusy = ripples.length || trail.length;
+    if (!fxBusy && !fxDirty) { requestAnimationFrame(frame); return; }
+    fxDirty = !!fxBusy;
     fc.setTransform(dpr, 0, 0, dpr, 0, 0); fc.clearRect(0, 0, W, H);
     for (let i = ripples.length - 1; i >= 0; i--) {
       const R = ripples[i]; R.a += dt; const k = R.a / R.life; if (k >= 1) { ripples.splice(i, 1); continue; }
@@ -211,7 +217,7 @@ window.CITY = (() => {
   resize(); requestAnimationFrame(frame);
   if (document.fonts) document.fonts.ready.then(() => build());
   return {
-    ripple(x, y, c = accent2, r = 90, ring2 = false) { ripples.push({ x, y, c, r, a: 0, life: .7, ring2 }); if (ripples.length > 40) ripples.shift(); },
+    ripple(x, y, c = accent2, r = 90, ring2 = false) { fxDirty = true; ripples.push({ x, y, c, r, a: 0, life: .7, ring2 }); if (ripples.length > 40) ripples.shift(); },
     setAccent(a, b) { accent = a; if (b) accent2 = b; },
   };
 })();

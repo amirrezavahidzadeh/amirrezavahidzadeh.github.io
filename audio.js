@@ -51,7 +51,9 @@ window.SND = (() => {
 
   function init() {
     if (ctx) return;
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const AC = window.AudioContext || window.webkitAudioContext;
+    // phones: bigger audio buffers so the music never crackles when the screen is busy
+    try { ctx = new AC({ latencyHint: matchMedia('(pointer: coarse)').matches ? 'playback' : 'interactive' }); } catch (e) { ctx = new AC(); }
     vol = ctx.createGain(); vol.gain.value = muted ? 0 : volume;
     comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; comp.attack.value = .004; comp.release.value = .2;
     an = ctx.createAnalyser(); an.fftSize = 256; an.smoothingTimeConstant = .78; spec = new Uint8Array(an.frequencyBinCount);
