@@ -85,7 +85,7 @@ window.CITY = (() => {
     const XS = [.05, .13, .21, .29, .71, .79, .87, .95];
     signs = words.map(([t, c], i) => ({ t, c, x: span * (XS[i] + (rnd() - .5) * .03), y: hor - H * (.05 + rnd() * .08), v: /[a-z0-9]/i.test(t) ? 0 : 1, f: rnd() }));
     signs.forEach(sg => {
-      const fs = Math.round(sg.v ? H * .028 : H * .024), font = sg.v ? `800 ${fs}px Vazirmatn` : `700 ${fs}px "Chakra Petch"`;
+      const fs = Math.round(sg.v ? H * .028 : H * .024), font = sg.v ? `${Math.round(fs * 1.15)}px Sahand, Vazirmatn` : `700 ${fs}px "Chakra Petch"`;
       const m = document.createElement('canvas').getContext('2d'); m.font = font; const w = Math.ceil(m.measureText(sg.t).width) + 40, h = fs * 2 + 20;
       const c = document.createElement('canvas'); c.width = w * dpr; c.height = h * dpr; const g = c.getContext('2d'); g.scale(dpr, dpr);
       g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = sg.c; g.shadowColor = sg.c; g.shadowBlur = 14; g.fillText(sg.t, w / 2, h / 2); g.fillText(sg.t, w / 2, h / 2);

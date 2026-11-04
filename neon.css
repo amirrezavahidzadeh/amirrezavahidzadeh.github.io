@@ -2,12 +2,13 @@
 @font-face{font-family:'Chakra Petch';src:url(fonts/chakra-petch-latin-500-normal.woff2) format('woff2');font-weight:500;font-display:swap}
 @font-face{font-family:'Chakra Petch';src:url(fonts/chakra-petch-latin-700-normal.woff2) format('woff2');font-weight:700;font-display:swap}
 @font-face{font-family:'Share Tech Mono';src:url(fonts/share-tech-mono-latin-400-normal.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Sahand';src:url(fonts/sahand.woff2) format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'Vazirmatn';src:url(fonts/vz-800.woff2) format('woff2');font-weight:800;font-display:swap}
 
 :root{
   --bg:#07030d;--ink:#e9e6ff;--dim:#9a93bd;--line:rgba(176,107,255,.28);
   --cy:#22f3ff;--mg:#ff2bd6;--yl:#ffe14d;--lm:#7dff6a;--vi:#b06bff;--or:#ff8a3d;--acc:#ff2bd6;
-  --disp:'Big Shoulders Display',Impact,sans-serif;--ui:'Chakra Petch',system-ui,sans-serif;--mono:'Share Tech Mono',ui-monospace,monospace;--fa:'Vazirmatn',Tahoma,sans-serif;
+  --disp:'Big Shoulders Display',Impact,sans-serif;--ui:'Chakra Petch',system-ui,sans-serif;--mono:'Share Tech Mono',ui-monospace,monospace;--fa:'Sahand','Vazirmatn',Tahoma,sans-serif;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
