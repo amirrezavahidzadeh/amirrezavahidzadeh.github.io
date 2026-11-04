@@ -98,7 +98,7 @@ kbd{font:400 .78em var(--mono);padding:.05em .4em;border:1px solid currentColor;
 .hn-l:nth-child(5n+3){animation:flick 9.5s 1.3s infinite}
 .hn-l.hit{transform:translateY(-.12em) scale(1.08);color:#fff;text-shadow:0 0 .05em #fff,0 0 .2em #fff,0 0 .5em var(--acc),0 0 1.4em var(--acc)}
 @keyframes flick{0%,95%,100%{opacity:1}96%{opacity:.35}97%{opacity:1}98%{opacity:.5}}
-.hero-fa{font-size:clamp(1.4rem,3.6vw,2.4rem);color:var(--mg);text-shadow:0 0 .1em #fff,0 0 .3em var(--mg),0 0 .8em var(--mg)}
+.hero-fa{font-size:clamp(1.4rem,3.6vw,2.4rem);color:var(--lm);text-shadow:0 0 .1em #fff,0 0 .3em var(--lm),0 0 .8em var(--lm)}
 .hero-roles{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:6px}
 .hero-roles button{font:700 .9rem/1 var(--ui);letter-spacing:.14em;text-transform:uppercase;padding:.7em 1em;border:1.5px solid var(--c);color:#fff;border-radius:3px;background:rgba(7,3,13,.55);box-shadow:0 0 10px color-mix(in srgb,var(--c) 60%,transparent)}
 .hero-roles li:nth-child(1) button{--c:#22f3ff}.hero-roles li:nth-child(2) button{--c:#ff2bd6}.hero-roles li:nth-child(3) button{--c:#7dff6a}.hero-roles li:nth-child(4) button{--c:#ffe14d}
@@ -242,7 +242,7 @@ kbd{font:400 .78em var(--mono);padding:.05em .4em;border:1px solid currentColor;
 .f-k2{font:400 .75rem var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
 .file h3{font:900 clamp(2.4rem,5.4vw,3.6rem)/.92 var(--disp);color:#fff;text-shadow:0 0 .2em var(--c)}
 .file h3 span{font-size:.5em;color:var(--c);margin-left:.3em;vertical-align:middle}
-.f-fa{font-size:1.6rem;color:var(--mg);text-shadow:0 0 10px var(--mg)}
+.f-fa{font-size:1.6rem;color:var(--lm);text-shadow:0 0 10px var(--lm)}
 .f-lede{font-size:1.12rem;line-height:1.55;color:#e4e0ff;max-width:68ch}
 .f-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 .f-stats div{padding:12px 14px;border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:4px;background:color-mix(in srgb,var(--c) 6%,transparent)}
