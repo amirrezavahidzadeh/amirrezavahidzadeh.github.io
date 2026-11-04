@@ -101,7 +101,7 @@ window.AV_START = (C) => {
   $('.hero-fa').textContent = C.hero.fa;
   $('#roles').innerHTML = C.hero.roles.map(r => `<li><button type="button" data-c="${E(r.color)}" style="--c:${E(r.color)}">${E(r.label)}</button></li>`).join('');
   $('.hero-play').textContent = C.hero.hint;
-  if (C.contact.length) $('#arcade').insertAdjacentHTML('afterend', `<section class="contact" aria-label="Contact"><h2>Transmit</h2><ul>${C.contact.map(x => `<li><a href="${E(link(x.url))}"${/^mailto:|^tel:/.test(link(x.url)) ? '' : ' target="_blank" rel="noopener"'}>${E(x.label)}</a></li>`).join('')}</ul></section>`);
+  $('#arcade').insertAdjacentHTML('afterend', `<section class="contact" aria-label="About me"><h2>Transmit</h2><ul><li><a href="about/">About me · Contact</a></li></ul></section>`);
   const letters = $$('.hn-l');
   function hitLetter(i, sound = true) {
     const l = letters[i]; if (!l) return; l.classList.remove('hit'); void l.offsetWidth; l.classList.add('hit');

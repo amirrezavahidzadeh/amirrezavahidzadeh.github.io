@@ -73,6 +73,8 @@ kbd{font:400 .78em var(--mono);padding:.05em .4em;border:1px solid currentColor;
 .d-track b{font:700 .95rem/1.15 var(--ui);letter-spacing:.08em;color:#fff;text-shadow:0 0 8px var(--mg);white-space:nowrap}
 #dBpm{font:400 .78rem/1.5 var(--mono);color:var(--cy)}
 #dViz{width:96px;height:28px}
+.hud-about{font:700 .8rem/1 var(--ui);letter-spacing:.14em;text-transform:uppercase;color:#fff;text-decoration:none;padding:10px 12px;border:1px solid var(--mg);border-radius:6px;background:rgba(10,3,24,.6);box-shadow:0 0 10px rgba(255,43,214,.45);white-space:nowrap}
+.hud-about:hover{background:rgba(255,43,214,.2)}
 .hud-shards{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:rgba(10,3,24,.6)}
 .hud-shards:hover{border-color:var(--yl)}
 .hs-gems{display:flex;gap:4px}
@@ -418,3 +420,4 @@ kbd{font:400 .78em var(--mono);padding:.05em .4em;border:1px solid currentColor;
   .orn-side::after{display:none}
   #fx{mix-blend-mode:normal}
 }
+@media (max-width:760px){.hud-about{margin-left:auto;padding:8px 10px;font-size:.72rem}.hud-about~.hud-shards{margin-left:0}}

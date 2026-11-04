@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>About me · Amirreza Vahidzadeh</title>
+<meta name="description" content="About Amirreza Vahidzadeh: filmmaker, director, game maker and AI specialist from Tehran. How to reach him.">
+<link rel="canonical" href="https://amirrezavahidzadeh.github.io/about/">
+<meta name="theme-color" content="#07030d">
+<style>
+@font-face{font-family:'Big Shoulders Display';src:url(../fonts/bsd.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Chakra Petch';src:url(../fonts/chakra-petch-latin-500-normal.woff2) format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Chakra Petch';src:url(../fonts/chakra-petch-latin-700-normal.woff2) format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'Share Tech Mono';src:url(../fonts/share-tech-mono-latin-400-normal.woff2) format('woff2');font-display:swap}
+@font-face{font-family:'Vazirmatn';src:url(../fonts/vz-800.woff2) format('woff2');font-weight:800;font-display:swap}
+:root{--bg:#07030d;--ink:#e9e6ff;--dim:#9a93bd;--cy:#22f3ff;--mg:#ff2bd6;--yl:#ffe14d;--lm:#7dff6a;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font:500 16px/1.5 'Chakra Petch',system-ui,sans-serif;min-height:100%}
+body{min-height:100vh;min-height:100dvh;overflow-x:hidden;display:grid;place-items:center;padding:40px 76px;position:relative}
+/* night sky, horizon glow, and a neon grid floor in pure CSS */
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(ellipse 70% 40% at 50% 62%,rgba(255,43,214,.32),transparent 70%),
+  linear-gradient(#030108 0%,#12042a 45%,#3a0b4f 62%,#0d0220 62.2%,#020006 100%)}
+body::after{content:"";position:fixed;left:-50%;right:-50%;bottom:0;height:38%;z-index:-1;
+  background:linear-gradient(transparent 0 97%,rgba(34,243,255,.55) 97%) 0 0/100% 34px,linear-gradient(90deg,transparent 0 97%,rgba(34,243,255,.4) 97%) 0 0/60px 100%;
+  transform:perspective(320px) rotateX(58deg);transform-origin:50% 0;animation:floor 2.4s linear infinite;opacity:.8}
+@keyframes floor{to{background-position:0 34px,0 0}}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit}
+[lang=fa]{font-family:Vazirmatn,Tahoma,sans-serif;font-weight:800}
+
+.orn-side{position:fixed;top:0;bottom:0;width:56px;z-index:2;pointer-events:none;background:var(--orn-side) repeat-y top center/56px 112px;opacity:.82}
+.orn-l{left:0}.orn-r{right:0;transform:scaleX(-1)}
+.orn-c{position:absolute;width:64px;height:64px;pointer-events:none;background:var(--orn-corner) center/contain no-repeat;z-index:2}
+.orn-c.tl{top:4px;left:4px}.orn-c.tr{top:4px;right:4px;transform:scaleX(-1)}.orn-c.bl{bottom:4px;left:4px;transform:scaleY(-1)}.orn-c.br{bottom:4px;right:4px;transform:scale(-1)}
+
+.card{position:relative;width:min(760px,100%);padding:56px 56px 44px;border:2px solid var(--cy);border-radius:8px;background:linear-gradient(rgba(14,5,30,.92),rgba(5,2,12,.95));box-shadow:0 0 34px rgba(34,243,255,.45),inset 0 0 40px rgba(34,243,255,.08);display:grid;gap:22px;text-align:center}
+.card::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:6px;background:repeating-linear-gradient(transparent 0 3px,rgba(255,255,255,.025) 3px 4px)}
+.k{font:400 .85rem 'Share Tech Mono',monospace;letter-spacing:.3em;text-transform:uppercase;color:var(--cy)}
+h1{font:900 clamp(2.8rem,9vw,5.2rem)/.86 'Big Shoulders Display',Impact,sans-serif;color:#fff;letter-spacing:.01em;text-shadow:0 0 .04em #fff,0 0 .18em var(--mg),0 0 .5em var(--mg),0 0 1.1em var(--mg)}
+.fa{font-size:clamp(1.3rem,4vw,1.9rem);color:var(--mg);text-shadow:0 0 .1em #fff,0 0 .35em var(--mg)}
+.roles{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;list-style:none}
+.roles li{font:700 .82rem/1 'Chakra Petch';letter-spacing:.14em;text-transform:uppercase;padding:.65em .9em;border:1.5px solid var(--c);border-radius:3px;box-shadow:0 0 10px color-mix(in srgb,var(--c) 55%,transparent)}
+.bio{color:#cfc9ee;max-width:56ch;margin:0 auto}
+.rule{height:22px;background:var(--orn-band) repeat-x center/48px 22px;opacity:.9}
+
+/* the transmission: email in neon-noir */
+.tx{display:grid;gap:12px;padding:24px 18px;border:1px solid rgba(255,43,214,.45);border-radius:6px;background:rgba(0,0,0,.35)}
+.tx-k{font:400 .78rem 'Share Tech Mono',monospace;letter-spacing:.28em;text-transform:uppercase;color:var(--mg)}
+.tx-k i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--lm);box-shadow:0 0 8px var(--lm);margin-right:8px;vertical-align:1px;animation:blink 1.2s steps(1) infinite}
+.mail{font:400 clamp(.8rem,calc((100vw - 130px) / 17),1.9rem)/1.3 'Share Tech Mono',monospace;color:#fff;letter-spacing:.02em;word-break:break-all;user-select:all;-webkit-user-select:all;text-shadow:0 0 .05em #fff,0 0 .3em var(--cy),0 0 .8em var(--cy),0 0 1.6em var(--cy);animation:flick 6s infinite}
+.mail .caret{display:inline-block;width:.55em;height:1em;background:var(--cy);vertical-align:-.12em;margin-left:2px;box-shadow:0 0 10px var(--cy);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@keyframes flick{0%,93%,100%{opacity:1}94%{opacity:.45}95%{opacity:1}96.5%{opacity:.6}}
+.acts{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:.6em;font:700 .95rem/1 'Chakra Petch';letter-spacing:.12em;text-transform:uppercase;color:#fff;text-decoration:none;padding:.85em 1.3em;border:2px solid var(--c,var(--cy));border-radius:4px;background:rgba(10,3,24,.55);box-shadow:0 0 12px var(--c,var(--cy));text-shadow:0 0 8px var(--c,var(--cy))}
+.btn:hover{background:color-mix(in srgb,var(--c,var(--cy)) 22%,transparent)}
+.btn.ghost{border-color:rgba(154,147,189,.5);box-shadow:none;color:var(--dim);text-shadow:none}
+.btn.ghost:hover{color:#fff;border-color:#fff}
+.status{min-height:1.4em;font:400 .85rem 'Share Tech Mono',monospace;color:var(--lm);letter-spacing:.1em}
+.links{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.links a{font:700 .85rem 'Chakra Petch';letter-spacing:.12em;text-transform:uppercase;text-decoration:none;padding:.6em 1em;border:1.5px solid var(--yl);border-radius:4px;box-shadow:0 0 10px rgba(255,225,77,.45)}
+.back{justify-self:center}
+@media (max-width:760px){
+  body{padding:28px 24px}
+  .orn-side{width:16px;background-size:16px 32px}
+  .card{padding:46px 20px 30px;gap:18px}
+  .orn-c{width:44px;height:44px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<main class="card boot-in">
+  <p class="k">File 00 · About me</p>
+  <h1>Amirreza<br>Vahidzadeh</h1>
+  <p class="fa" lang="fa" dir="rtl">امیررضا وحیدزاده</p>
+  <ul class="roles">
+    <li style="--c:#22f3ff">Filmmaker</li><li style="--c:#ff2bd6">Director</li><li style="--c:#7dff6a">Game maker</li><li style="--c:#ffe14d">AI specialist</li>
+  </ul>
+  <p class="bio">Filmmaker, director, game maker and AI specialist from Tehran, working mostly in video and games. B.A. in Cinema from the Art University of Tehran. Creator of Prompt Bazar and the Siavash game.</p>
+  <div class="rule" aria-hidden="true"></div>
+  <section class="tx" aria-label="Email">
+    <p class="tx-k"><i></i>Open channel · Email</p>
+    <p class="mail"><span id="mail">vahidstudioaccdontuse@gmail.com</span><span class="caret" aria-hidden="true"></span></p>
+    <div class="acts">
+      <button type="button" class="btn" id="copy" style="--c:#22f3ff">Copy email</button>
+      <a class="btn" id="send" href="mailto:vahidstudioaccdontuse@gmail.com" style="--c:#ff2bd6">Write to me</a>
+    </div>
+    <p class="status" id="status" role="status"></p>
+  </section>
+  <div class="links" id="links" hidden></div>
+  <a class="btn ghost back" href="../">← Back to the arcade</a>
+</main>
+<script src="../ornament.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const mailEl = $('#mail'), status = $('#status');
+  const E = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const isMail = u => /^(mailto:)?[^\s@\/:]+@[^\s@\/]+\.[^\s@\/]+$/i.test(u);
+  const href = u => { u = u.trim(); if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return u; if (isMail(u)) return 'mailto:' + u; return 'https://' + u; };
+  function setMail(addr) { mailEl.textContent = addr; $('#send').href = 'mailto:' + addr; }
+  // typewriter reveal
+  function type(addr) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return setMail(addr);
+    setMail(addr); mailEl.textContent = ''; let i = 0;
+    const t = setInterval(() => { mailEl.textContent = addr.slice(0, ++i); if (i >= addr.length) clearInterval(t); }, 38);
+  }
+  let addr = mailEl.textContent.trim();
+  // pick up whatever the admin page saved
+  fetch('../content.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(c => {
+    const list = (c && Array.isArray(c.contact)) ? c.contact : [];
+    const m = list.find(x => isMail(String(x.url || '')));
+    if (m) addr = String(m.url).replace(/^mailto:/i, '').trim();
+    const others = list.filter(x => x !== m && x.url);
+    if (others.length) { const L = $('#links'); L.innerHTML = others.map(x => `<a href="${E(href(String(x.url)))}" target="_blank" rel="noopener">${E(x.label)}</a>`).join(''); L.hidden = false; }
+    type(addr);
+  });
+  $('#copy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(addr); }
+    catch (e) { const r = document.createRange(); r.selectNodeContents(mailEl); const s = getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand && document.execCommand('copy'); }
+    status.textContent = '> copied to clipboard'; setTimeout(() => status.textContent = '', 2500);
+  });
+})();
+</script>
+</body>
+</html>
