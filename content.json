@@ -132,78 +132,87 @@
       "kicker": "AI product",
       "title": "Prompt Bazar",
       "fa": "بازار پرامپت",
-      "image": "img/bazar.webp",
-      "imageAlt": "Al-Khwarizmi with his astrolabe in the bazar, the guide of Prompt Bazar",
-      "lede": "A private AI filmmaking library and production workspace: a searchable memory of what works in generative video, built for models like Seedance and Kling.",
-      "numbers": [
+      "role": "Product concept, UX/UI direction and AI-assisted development",
+      "hero": "img/pb-home.webp",
+      "heroAlt": "The Prompt Bazar homepage: a search bar for AI video prompts above Al-Khwarizmi seated among astrolabes and books",
+      "lede": "I conceived and developed Prompt Bazar with AI assistance as a workspace for AI filmmakers to find, understand, and reuse prompts, tools, and workflows.",
+      "body": "I shaped its Persian-inspired visual identity and refined the experience through iterative prototyping and testing.",
+      "features": [
         {
-          "value": "609,030",
-          "label": "prompt records"
+          "title": "Search",
+          "text": "Find prompts by model, genre and visual style."
         },
         {
-          "value": "7",
-          "label": "parts per prompt"
+          "title": "Prompt Scholar",
+          "text": "Study how a prompt is built, part by part."
         },
         {
-          "value": "5",
-          "label": "libraries"
+          "title": "Projects",
+          "text": "Organize references into projects."
+        },
+        {
+          "title": "Libraries",
+          "text": "AI skills, MCP tools, ComfyUI workflows and curated films."
+        },
+        {
+          "title": "Director Mode",
+          "text": "Plan scripts and shots."
+        },
+        {
+          "title": "Admin tools",
+          "text": "Bulk imports, content editing, access control and live layout customization."
         }
       ],
-      "points": [
+      "shots": [
         {
-          "bold": "Prompt Scholar",
-          "text": "splits a prompt into subject, action, camera, environment, light, timing and constraints, and flags what is missing."
+          "image": "img/pb-pahlewan.webp",
+          "caption": "Pahlewan AI: the AI skills directory"
         },
         {
-          "bold": "Director Mode",
-          "text": "keeps scripts, shots and continuity, so a run of AI shots holds the same characters, props and screen direction."
-        },
-        {
-          "bold": "Evidence, not likes.",
-          "text": "People log whether they tried a prompt, how it turned out, and on which model."
-        },
-        {
-          "bold": "Five libraries:",
-          "text": "Pahlewan AI, MCP Abad, Comfy Library, Higgsfield Open Films and AI Radar."
+          "image": "img/pb-comfy.webp",
+          "caption": "Comfy Library: the ComfyUI workflow directory"
         }
       ],
-      "gallery": [
-        {
-          "image": "img/mcp.webp",
-          "label": "MCP Abad"
-        },
-        {
-          "image": "img/pahlewan.webp",
-          "label": "Pahlewan AI"
-        },
-        {
-          "image": "img/comfy.webp",
-          "label": "Comfy Library"
-        }
-      ],
-      "footnote": "React · TypeScript · Cloudflare Workers · D1 · R2",
+      "footnote": "Screenshots captured from a local preview of the current interface, without production records.",
       "link": ""
     },
     "siavash": {
       "kicker": "Game",
       "title": "Siavash",
       "fa": "سیاوش",
-      "lede": "A hunting game painted like a Shahnameh manuscript. Young Siavash learns the bow from Rostam, reads the wind to bring down the stag, and meets Azhdaha, the Serpent of the Falls.",
-      "screenshots": [
+      "tagline": "A living page of the Shahnameh",
+      "hero": "img/sia-title.webp",
+      "heroAlt": "The Siavash title screen: a Persian miniature landscape with a river, cypress trees and a city on the hill",
+      "gameBackdrop": "img/sia-hunt.webp",
+      "lede": "A game painted like a Persian manuscript page that comes alive. You play young Siavash: stalk game across the page, read the wind, and face the beasts of the Shahnameh.",
+      "features": [
         {
-          "image": "img/sia-stream.webp",
-          "alt": "Siavash at the stream, the stag across the water, Rostam teaching the bow"
+          "image": "img/sia-hunt.webp",
+          "title": "The hunt",
+          "text": "Stalk the stag across the stream, draw the bow, read the wind, and loose when you are ready."
         },
         {
-          "image": "img/sia-serpent.webp",
-          "alt": "Azhdaha, the Serpent of the Falls, rising at Siavash"
+          "image": "img/sia-sense.webp",
+          "title": "The hunter’s sense",
+          "text": "The page fades to ink and only what matters shows: animals, trails, hidden things."
         },
         {
-          "image": "img/sia-falls.webp",
-          "alt": "Siavash facing the coiled serpent beside the fallen stag"
+          "image": "img/sia-boss.webp",
+          "title": "Azhdaha, the Serpent of the Falls",
+          "text": "Dodge its strike, then go in with the knife when it lowers its head."
+        },
+        {
+          "image": "img/sia-merchant.webp",
+          "title": "The Merchant of Zabol",
+          "text": "Craft, buy, upgrade and trade with what you hunt: a serpent-tooth knife, a serpent-skin satchel, and tiryaq, the old Persian cure-all."
+        },
+        {
+          "image": "img/sia-styles.webp",
+          "title": "Four ways to see it",
+          "text": "Switch the whole painting between Pure Persian, Cinematic, Dark and Kiarostami styles."
         }
       ],
-      "footnote": "2.5D · Runs in the browser · Chapter one complete",
+      "footnote": "English and Persian · Built for the browser · Chapter one complete",
       "link": ""
     },
     "edu": {

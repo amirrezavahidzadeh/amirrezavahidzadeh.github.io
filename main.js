@@ -7,7 +7,7 @@ window.AV_START = (C) => {
   const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const E = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const F = C.files, RULES = C.rules;
-  const IMG = { siaStream: (F.siavash.screenshots[0] || {}).image || '' };
+  const IMG = { siaStream: F.siavash.gameBackdrop || ((F.siavash.features || [])[0] || {}).image || F.siavash.hero || '' };
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ── page meta, from the admin ── */
@@ -39,20 +39,18 @@ window.AV_START = (C) => {
     about: () => { const d = F.about; return `<div class="file f-about">${kick('about', d.kicker)}
       <h3>${E(d.title)}</h3>${d.fa ? `<p class="f-fa" lang="fa" dir="rtl">${E(d.fa)}</p>` : ''}
       <dl class="f-stats">${d.stats.map(x => `<div><dt>${E(x.label)}</dt><dd>${E(x.value)}</dd></div>`).join('')}</dl></div>`; },
-    bazar: () => { const d = F.bazar; return `<div class="file f-bazar">
-      ${d.image ? `<figure class="f-hero"><img src="${E(d.image)}" alt="${E(d.imageAlt)}"></figure>` : ''}
-      <div class="f-main">${kick('bazar', d.kicker)}
-        <h3>${E(d.title)} ${fa(d.fa)}</h3>
-        <p class="f-lede">${E(d.lede)}</p>
-        ${d.numbers.length ? `<dl class="f-nums">${d.numbers.map(x => `<div><dd>${E(x.value)}</dd><dt>${E(x.label)}</dt></div>`).join('')}</dl>` : ''}
-        ${d.points.length ? `<ul class="f-list">${d.points.map(x => `<li><b>${E(x.bold)}</b> ${E(x.text)}</li>`).join('')}</ul>` : ''}
-        ${d.gallery.length ? `<div class="f-strip">${d.gallery.map(x => `<button type="button" data-zoom="${E(x.image)}" aria-label="Enlarge ${E(x.label)}"><img src="${E(x.image)}" alt="${E(x.label)}"><span>${E(x.label)}</span></button>`).join('')}</div>` : ''}
-        ${d.footnote ? `<p class="f-tech">${E(d.footnote)}</p>` : ''}${more(d.link)}
-      </div></div>`; },
-    siavash: () => { const d = F.siavash; return `<div class="file f-sia">${kick('siavash', d.kicker)}
-      <h3>${E(d.title)} ${fa(d.fa)}</h3>
+    bazar: () => { const d = F.bazar; return `<div class="file f-pb">
+      ${d.hero ? `<button type="button" class="f-cover" data-zoom="${E(d.hero)}" aria-label="Enlarge: ${E(d.heroAlt)}"><img src="${E(d.hero)}" alt="${E(d.heroAlt)}"></button>` : ''}
+      <header class="f-head">${kick('bazar', d.kicker)}<h3>${E(d.title)} ${fa(d.fa)}</h3>${d.role ? `<p class="f-role">${E(d.role)}</p>` : ''}</header>
+      <p class="f-lede">${E(d.lede)}</p>${d.body ? `<p class="f-body">${E(d.body)}</p>` : ''}
+      ${(d.features || []).length ? `<ul class="f-feats">${d.features.map(x => `<li><b>${E(x.title)}</b><span>${E(x.text)}</span></li>`).join('')}</ul>` : ''}
+      ${(d.shots || []).length ? `<div class="f-pair">${d.shots.map(x => `<figure><button type="button" data-zoom="${E(x.image)}" aria-label="Enlarge: ${E(x.caption)}"><img src="${E(x.image)}" alt="${E(x.caption)}" loading="lazy"></button><figcaption>${E(x.caption)}</figcaption></figure>`).join('')}</div>` : ''}
+      ${d.footnote ? `<p class="f-tech">${E(d.footnote)}</p>` : ''}${more(d.link)}</div>`; },
+    siavash: () => { const d = F.siavash; return `<div class="file f-sia2">
+      ${d.hero ? `<button type="button" class="f-cover" data-zoom="${E(d.hero)}" aria-label="Enlarge: ${E(d.heroAlt)}"><img src="${E(d.hero)}" alt="${E(d.heroAlt)}"></button>` : ''}
+      <header class="f-head">${kick('siavash', d.kicker)}<h3>${E(d.title)} ${fa(d.fa)}</h3>${d.tagline ? `<p class="f-role">${E(d.tagline)}</p>` : ''}</header>
       <p class="f-lede">${E(d.lede)}</p>
-      ${d.screenshots.length ? `<div class="f-shots n${Math.min(3, d.screenshots.length)}">${d.screenshots.map(x => `<button type="button" data-zoom="${E(x.image)}" aria-label="Enlarge: ${E(x.alt)}"><img src="${E(x.image)}" alt="${E(x.alt)}"></button>`).join('')}</div>` : ''}
+      ${(d.features || []).length ? `<div class="f-rows">${d.features.map((x, i) => `<article class="f-row${i % 2 ? ' flip' : ''}">${x.image ? `<button type="button" data-zoom="${E(x.image)}" aria-label="Enlarge: ${E(x.title)}"><img src="${E(x.image)}" alt="${E(x.title)}" loading="lazy"></button>` : ''}<div><p class="f-n">${String(i + 1).padStart(2, '0')}</p><h4>${E(x.title)}</h4><p>${E(x.text)}</p></div></article>`).join('')}</div>` : ''}
       ${d.footnote ? `<p class="f-tech">${E(d.footnote)}</p>` : ''}${more(d.link)}</div>`; },
     edu: () => { const d = F.edu; return `<div class="file f-edu">${kick('edu', d.kicker)}
       <div class="f-badges">${d.badges.map(x => `<div class="f-badge${x.highlight ? ' hl' : ''}">${x.logo ? `<img src="${E(x.logo)}" alt="${E(x.logoAlt)}">` : ''}<div><p class="f-k2">${E(x.small)}</p><h3>${E(x.big)}</h3><p>${E(x.line)}</p></div></div>`).join('')}</div></div>`; },

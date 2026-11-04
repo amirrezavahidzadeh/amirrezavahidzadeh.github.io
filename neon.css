@@ -422,3 +422,45 @@ kbd{font:400 .78em var(--mono);padding:.05em .4em;border:1px solid currentColor;
   #fx{mix-blend-mode:normal}
 }
 @media (max-width:760px){.hud-about{margin-left:auto;padding:8px 10px;font-size:.72rem}.hud-about~.hud-shards{margin-left:0}}
+
+/* ── richer Prompt Bazar and Siavash files ── */
+.f-cover{display:block;width:100%;border:2px solid var(--c);border-radius:6px;overflow:hidden;position:relative;box-shadow:0 0 22px color-mix(in srgb,var(--c) 45%,transparent);cursor:zoom-in}
+.f-cover img{width:100%;height:auto;max-height:68vh;object-fit:cover;object-position:top;display:block;transition:transform .5s}
+.f-cover:hover img{transform:scale(1.02)}
+.f-cover.wide img{aspect-ratio:16/8;object-fit:cover}
+.f-cover-t{position:absolute;left:0;right:0;bottom:0;display:grid;justify-items:start;gap:2px;padding:40px 22px 18px;background:linear-gradient(transparent,rgba(5,1,12,.92));text-align:left}
+.f-cover-t span{font-size:1.4rem;color:var(--lm);text-shadow:0 0 10px var(--lm)}
+.f-cover-t b{font:900 clamp(2.4rem,6vw,4rem)/.9 var(--disp);color:#fff;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 0 .2em var(--c),0 0 .6em var(--c)}
+.f-cover-t i{font:500 1.05rem var(--ui);color:#ffd9b0}
+.f-head{display:grid;gap:6px}
+.f-role{font:700 .9rem var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+.f-body{color:#d9d4f5;max-width:68ch}
+.f-feats{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.f-feats li{display:grid;gap:4px;padding:14px 16px;border:1px solid color-mix(in srgb,var(--c) 40%,transparent);border-left:3px solid var(--c);border-radius:4px;background:color-mix(in srgb,var(--c) 6%,transparent)}
+.f-feats b{font:900 1.35rem/1 var(--disp);color:#fff;letter-spacing:.03em;text-shadow:0 0 .25em var(--c)}
+.f-feats span{color:#cfc9ee;font-size:.95rem}
+.f-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.f-pair figure{display:grid;gap:6px}
+.f-pair button{border:1px solid color-mix(in srgb,var(--c) 55%,transparent);border-radius:4px;overflow:hidden;cursor:zoom-in}
+.f-pair img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;transition:transform .4s}
+.f-pair button:hover img{transform:scale(1.03)}
+.f-pair figcaption{font:400 .8rem var(--mono);letter-spacing:.06em;color:var(--dim)}
+.f-rows{display:grid;gap:18px}
+.f-row{display:grid;grid-template-columns:1.35fr 1fr;gap:20px;align-items:center;padding:14px;border:1px solid color-mix(in srgb,var(--c) 30%,transparent);border-radius:6px;background:rgba(255,255,255,.02)}
+.f-row.flip{grid-template-columns:1fr 1.35fr}
+.f-row.flip > button{order:2}
+.f-row > button{border:1px solid color-mix(in srgb,var(--c) 55%,transparent);border-radius:4px;overflow:hidden;cursor:zoom-in;box-shadow:0 0 14px color-mix(in srgb,var(--c) 30%,transparent)}
+.f-row img{width:100%;aspect-ratio:16/9;object-fit:cover;transition:transform .4s}
+.f-row > button:hover img{transform:scale(1.03)}
+.f-row h4{font:900 clamp(1.6rem,3vw,2.2rem)/.95 var(--disp);color:#fff;text-shadow:0 0 .25em var(--c);margin:4px 0 8px}
+.f-row p{color:#d9d4f5}
+.f-n{font:400 .8rem var(--mono)!important;letter-spacing:.2em;color:var(--c)!important}
+@media (max-width:760px){
+  .f-pair{grid-template-columns:1fr}
+  .f-row,.f-row.flip{grid-template-columns:1fr;gap:12px}
+  .f-row.flip > button{order:0}
+  .f-cover.wide img{aspect-ratio:16/10}
+  .f-cover-t{padding:30px 14px 12px}
+}
+@media print{.f-cover,.f-pair,.f-row > button{display:none}.f-row,.f-row.flip{grid-template-columns:1fr}}
+.ov-body .f-head .f-k{display:none}
