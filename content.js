@@ -1,8 +1,8 @@
 /* Default content. On the live site, content.json (written by the admin page) overrides any of this. */
 window.AV_DEFAULT = {
   site: {
-    title: 'Amirreza Vahidzadeh: filmmaker, director, game maker',
-    description: 'Amirreza Vahidzadeh is a filmmaker, director, game maker and AI specialist from Tehran. Creator of Prompt Bazar and the Siavash game. Win the arcade games to decrypt his files.',
+    title: 'Amirreza Vahidzadeh: writer, filmmaker, director, game maker',
+    description: 'Amirreza Vahidzadeh is a film and series writer, filmmaker, director, game maker and AI specialist from Tehran. Creator of Prompt Bazar and the Siavash game. Win the arcade games to decrypt his files.',
   },
   hero: {
     kicker: 'Player one',
@@ -10,6 +10,7 @@ window.AV_DEFAULT = {
     nameLine2: 'VAHIDZADEH',
     fa: 'امیررضا وحیدزاده',
     roles: [
+      { label: 'Writer', color: '#5c8dff' },
       { label: 'Filmmaker', color: '#22f3ff' },
       { label: 'Director', color: '#ff2bd6' },
       { label: 'Game maker', color: '#7dff6a' },
@@ -25,6 +26,7 @@ window.AV_DEFAULT = {
   contact: [],
   cabinets: [
     { id: 'about', hidden: false, name: 'Player one', fa: 'بازیکن یک', game: 'Sync', how: 'Hit the notes on the beat.', color: '#22f3ff' },
+    { id: 'writer', hidden: false, name: 'Writer’s room', fa: 'نویسنده', game: 'Plot', how: 'Put a film’s scenes in story order.', color: '#5c8dff' },
     { id: 'bazar', hidden: false, name: 'Prompt Bazar', fa: 'بازار پرامپت', game: 'Decode', how: 'Tag the parts of an AI video prompt.', color: '#ffc94d' },
     { id: 'siavash', hidden: false, name: 'Siavash', fa: 'سیاوش', game: 'Windshot', how: 'Read the wind. Hit the stag twice.', color: '#ff8a3d' },
     { id: 'edu', hidden: false, name: 'Film school', fa: 'دانشکده سینما', game: 'Splice', how: 'Cut the film on the beat.', color: '#2bffc6' },
@@ -39,7 +41,7 @@ window.AV_DEFAULT = {
       fa: 'امیررضا وحیدزاده',
       stats: [
         { label: 'Born', value: 'February 2001' },
-        { label: 'Class', value: 'Filmmaker, director, game maker, AI specialist' },
+        { label: 'Class', value: 'Writer, filmmaker, director, game maker, AI specialist' },
         { label: 'Main skill', value: 'AI for video and games' },
         { label: 'On screen', value: 'Short films and music videos' },
       ],
@@ -92,6 +94,17 @@ window.AV_DEFAULT = {
       badges: [
         { logo: 'img/uni.png', logoAlt: 'Art University of Tehran logo', small: 'Bachelor of Arts', big: 'Cinema', line: 'Art University of Tehran', highlight: false },
         { logo: 'img/nahal-w.png', logoAlt: 'Nahal Student Film Festival logo', small: 'While studying', big: 'International Secretary', line: '18th Nahal Student Film Festival', highlight: true },
+      ],
+    },
+    writer: {
+      kicker: 'Writer',
+      title: 'Writer',
+      fa: 'نویسنده',
+      lede: 'I write mostly for film and series.',
+      genres: ['Feature films', 'Series'],
+      credits: [
+        { role: 'Writer on his projects', where: 'Mohammad Davoodi' },
+        { role: 'Writer on the studio’s projects', where: 'Lahze Studio' },
       ],
     },
     crew: {

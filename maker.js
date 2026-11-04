@@ -124,13 +124,13 @@ window.MAKER = (() => {
 
     function drawTile(c, k, x, y, t, open) {
       const s = T, m = s / 2; c.save(); c.translate(x, y);
-      if (k === '#') { c.fillStyle = '#10082a'; c.fillRect(1, 1, s - 2, s - 2); c.strokeStyle = '#22f3ff'; c.shadowColor = '#22f3ff'; c.shadowBlur = 8; c.lineWidth = 2; c.strokeRect(3, 3, s - 6, s - 6); }
-      else if (k === 'o') { c.fillStyle = '#ffe14d'; c.shadowColor = '#ffe14d'; c.shadowBlur = 12; c.beginPath(); c.ellipse(m, m, 8 * Math.abs(Math.cos(t * 3)) + 2, 10, 0, 0, 7); c.fill(); }
-      else if (k === '^') { c.fillStyle = '#ff2bd6'; c.shadowColor = '#ff2bd6'; c.shadowBlur = 10; c.beginPath(); for (let i = 0; i < 3; i++) { c.moveTo(4 + i * 11, s - 3); c.lineTo(9.5 + i * 11, s - 22); c.lineTo(15 + i * 11, s - 3); } c.fill(); }
-      else if (k === 'S') { c.strokeStyle = '#7dff6a'; c.shadowColor = '#7dff6a'; c.shadowBlur = 10; c.lineWidth = 3; c.beginPath(); c.moveTo(6, s - 6); c.lineTo(s - 6, s - 6); c.moveTo(8, s - 12); for (let i = 0; i < 4; i++) c.lineTo(i % 2 ? 8 : s - 8, s - 12 - i * 5); c.moveTo(6, s - 30); c.lineTo(s - 6, s - 30); c.stroke(); }
-      else if (k === 'e') { c.strokeStyle = '#ff8a3d'; c.shadowColor = '#ff8a3d'; c.shadowBlur = 10; c.lineWidth = 2.5; c.strokeRect(8, 12, s - 16, s - 22); c.fillStyle = '#ff8a3d'; c.fillRect(13, 18, 5, 5); c.fillRect(s - 18, 18, 5, 5); c.beginPath(); c.moveTo(4, 10); c.lineTo(s - 4, 10); c.stroke(); }
+      if (k === '#') { c.fillStyle = '#10082a'; c.fillRect(1, 1, s - 2, s - 2); c.strokeStyle = '#22f3ff'; c.shadowColor = '#22f3ff'; c.shadowBlur = .9 * (8); c.lineWidth = 2; c.strokeRect(3, 3, s - 6, s - 6); }
+      else if (k === 'o') { c.fillStyle = '#ffe14d'; c.shadowColor = '#ffe14d'; c.shadowBlur = .9 * (12); c.beginPath(); c.ellipse(m, m, 8 * Math.abs(Math.cos(t * 3)) + 2, 10, 0, 0, 7); c.fill(); }
+      else if (k === '^') { c.fillStyle = '#ff2bd6'; c.shadowColor = '#ff2bd6'; c.shadowBlur = .9 * (10); c.beginPath(); for (let i = 0; i < 3; i++) { c.moveTo(4 + i * 11, s - 3); c.lineTo(9.5 + i * 11, s - 22); c.lineTo(15 + i * 11, s - 3); } c.fill(); }
+      else if (k === 'S') { c.strokeStyle = '#7dff6a'; c.shadowColor = '#7dff6a'; c.shadowBlur = .9 * (10); c.lineWidth = 3; c.beginPath(); c.moveTo(6, s - 6); c.lineTo(s - 6, s - 6); c.moveTo(8, s - 12); for (let i = 0; i < 4; i++) c.lineTo(i % 2 ? 8 : s - 8, s - 12 - i * 5); c.moveTo(6, s - 30); c.lineTo(s - 6, s - 30); c.stroke(); }
+      else if (k === 'e') { c.strokeStyle = '#ff8a3d'; c.shadowColor = '#ff8a3d'; c.shadowBlur = .9 * (10); c.lineWidth = 2.5; c.strokeRect(8, 12, s - 16, s - 22); c.fillStyle = '#ff8a3d'; c.fillRect(13, 18, 5, 5); c.fillRect(s - 18, 18, 5, 5); c.beginPath(); c.moveTo(4, 10); c.lineTo(s - 4, 10); c.stroke(); }
       else if (k === 'P') { c.strokeStyle = '#fff'; c.setLineDash([4, 4]); c.lineWidth = 2; c.strokeRect(6, 6, s - 12, s - 12); c.setLineDash([]); c.fillStyle = '#fff'; c.font = '700 14px "Chakra Petch"'; c.textAlign = 'center'; c.fillText('P1', m, m + 5); }
-      else if (k === 'G') { const col = open === false ? '#5a4f7a' : '#b06bff'; c.strokeStyle = col; c.shadowColor = col; c.shadowBlur = 14; c.lineWidth = 3; c.beginPath(); c.moveTo(10, s - 3); c.lineTo(10, 5); c.stroke(); c.fillStyle = col; c.beginPath(); c.moveTo(10, 5); c.lineTo(s - 6, 11); c.lineTo(10, 17); c.fill(); }
+      else if (k === 'G') { const col = open === false ? '#5a4f7a' : '#b06bff'; c.strokeStyle = col; c.shadowColor = col; c.shadowBlur = .9 * (14); c.lineWidth = 3; c.beginPath(); c.moveTo(10, s - 3); c.lineTo(10, 5); c.stroke(); c.fillStyle = col; c.beginPath(); c.moveTo(10, 5); c.lineTo(s - 6, 11); c.lineTo(10, 17); c.fill(); }
       else if (k === '.') { c.strokeStyle = '#8a83a8'; c.lineWidth = 2; c.beginPath(); c.moveTo(10, 10); c.lineTo(s - 10, s - 10); c.moveTo(s - 10, 10); c.lineTo(10, s - 10); c.stroke(); }
       c.restore();
     }
@@ -150,7 +150,7 @@ window.MAKER = (() => {
       }
       if (sim) {
         sim.drones.forEach(dn => drawTile(g, 'e', dn.x - 4, dn.y - 8, t));
-        const p = sim.p; g.save(); g.fillStyle = '#ff2bd6'; g.shadowColor = '#ff2bd6'; g.shadowBlur = 16; g.fillRect(p.x, p.y, p.w, p.h);
+        const p = sim.p; g.save(); g.fillStyle = '#ff2bd6'; g.shadowColor = '#ff2bd6'; g.shadowBlur = .9 * (16); g.fillRect(p.x, p.y, p.w, p.h);
         g.fillStyle = '#22f3ff'; g.shadowColor = '#22f3ff'; g.fillRect(p.x + (p.vx < 0 ? 2 : p.w - 16), p.y + 7, 14, 6); g.restore();
       }
       if (msgT > 0) { msgT -= dt; if (msgT <= 0) msgEl.classList.remove('on'); }

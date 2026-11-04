@@ -13,7 +13,7 @@ window.GAMES = (() => {
   }
   function loop(fn) { let id = 0, alive = true, last = performance.now(); const f = ts => { if (!alive) return; const dt = Math.min(.05, (ts - last) / 1000); last = ts; fn(dt, ts / 1000); id = requestAnimationFrame(f); }; id = requestAnimationFrame(f); return () => { alive = false; cancelAnimationFrame(id); }; }
   function keys(map) { const h = e => { if (e.metaKey || e.ctrlKey || e.altKey) return; const f = map[e.key.toLowerCase()] || map[e.code]; if (f) { e.preventDefault(); if (!e.repeat) f(e); } }; addEventListener('keydown', h); return () => removeEventListener('keydown', h); }
-  const glow = (g, c, b = 14) => { g.shadowColor = c; g.shadowBlur = b; };
+  const glow = (g, c, b = 14) => { g.shadowColor = c; g.shadowBlur = .9 * (b); };
 
   /* ══ 01 · SYNC: a four-lane rhythm game riding the soundtrack ══ */
   function sync(el, api) {
@@ -282,6 +282,38 @@ window.GAMES = (() => {
     return () => { tm.forEach(clearTimeout); unkey(); };
   }
 
+  /* ══ 06 · PLOT: put a film's beats in story order ══ */
+  function plot(el, api) {
+    const BEATS = [
+      ['Setup', 'A night-shift taxi driver works the empty streets of Tehran.'],
+      ['Inciting incident', 'A passenger leaves a bag of cassette tapes in the back seat.'],
+      ['Midpoint', 'He plays one. The tapes are recordings of him.'],
+      ['Darkest moment', 'His cab is found burned, and he is the only suspect.'],
+      ['Climax', 'He plays the last tape to the man who recorded it.'],
+    ];
+    let order; do { order = BEATS.map((_, i) => i).sort(() => Math.random() - .5); } while (order.every((v, i) => v === i));
+    el.innerHTML = `<div class="g g-plot">
+      <p class="g-how">A film in five beats, shuffled. Tap them in story order, from the first scene to the climax. Two wrong picks and the draft is torn up.</p>
+      <ol class="plot-slots">${BEATS.map((_, i) => `<li data-i="${i}"><span>${String(i + 1).padStart(2, '0')}</span><i></i></li>`).join('')}</ol>
+      <div class="plot-cards">${order.map(i => `<button type="button" class="plot-card" data-i="${i}"><p>${BEATS[i][1]}</p></button>`).join('')}</div></div>`;
+    let next = 0, lives = 2, done = false;
+    const st = () => api.stat(`SCENE ${Math.min(next + 1, 5)}/5 · LIVES ${'♥'.repeat(lives)}`); st();
+    el.querySelector('.plot-cards').addEventListener('click', e => {
+      const b = e.target.closest('.plot-card'); if (!b || done || b.disabled) return;
+      if (+b.dataset.i === next) {
+        b.disabled = true; b.classList.add('used');
+        const slot = el.querySelector(`.plot-slots li[data-i="${next}"]`); slot.classList.add('on'); slot.querySelector('i').innerHTML = `<b>${BEATS[next][0]}</b>${BEATS[next][1]}`;
+        SND.note(next * 2, .3); next++; st();
+        if (next === BEATS.length) { done = true; setTimeout(() => api.win(`The draft holds together with ${lives} ${lives === 1 ? 'life' : 'lives'} left.`), 900); }
+      } else {
+        lives--; SND.ui('bad'); b.classList.remove('no'); void b.offsetWidth; b.classList.add('no'); st();
+        if (!lives) { done = true; setTimeout(() => api.lose('The story fell out of order.'), 500); }
+      }
+    });
+    dbg.plot = { next: () => next };
+    return () => { };
+  }
+
   /* ══ BEAT LAB: rewrite the drums of the soundtrack ══ */
   let labEl = null;
   SND.on((type, e) => {
@@ -325,5 +357,5 @@ window.GAMES = (() => {
     return () => { labEl = null; };
   }
 
-  return { dbg, about: sync, bazar: decode, siavash: windshot, edu: splice, crew: echo, beat };
+  return { dbg, about: sync, bazar: decode, siavash: windshot, edu: splice, crew: echo, writer: plot, beat };
 })();

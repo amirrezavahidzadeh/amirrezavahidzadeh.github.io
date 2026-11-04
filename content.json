@@ -1,7 +1,7 @@
 {
   "site": {
-    "title": "Amirreza Vahidzadeh: filmmaker, director, game maker",
-    "description": "Amirreza Vahidzadeh is a filmmaker, director, game maker and AI specialist from Tehran. Creator of Prompt Bazar and the Siavash game. Win the arcade games to decrypt his files."
+    "title": "Amirreza Vahidzadeh: writer, filmmaker, director, game maker",
+    "description": "Amirreza Vahidzadeh is a film and series writer, filmmaker, director, game maker and AI specialist from Tehran. Creator of Prompt Bazar and the Siavash game. Win the arcade games to decrypt his files."
   },
   "hero": {
     "kicker": "Player one",
@@ -9,6 +9,10 @@
     "nameLine2": "VAHIDZADEH",
     "fa": "امیررضا وحیدزاده",
     "roles": [
+      {
+        "label": "Writer",
+        "color": "#5c8dff"
+      },
       {
         "label": "Filmmaker",
         "color": "#24d3ff"
@@ -48,6 +52,15 @@
       "game": "Sync",
       "how": "Hit the notes on the beat.",
       "color": "#22f3ff"
+    },
+    {
+      "id": "writer",
+      "hidden": false,
+      "name": "Writer’s room",
+      "fa": "نویسنده",
+      "game": "Plot",
+      "how": "Put a film’s scenes in story order.",
+      "color": "#5c8dff"
     },
     {
       "id": "bazar",
@@ -116,7 +129,7 @@
         },
         {
           "label": "Class",
-          "value": "Filmmaker, director, game maker, AI specialist"
+          "value": "Writer, filmmaker, director, game maker, AI specialist"
         },
         {
           "label": "Main skill",
@@ -246,6 +259,26 @@
         {
           "role": "Assistant to the director and writer",
           "where": "Mohammad Davoodi"
+        }
+      ]
+    },
+    "writer": {
+      "kicker": "Writer",
+      "title": "Writer",
+      "fa": "نویسنده",
+      "lede": "I write mostly for film and series.",
+      "genres": [
+        "Feature films",
+        "Series"
+      ],
+      "credits": [
+        {
+          "role": "Writer on his projects",
+          "where": "Mohammad Davoodi"
+        },
+        {
+          "role": "Writer on the studio’s projects",
+          "where": "Lahze Studio"
         }
       ]
     }

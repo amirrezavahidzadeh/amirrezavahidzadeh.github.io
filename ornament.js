@@ -11,7 +11,7 @@
   };
 
   // vertical eslimi strip: S-curving stem, spiral curls, split palmettes (khatayi), ruled borders
-  const side = `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="112" viewBox="0 0 56 112" fill="none" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#g)">
+  const side = `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="112" viewBox="0 0 56 112" fill="none" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#g)">
     <path d="M3 0V112M53 0V112" stroke="${GD}" stroke-width="1.4"/>
     <path d="M7 0V112M49 0V112" stroke="${GD}" stroke-width=".6" opacity=".55"/>
     <path d="M3 52l2.4 4-2.4 4-2.4-4zM53 108l2.4 4-2.4 4-2.4-4zM53 -4l2.4 4-2.4 4-2.4-4z" fill="${GD}" stroke="none"/>
@@ -26,7 +26,7 @@
   </g></svg>`;
 
   // horizontal girih band: a chain of 8-pointed stars joined by rules
-  const band = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="22" viewBox="0 0 48 22" fill="none"><defs><filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#g)">
+  const band = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="22" viewBox="0 0 48 22" fill="none"><defs><filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.44" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#g)">
     <path d="M0 1.5H48M0 20.5H48" stroke="${GD}" stroke-width="1"/>
     <path d="M0 11H15M33 11H48" stroke="${CY}" stroke-width="1.2"/>
     ${star(24, 11, 7.5, 1.2, MG)}
@@ -34,7 +34,7 @@
   </g></svg>`;
 
   // corner lunette: quarter medallion with an eslimi curl and a star (top-left; CSS mirrors it)
-  const corner = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" fill="none" stroke-linecap="round"><defs><filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#g)">
+  const corner = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" fill="none" stroke-linecap="round"><defs><filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.62" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#g)">
     <path d="M2 74A72 72 0 0 1 74 2" stroke="${GD}" stroke-width="1.6"/>
     <path d="M2 62A60 60 0 0 1 62 2" stroke="${GD}" stroke-width=".7" opacity=".6"/>
     <path d="M6 58C14 44 26 40 34 44C40 47 38 55 32 54C27 53 29 47 33 48" stroke="${CY}" stroke-width="1.6"/>
@@ -46,7 +46,7 @@
 
   // toranj: the central medallion between the hero and the arcade
   const petals = Array.from({ length: 16 }, (_, i) => { const a = i / 16 * Math.PI * 2, b = a + Math.PI / 16, c = a - Math.PI / 16; const P = (t, r) => `${(60 + Math.cos(t) * r).toFixed(1)} ${(60 + Math.sin(t) * r).toFixed(1)}`; return `<path d="M${P(c, 30)}Q${P(a, 52)} ${P(b, 30)}" stroke="${i % 2 ? CY : MG}" stroke-width="1.3"/>`; }).join('');
-  const toranj = `<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="-10 -10 140 140" fill="none"><defs><filter id="g" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#g)">
+  const toranj = `<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="-10 -10 140 140" fill="none"><defs><filter id="g" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.16" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#g)">
     <circle cx="60" cy="60" r="56" stroke="${GD}" stroke-width="1.2"/><circle cx="60" cy="60" r="30" stroke="${GD}" stroke-width=".8" opacity=".7"/>
     ${petals}${star(60, 60, 20, 1.5, CY)}${star(60, 60, 11, 1, MG)}
   </g></svg>`;

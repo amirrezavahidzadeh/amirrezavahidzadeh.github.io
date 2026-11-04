@@ -22,7 +22,7 @@ window.AV_START = (C) => {
   const persist = () => { try { S.drums = SND.allDrums(); S.track = SND.track; S.muted = SND.muted; localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } };
 
   /* ── the cabinets ── */
-  const LOCKED = ['about', 'bazar', 'siavash', 'edu', 'crew'];
+  const LOCKED = ['about', 'bazar', 'siavash', 'edu', 'writer', 'crew'];
   const CABS = C.cabinets.filter(c => !c.hidden && (LOCKED.includes(c.id) || c.id === 'maker' || c.id === 'beat'))
     .map((c, i) => ({ ...c, n: String(i + 1).padStart(2, '0'), c: c.color, file: LOCKED.includes(c.id) }));
   const FILES = CABS.filter(c => c.file), NF = FILES.length;
@@ -54,6 +54,11 @@ window.AV_START = (C) => {
       ${d.footnote ? `<p class="f-tech">${E(d.footnote)}</p>` : ''}${more(d.link)}</div>`; },
     edu: () => { const d = F.edu; return `<div class="file f-edu">${kick('edu', d.kicker)}
       <div class="f-badges">${d.badges.map(x => `<div class="f-badge${x.highlight ? ' hl' : ''}">${x.logo ? `<img src="${E(x.logo)}" alt="${E(x.logoAlt)}">` : ''}<div><p class="f-k2">${E(x.small)}</p><h3>${E(x.big)}</h3><p>${E(x.line)}</p></div></div>`).join('')}</div></div>`; },
+    writer: () => { const d = F.writer; return `<div class="file f-writer">${kick('writer', d.kicker)}
+      <h3>${E(d.title)} ${fa(d.fa)}</h3>
+      <p class="f-lede">${E(d.lede)}</p>
+      ${(d.genres || []).length ? `<ul class="f-genres">${d.genres.map(g => `<li>${E(g)}</li>`).join('')}</ul>` : ''}
+      ${(d.credits || []).length ? `<ul class="f-quill">${d.credits.map(x => `<li><b>${E(x.where)}</b><span>${E(x.role)}</span></li>`).join('')}</ul>` : ''}</div>`; },
     crew: () => { const d = F.crew; return `<div class="file f-crew">${kick('crew', d.kicker)}
       <ul class="f-roles">${d.roles.map(x => `<li><span class="f-clap" aria-hidden="true"></span><div><b>${E(x.role)}</b><span>${E(x.where)}</span></div></li>`).join('')}</ul></div>`; },
   };
@@ -94,7 +99,8 @@ window.AV_START = (C) => {
   /* ── hero: a name you can play ── */
   const heroName = $('#heroName');
   heroName.setAttribute('aria-label', `${C.hero.nameLine1} ${C.hero.nameLine2}`.trim());
-  heroName.innerHTML = [C.hero.nameLine1, C.hero.nameLine2].filter(Boolean).map(w => `<span class="hn-w">${[...w].map(ch => `<span class="hn-l" aria-hidden="true">${E(ch)}</span>`).join('')}</span>`).join(' ');
+  let lix = 0;
+  heroName.innerHTML = [C.hero.nameLine1, C.hero.nameLine2].filter(Boolean).map(w => `<span class="hn-w">${[...w].map(ch => `<span class="hn-l" aria-hidden="true" style="--i:${lix++}">${E(ch)}</span>`).join('')}</span>`).join(' ');
   $('.hero-k').firstChild.textContent = C.hero.kicker + ' ';
   $('.hero-fa').textContent = C.hero.fa;
   $('#roles').innerHTML = C.hero.roles.map(r => `<li><button type="button" data-c="${E(r.color)}" style="--c:${E(r.color)}">${E(r.label)}</button></li>`).join('');
@@ -133,6 +139,7 @@ window.AV_START = (C) => {
     siavash(g, w, h, t, c) { const im = getImg('siaStream'); if (im.complete) g.drawImage(im, 0, 0, w, h); g.fillStyle = 'rgba(30,5,40,.6)'; g.fillRect(0, 0, w, h); const k = (t * .6) % 1; g.strokeStyle = c; g.lineWidth = 2; g.beginPath(); for (let i = 0; i <= 20; i++) { const u = i / 20 * k; g.lineTo(30 + u * 180, 110 - Math.sin(u * Math.PI) * 70); } g.stroke(); },
     edu(g, w, h, t, c) { const o = (t * 60) % 60; for (let i = -1; i < 6; i++) { const x = i * 60 - o; g.fillStyle = `hsla(${(i * 40 + 160) % 360},70%,40%,.7)`; g.fillRect(x + 3, 35, 54, 70); g.fillStyle = '#1e1630'; for (let k = 0; k < 3; k++) { g.fillRect(x + 6 + k * 20, 22, 10, 7); g.fillRect(x + 6 + k * 20, 111, 10, 7); } } g.strokeStyle = c; g.lineWidth = 3; g.strokeRect(w / 2 - 14, 14, 28, 112); },
     crew(g, w, h, t) { const on = Math.floor(t * 2.5) % 4, cs = ['#22f3ff', '#ff2bd6', '#ffe14d', '#7dff6a']; for (let i = 0; i < 4; i++) { g.globalAlpha = i === on ? 1 : .25; g.fillStyle = cs[i]; g.fillRect(40 + (i % 2) * 84, 14 + (i >> 1) * 60, 74, 50); } g.globalAlpha = 1; },
+    writer(g, w, h, t, c) { g.font = '13px "Share Tech Mono"'; const lines = ['INT. TAXI - NIGHT', 'He checks the mirror.', 'PASSENGER (O.S.)', 'Keep driving.', 'The tape clicks.', 'FADE OUT.']; const k = (t * 9) % 140; lines.forEach((l, i) => { const n = Math.max(0, Math.min(l.length, Math.floor(k - i * 22))); g.fillStyle = i % 2 ? 'rgba(200,210,255,.75)' : c; g.fillText(l.slice(0, n), 18, 24 + i * 19); }); if (Math.floor(t * 2) % 2) { g.fillStyle = c; g.fillRect(18, 128, 8, 3); } },
     maker(g, w, h, t, c) { g.strokeStyle = '#22f3ff'; g.lineWidth = 2; [[10, 120, 80], [110, 95, 50], [175, 70, 55]].forEach(([x, y, l]) => g.strokeRect(x, y, l, 10)); const k = (t * .5) % 1, x = 20 + k * 200, y = 108 - Math.abs(Math.sin(k * Math.PI * 3)) * 50 - k * 30; g.fillStyle = c; g.fillRect(x, y, 12, 12); g.fillStyle = '#ffe14d'; g.beginPath(); g.arc(200, 50, 5, 0, 7); g.fill(); },
     beat(g, w, h, t, c) { const D = SND.drums(), rows = ['t', 'k', 's', 'h']; rows.forEach((r, j) => { for (let i = 0; i < 16; i++) { g.fillStyle = D[r][i] ? (i === lastStep && SND.playing ? '#fff' : c) : 'rgba(255,255,255,.08)'; g.fillRect(8 + i * 14, 20 + j * 26, 11, 18); } }); },
   };
