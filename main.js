@@ -30,7 +30,9 @@ window.AV_START = (C) => {
   const done = id => !!S.shards[id];
   const kick = (id, k) => `<p class="f-k">File ${cab(id) ? cab(id).n : ''} · ${E(k)}</p>`;
   const fa = t => t ? `<span lang="fa" dir="rtl">${E(t)}</span>` : '';
-  const more = l => l ? `<p><a class="f-link" href="${E(l)}" target="_blank" rel="noopener">Open ↗</a></p>` : '';
+  // fix links typed without a scheme: bare emails become mailto:, bare domains become https://
+  const link = u => { u = String(u || '').trim(); if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return u; if (/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(u)) return 'mailto:' + u; if (/^\+?[\d\s()-]{7,}$/.test(u)) return 'tel:' + u.replace(/[^\d+]/g, ''); if (u && !/^[a-z][a-z0-9+.-]*:/i.test(u) && !u.startsWith('/') && !u.startsWith('#')) return 'https://' + u; return u; };
+  const more = l => l ? `<p><a class="f-link" href="${E(link(l))}" target="_blank" rel="noopener">Open ↗</a></p>` : '';
 
   /* ── file contents ── */
   const FILE = {
@@ -99,7 +101,7 @@ window.AV_START = (C) => {
   $('.hero-fa').textContent = C.hero.fa;
   $('#roles').innerHTML = C.hero.roles.map(r => `<li><button type="button" data-c="${E(r.color)}" style="--c:${E(r.color)}">${E(r.label)}</button></li>`).join('');
   $('.hero-play').textContent = C.hero.hint;
-  if (C.contact.length) $('#arcade').insertAdjacentHTML('afterend', `<section class="contact" aria-label="Contact"><h2>Transmit</h2><ul>${C.contact.map(x => `<li><a href="${E(x.url)}" target="_blank" rel="noopener">${E(x.label)}</a></li>`).join('')}</ul></section>`);
+  if (C.contact.length) $('#arcade').insertAdjacentHTML('afterend', `<section class="contact" aria-label="Contact"><h2>Transmit</h2><ul>${C.contact.map(x => `<li><a href="${E(link(x.url))}"${/^mailto:|^tel:/.test(link(x.url)) ? '' : ' target="_blank" rel="noopener"'}>${E(x.label)}</a></li>`).join('')}</ul></section>`);
   const letters = $$('.hn-l');
   function hitLetter(i, sound = true) {
     const l = letters[i]; if (!l) return; l.classList.remove('hit'); void l.offsetWidth; l.classList.add('hit');
