@@ -30,7 +30,7 @@
   },
   "rules": {
     "bypassEnabled": true,
-    "lossesBeforeBypass": 2,
+    "lossesBeforeBypass": 1,
     "defaultTrack": 1
   },
   "contact": [
