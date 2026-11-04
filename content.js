@@ -1,0 +1,101 @@
+/* Default content. On the live site, content.json (written by the admin page) overrides any of this. */
+window.AV_DEFAULT = {
+  site: {
+    title: 'Amirreza Vahidzadeh: filmmaker, director, game maker',
+    description: 'Amirreza Vahidzadeh is a filmmaker, director, game maker and AI specialist from Tehran. Creator of Prompt Bazar and the Siavash game. Win the arcade games to decrypt his files.',
+  },
+  hero: {
+    kicker: 'Player one',
+    nameLine1: 'AMIRREZA',
+    nameLine2: 'VAHIDZADEH',
+    fa: 'امیررضا وحیدزاده',
+    roles: [
+      { label: 'Filmmaker', color: '#22f3ff' },
+      { label: 'Director', color: '#ff2bd6' },
+      { label: 'Game maker', color: '#7dff6a' },
+      { label: 'AI specialist', color: '#ffe14d' },
+    ],
+    hint: 'Hover the name, tap anywhere, or press A to L to play along.',
+  },
+  rules: {
+    bypassEnabled: true,
+    lossesBeforeBypass: 2,
+    defaultTrack: 0,
+  },
+  contact: [],
+  cabinets: [
+    { id: 'about', hidden: false, name: 'Player one', fa: 'بازیکن یک', game: 'Sync', how: 'Hit the notes on the beat.', color: '#22f3ff' },
+    { id: 'bazar', hidden: false, name: 'Prompt Bazar', fa: 'بازار پرامپت', game: 'Decode', how: 'Tag the parts of an AI video prompt.', color: '#ffc94d' },
+    { id: 'siavash', hidden: false, name: 'Siavash', fa: 'سیاوش', game: 'Windshot', how: 'Read the wind. Hit the stag twice.', color: '#ff8a3d' },
+    { id: 'edu', hidden: false, name: 'Film school', fa: 'دانشکده سینما', game: 'Splice', how: 'Cut the film on the beat.', color: '#2bffc6' },
+    { id: 'crew', hidden: false, name: 'On set', fa: 'سر صحنه', game: 'Echo', how: 'Repeat the director’s cues.', color: '#b06bff' },
+    { id: 'maker', hidden: false, name: 'Make a game', fa: 'بازی بساز', game: 'Level maker', how: 'Build a level and send it as a link.', color: '#ff2bd6' },
+    { id: 'beat', hidden: false, name: 'Beat lab', fa: 'آزمایشگاه ضرب', game: 'Sequencer', how: 'Rewrite the drums of this soundtrack.', color: '#ff4d6d' },
+  ],
+  files: {
+    about: {
+      kicker: 'Player one',
+      title: 'Amirreza Vahidzadeh',
+      fa: 'امیررضا وحیدزاده',
+      stats: [
+        { label: 'Born', value: 'February 2001' },
+        { label: 'Class', value: 'Filmmaker, director, game maker, AI specialist' },
+        { label: 'Main skill', value: 'AI for video and games' },
+        { label: 'On screen', value: 'Short films and music videos' },
+      ],
+    },
+    bazar: {
+      kicker: 'AI product',
+      title: 'Prompt Bazar',
+      fa: 'بازار پرامپت',
+      image: 'img/bazar.webp',
+      imageAlt: 'Al-Khwarizmi with his astrolabe in the bazar, the guide of Prompt Bazar',
+      lede: 'A private AI filmmaking library and production workspace: a searchable memory of what works in generative video, built for models like Seedance and Kling.',
+      numbers: [
+        { value: '609,030', label: 'prompt records' },
+        { value: '7', label: 'parts per prompt' },
+        { value: '5', label: 'libraries' },
+      ],
+      points: [
+        { bold: 'Prompt Scholar', text: 'splits a prompt into subject, action, camera, environment, light, timing and constraints, and flags what is missing.' },
+        { bold: 'Director Mode', text: 'keeps scripts, shots and continuity, so a run of AI shots holds the same characters, props and screen direction.' },
+        { bold: 'Evidence, not likes.', text: 'People log whether they tried a prompt, how it turned out, and on which model.' },
+        { bold: 'Five libraries:', text: 'Pahlewan AI, MCP Abad, Comfy Library, Higgsfield Open Films and AI Radar.' },
+      ],
+      gallery: [
+        { image: 'img/mcp.webp', label: 'MCP Abad' },
+        { image: 'img/pahlewan.webp', label: 'Pahlewan AI' },
+        { image: 'img/comfy.webp', label: 'Comfy Library' },
+      ],
+      footnote: 'React · TypeScript · Cloudflare Workers · D1 · R2',
+      link: '',
+    },
+    siavash: {
+      kicker: 'Game',
+      title: 'Siavash',
+      fa: 'سیاوش',
+      lede: 'A hunting game painted like a Shahnameh manuscript. Young Siavash learns the bow from Rostam, reads the wind to bring down the stag, and meets Azhdaha, the Serpent of the Falls.',
+      screenshots: [
+        { image: 'img/sia-stream.webp', alt: 'Siavash at the stream, the stag across the water, Rostam teaching the bow' },
+        { image: 'img/sia-serpent.webp', alt: 'Azhdaha, the Serpent of the Falls, rising at Siavash' },
+        { image: 'img/sia-falls.webp', alt: 'Siavash facing the coiled serpent beside the fallen stag' },
+      ],
+      footnote: '2.5D · Runs in the browser · Chapter one complete',
+      link: '',
+    },
+    edu: {
+      kicker: 'Film school',
+      badges: [
+        { logo: 'img/uni.png', logoAlt: 'Art University of Tehran logo', small: 'Bachelor of Arts', big: 'Cinema', line: 'Art University of Tehran', highlight: false },
+        { logo: 'img/nahal-w.png', logoAlt: 'Nahal Student Film Festival logo', small: 'While studying', big: 'International Secretary', line: '18th Nahal Student Film Festival', highlight: true },
+      ],
+    },
+    crew: {
+      kicker: 'On set',
+      roles: [
+        { role: 'AI director and writer assistant', where: 'Lahze Studio' },
+        { role: 'Assistant to the director and writer', where: 'Mohammad Davoodi' },
+      ],
+    },
+  },
+};

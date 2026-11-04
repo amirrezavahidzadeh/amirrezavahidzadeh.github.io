@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Amirreza Vahidzadeh: filmmaker, director, game maker</title>
+<meta name="description" content="Amirreza Vahidzadeh is a filmmaker, director, game maker and AI specialist from Tehran. Creator of Prompt Bazar and the Siavash game. Win the arcade games to decrypt his files.">
+<meta name="author" content="Amirreza Vahidzadeh">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="Amirreza Vahidzadeh">
+<meta property="og:description" content="Filmmaker, director, game maker and AI specialist. A neon arcade: win the games to decrypt the files.">
+<meta property="og:image" content="https://amirrezavahidzadeh.github.io/img/og.jpg">
+<meta property="og:url" content="https://amirrezavahidzadeh.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://amirrezavahidzadeh.github.io/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Amirreza Vahidzadeh","alternateName":"امیررضا وحیدزاده","birthDate":"2001-02","jobTitle":["Filmmaker","Director","Game maker","AI specialist"],"alumniOf":{"@type":"CollegeOrUniversity","name":"Art University of Tehran"},"knowsAbout":["Filmmaking","Directing","Game development","Generative AI video"],"url":"https://amirrezavahidzadeh.github.io/","image":"https://amirrezavahidzadeh.github.io/img/og.jpg"}</script>
+<meta name="theme-color" content="#07030d">
+<link rel="stylesheet" href="neon.css">
+</head>
+<body>
+<canvas id="city" aria-hidden="true"></canvas>
+
+<div id="boot" role="dialog" aria-label="Start">
+  <div class="boot-in">
+    <p class="boot-tag">AV://NIGHT-CITY <span>v2.099</span></p>
+    <h1 class="boot-name glitch" data-t="AMIRREZA">AMIRREZA</h1>
+    <pre class="boot-log" id="bootLog" aria-hidden="true"></pre>
+    <div class="boot-go">
+      <button type="button" id="jackIn" class="btn-neon big">Jack in <span>sound on ♪</span></button>
+      <button type="button" id="jackSilent" class="btn-ghost">Enter silent</button>
+    </div>
+    <p class="boot-hint">Best with headphones. The soundtrack is generated live in your browser.</p>
+  </div>
+</div>
+
+<header id="hud">
+  <a class="hud-logo" href="#" aria-label="Amirreza Vahidzadeh, top"><b>AV</b><span>// amirreza.vahidzadeh</span></a>
+  <div class="deck" aria-label="Music">
+    <button type="button" id="dPlay" class="d-btn" aria-label="Play or pause the music"><i class="ic-play"></i></button>
+    <button type="button" id="dTrack" class="d-track" aria-label="Next track"><span class="d-now">NOW PLAYING</span><b id="dName">SHUR · NIGHT</b><span id="dBpm">92 BPM</span></button>
+    <canvas id="dViz" width="96" height="28" aria-hidden="true"></canvas>
+    <button type="button" id="dMute" class="d-btn" aria-label="Mute"><i class="ic-snd"></i></button>
+  </div>
+  <button type="button" id="hudShards" class="hud-shards" aria-label="Open the dossier"><span class="hs-gems" id="gems"></span><b><span id="shardN">0</span>/<span id="shardT">5</span></b><span class="hs-l">Dossier</span></button>
+</header>
+
+<noscript><p style="position:relative;z-index:20;padding:120px 20px;color:#fff">Amirreza Vahidzadeh: filmmaker, director, game maker and AI specialist. This site is an arcade and needs JavaScript.</p></noscript>
+<main id="main">
+  <section class="hero" aria-label="Amirreza Vahidzadeh">
+    <p class="hero-k">Player one <span class="blink">▮</span></p>
+    <h1 class="hero-name" id="heroName" aria-label="Amirreza Vahidzadeh"></h1>
+    <p class="hero-fa" lang="fa" dir="rtl">امیررضا وحیدزاده</p>
+    <ul class="hero-roles" id="roles">
+      <li><button type="button" data-c="#22f3ff">Filmmaker</button></li>
+      <li><button type="button" data-c="#ff2bd6">Director</button></li>
+      <li><button type="button" data-c="#7dff6a">Game maker</button></li>
+      <li><button type="button" data-c="#ffe14d">AI specialist</button></li>
+    </ul>
+    <p class="hero-brief"><b>5 files are encrypted.</b> Each arcade cabinet holds one. Win its game to decrypt it. <span class="hero-play">Hover the name, tap anywhere, or press <kbd>A</kbd> to <kbd>L</kbd> to play along.</span></p>
+  </section>
+
+  <section class="arcade" id="arcade" aria-label="Arcade"></section>
+</main>
+
+<footer id="ticker" aria-hidden="true"><div class="tk-in" id="tkIn"></div></footer>
+
+<div id="ov" hidden role="dialog" aria-modal="true" aria-labelledby="ovTitle">
+  <div class="ov-panel" id="ovPanel">
+    <header class="ov-top">
+      <div class="ov-id"><span class="ov-k" id="ovKick"></span><h2 id="ovTitle"></h2></div>
+      <p class="ov-stat" id="ovStat" role="status"></p>
+      <button type="button" class="ov-x" id="ovX" aria-label="Close">✕<kbd>Esc</kbd></button>
+    </header>
+    <div class="ov-body" id="ovBody"></div>
+  </div>
+</div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<script src="audio.js"></script>
+<script src="city.js"></script>
+<script src="games.js"></script>
+<script src="maker.js"></script>
+<script src="content.js"></script>
+<script src="main.js"></script>
+<script src="ornament.js"></script>
+</body>
+</html>
