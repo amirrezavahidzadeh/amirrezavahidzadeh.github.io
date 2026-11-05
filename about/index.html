@@ -38,7 +38,7 @@ a{color:inherit}
 .card{position:relative;width:min(760px,100%);padding:56px 56px 44px;border:2px solid var(--cy);border-radius:8px;background:linear-gradient(rgba(14,5,30,.92),rgba(5,2,12,.95));box-shadow:0 0 30.6px rgba(34,243,255,.45),inset 0 0 36px rgba(34,243,255,.08);display:grid;gap:22px;text-align:center}
 .card::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:6px;background:repeating-linear-gradient(transparent 0 3px,rgba(255,255,255,.025) 3px 4px)}
 .k{font:400 .85rem 'Share Tech Mono',monospace;letter-spacing:.3em;text-transform:uppercase;color:var(--cy)}
-h1{font:900 clamp(2.8rem,9vw,5.2rem)/.86 'Big Shoulders Display',Impact,sans-serif;color:#fff;letter-spacing:.01em;text-shadow:0 0 .036em #fff,0 0 .162em var(--mg),0 0 .45em var(--mg),0 0 .99em var(--mg)}
+h1{font:900 clamp(2.8rem,9vw,5.2rem)/.86 'Big Shoulders Display',Impact,sans-serif;color:#fff;--x:0;letter-spacing:.01em;text-shadow:0 0 .036em #fff,0 0 .162em var(--mg),0 0 .45em var(--mg),0 0 .99em var(--mg)}
 .fa{font-size:clamp(1.3rem,4vw,1.9rem);color:var(--lm);text-shadow:0 0 .09em #fff,0 0 .315em var(--lm),0 0 .72em var(--lm)}
 .roles{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;list-style:none}
 .roles li{font:700 .82rem/1 'Chakra Petch';letter-spacing:.14em;text-transform:uppercase;padding:.65em .9em;border:1.5px solid var(--c);border-radius:3px;box-shadow:0 0 9px color-mix(in srgb,var(--c) 55%,transparent)}
@@ -69,12 +69,15 @@ h1{font:900 clamp(2.8rem,9vw,5.2rem)/.86 'Big Shoulders Display',Impact,sans-ser
   .orn-c{width:44px;height:44px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+.wh{color:#fff;text-shadow:0 0 .03em #fff,0 0 .11em #fff,0 0 .32em rgba(255,255,255,.62),0 0 .72em rgba(205,220,255,.38)}
+.bk{color:#06060a;-webkit-text-stroke:.014em rgba(255,255,255,.75);text-shadow:0 0 .02em #fff,0 0 .09em rgba(255,255,255,.9),0 0 .26em rgba(255,255,255,.55),0 0 .62em rgba(255,255,255,.3)}
+.roles li{--x:0}
 </style>
 </head>
 <body>
 <main class="card boot-in">
   <p class="k">File 00 · About me</p>
-  <h1>Amirreza<br>Vahidzadeh</h1>
+  <h1 aria-label="Amirreza Vahidzadeh"><span aria-hidden="true"><span class="wh">A</span><span class="bk">m</span><span class="wh">i</span><span class="bk">r</span><span class="wh">r</span><span class="bk">e</span><span class="wh">z</span><span class="bk">a</span><br><span class="bk">V</span><span class="wh">a</span><span class="bk">h</span><span class="wh">i</span><span class="bk">d</span><span class="wh">z</span><span class="bk">a</span><span class="wh">d</span><span class="bk">e</span><span class="wh">h</span></span></h1>
   <p class="fa" lang="fa" dir="rtl">امیررضا وحیدزاده</p>
   <ul class="roles">
     <li style="--c:#5c8dff">Writer</li><li style="--c:#22f3ff">Filmmaker</li><li style="--c:#ff2bd6">Director</li><li style="--c:#7dff6a">Game maker</li><li style="--c:#ffe14d">AI specialist</li>

@@ -22,7 +22,7 @@ window.AV_START = (C) => {
   const persist = () => { try { S.drums = SND.allDrums(); S.track = SND.track; S.muted = SND.muted; localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } };
 
   /* ── the cabinets ── */
-  const LOCKED = ['about', 'bazar', 'siavash', 'edu', 'writer', 'crew'];
+  const LOCKED = ['about', 'bazar', 'siavash', 'edu', 'writer', 'crew', 'chess'];
   const CABS = C.cabinets.filter(c => !c.hidden && (LOCKED.includes(c.id) || c.id === 'maker' || c.id === 'beat'))
     .map((c, i) => ({ ...c, n: String(i + 1).padStart(2, '0'), c: c.color, file: LOCKED.includes(c.id) }));
   const FILES = CABS.filter(c => c.file), NF = FILES.length;
@@ -33,6 +33,23 @@ window.AV_START = (C) => {
   // fix links typed without a scheme: bare emails become mailto:, bare domains become https://
   const link = u => { u = String(u || '').trim(); if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return u; if (/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(u)) return 'mailto:' + u; if (/^\+?[\d\s()-]{7,}$/.test(u)) return 'tel:' + u.replace(/[^\d+]/g, ''); if (u && !/^[a-z][a-z0-9+.-]*:/i.test(u) && !u.startsWith('/') && !u.startsWith('#')) return 'https://' + u; return u; };
   const more = l => l ? `<p><a class="f-link" href="${E(link(l))}" target="_blank" rel="noopener">Open ↗</a></p>` : '';
+
+  /* ── story: one chapter per file ── */
+  const ST = C.story || { chapters: {} };
+  const chapN = id => FILES.findIndex(f => f.id === id) + 1;
+  const chap = id => { const x = (ST.chapters || {})[id]; return x && x.text ? `<div class="chapter"><p class="ch-k">Chapter ${chapN(id)} of ${NF}${x.title ? ` · ${E(x.title)}` : ''}</p><p class="ch-t">${E(x.text)}</p></div>` : ''; };
+  // live chess.com rating, falling back to the number set in the admin
+  function hydrate(root) {
+    root.querySelectorAll('[data-chess]').forEach(el => {
+      const h = el.dataset.chess; if (!h) return;
+      fetch(`https://api.chess.com/pub/player/${encodeURIComponent(h.toLowerCase())}/stats`).then(r => r.ok ? r.json() : null).then(j => {
+        const r = j && j.chess_rapid; if (!r || !r.last) return;
+        const v = el.querySelector('.cz-num'); if (v) v.textContent = r.last.rating;
+        const b = el.querySelector('.cz-best'); if (b && r.best) { b.textContent = `Best ${r.best.rating}`; b.hidden = false; }
+        const l = el.querySelector('.cz-live'); if (l) l.hidden = false;
+      }).catch(() => { });
+    });
+  }
 
   /* ── file contents ── */
   const FILE = {
@@ -59,6 +76,12 @@ window.AV_START = (C) => {
       <p class="f-lede">${E(d.lede)}</p>
       ${(d.genres || []).length ? `<ul class="f-genres">${d.genres.map(g => `<li>${E(g)}</li>`).join('')}</ul>` : ''}
       ${(d.credits || []).length ? `<ul class="f-quill">${d.credits.map(x => `<li><b>${E(x.where)}</b><span>${E(x.role)}</span></li>`).join('')}</ul>` : ''}</div>`; },
+    chess: () => { const d = F.chess; return `<div class="file f-chess" data-chess="${E(d.handle)}">${kick('chess', d.kicker)}
+      <div class="cz">
+        <div class="cz-card"><p class="cz-fmt">${E(d.format)} · chess.com</p><p class="cz-num">${E(d.rating)}</p><p class="cz-sub"><span class="cz-live" hidden>● live rating</span> <span class="cz-best" hidden></span></p></div>
+        <div class="cz-main"><h3>${E(d.title)}</h3><p class="cz-handle">@${E(d.handle)}</p><p class="f-lede">${E(d.lede)}</p>
+          ${d.profile ? `<a class="btn-neon cz-cta" href="${E(link(d.profile))}" target="_blank" rel="noopener">${E(d.cta || 'Profile')} ↗</a>` : ''}</div>
+      </div></div>`; },
     crew: () => { const d = F.crew; return `<div class="file f-crew">${kick('crew', d.kicker)}
       <ul class="f-roles">${d.roles.map(x => `<li><span class="f-clap" aria-hidden="true"></span><div><b>${E(x.role)}</b><span>${E(x.where)}</span></div></li>`).join('')}</ul></div>`; },
   };
@@ -68,7 +91,8 @@ window.AV_START = (C) => {
     const n = FILES.filter(f => done(f.id)).length;
     shardN.textContent = n; $('#shardT').textContent = NF; gems.innerHTML = FILES.map(f => `<i class="${done(f.id) ? 'on' : ''}" style="--c:${f.c}"></i>`).join('');
     $$('.cab').forEach(b => { const c = cab(b.dataset.id); if (!c.file) return; b.classList.toggle('open', done(c.id)); $('.cab-lock', b).textContent = done(c.id) ? 'Decrypted' : 'Encrypted'; });
-    $('.hero-brief b').textContent = n === NF ? `All ${NF} files decrypted.` : `${NF - n} of ${NF} files ${NF - n === 1 ? 'is' : 'are'} encrypted.`;
+    $('.hero-brief b').textContent = n === NF ? `All ${NF} chapters recovered.` : `Chapter ${n + 1} of ${NF} is waiting.`;
+    $('#skipAll').hidden = n === NF || RULES.skipButton === false;
     ticker();
   }
   function deck() {
@@ -105,6 +129,7 @@ window.AV_START = (C) => {
   $('.hero-fa').textContent = C.hero.fa;
   $('#roles').innerHTML = C.hero.roles.map(r => `<li><button type="button" data-c="${E(r.color)}" style="--c:${E(r.color)}">${E(r.label)}</button></li>`).join('');
   $('.hero-play').textContent = C.hero.hint;
+  if (ST.prologue) $('.hero-story').textContent = ST.prologue; else $('.hero-story').remove();
   $('#arcade').insertAdjacentHTML('afterend', `<section class="contact" aria-label="About me"><h2>Transmit</h2><ul><li><a href="about/">About me · Contact</a></li></ul></section>`);
   const letters = $$('.hn-l');
   function hitLetter(i, sound = true) {
@@ -140,6 +165,7 @@ window.AV_START = (C) => {
     edu(g, w, h, t, c) { const o = (t * 60) % 60; for (let i = -1; i < 6; i++) { const x = i * 60 - o; g.fillStyle = `hsla(${(i * 40 + 160) % 360},70%,40%,.7)`; g.fillRect(x + 3, 35, 54, 70); g.fillStyle = '#1e1630'; for (let k = 0; k < 3; k++) { g.fillRect(x + 6 + k * 20, 22, 10, 7); g.fillRect(x + 6 + k * 20, 111, 10, 7); } } g.strokeStyle = c; g.lineWidth = 3; g.strokeRect(w / 2 - 14, 14, 28, 112); },
     crew(g, w, h, t) { const on = Math.floor(t * 2.5) % 4, cs = ['#22f3ff', '#ff2bd6', '#ffe14d', '#7dff6a']; for (let i = 0; i < 4; i++) { g.globalAlpha = i === on ? 1 : .25; g.fillStyle = cs[i]; g.fillRect(40 + (i % 2) * 84, 14 + (i >> 1) * 60, 74, 50); } g.globalAlpha = 1; },
     writer(g, w, h, t, c) { g.font = '13px "Share Tech Mono"'; const lines = ['INT. TAXI - NIGHT', 'He checks the mirror.', 'PASSENGER (O.S.)', 'Keep driving.', 'The tape clicks.', 'FADE OUT.']; const k = (t * 9) % 140; lines.forEach((l, i) => { const n = Math.max(0, Math.min(l.length, Math.floor(k - i * 22))); g.fillStyle = i % 2 ? 'rgba(200,210,255,.75)' : c; g.fillText(l.slice(0, n), 18, 24 + i * 19); }); if (Math.floor(t * 2) % 2) { g.fillStyle = c; g.fillRect(18, 128, 8, 3); } },
+    chess(g, w, h, t) { for (let i = 0; i < 6; i++) { const x = 120 + Math.sin(t * .5 + i * 1.7) * 90, y = 70 + Math.cos(t * .4 + i * 2.3) * 40, r = 40 + 14 * Math.sin(t + i); const gr = g.createRadialGradient(x, y, 2, x, y, r); gr.addColorStop(0, 'rgba(255,190,60,.9)'); gr.addColorStop(.5, 'rgba(255,70,20,.55)'); gr.addColorStop(1, 'rgba(120,10,0,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); } for (let r = 0; r < 4; r++) for (let q = 0; q < 8; q++) { if ((r + q) % 2) continue; g.fillStyle = 'rgba(10,6,6,.82)'; g.fillRect(24 + q * 24, 22 + r * 24, 24, 24); } g.font = '20px serif'; g.fillStyle = '#fff1d6'; g.fillText('\u265A\uFE0E', 30 + (Math.floor(t) % 8) * 24, 40 + (Math.floor(t / 8) % 4) * 24); },
     maker(g, w, h, t, c) { g.strokeStyle = '#22f3ff'; g.lineWidth = 2; [[10, 120, 80], [110, 95, 50], [175, 70, 55]].forEach(([x, y, l]) => g.strokeRect(x, y, l, 10)); const k = (t * .5) % 1, x = 20 + k * 200, y = 108 - Math.abs(Math.sin(k * Math.PI * 3)) * 50 - k * 30; g.fillStyle = c; g.fillRect(x, y, 12, 12); g.fillStyle = '#ffe14d'; g.beginPath(); g.arc(200, 50, 5, 0, 7); g.fill(); },
     beat(g, w, h, t, c) { const D = SND.drums(), rows = ['t', 'k', 's', 'h']; rows.forEach((r, j) => { for (let i = 0; i < 16; i++) { g.fillStyle = D[r][i] ? (i === lastStep && SND.playing ? '#fff' : c) : 'rgba(255,255,255,.08)'; g.fillRect(8 + i * 14, 20 + j * 26, 11, 18); } }); },
   };
@@ -161,7 +187,9 @@ window.AV_START = (C) => {
   const ov = $('#ov'), body = $('#ovBody'), stat = $('#ovStat');
   let cur = null, cleanup = null, token = 0, lastFocus = null;
   function teardown() { if (cleanup) { try { cleanup(); } catch (e) { } cleanup = null; } token++; }
+  const skipBtn = $('#ovSkip');
   function frame(c, game) {
+    skipBtn.hidden = !(c && c.file && game && RULES.skipButton !== false);
     $('#ovPanel').style.setProperty('--c', c ? c.c : '#22f3ff');
     $('#ovKick').textContent = c ? (c.file ? `File ${c.n} · ${game ? c.game : 'decrypted'}` : c.game) : 'All files';
     $('#ovTitle').textContent = c ? c.name : 'Dossier'; stat.textContent = '';
@@ -194,7 +222,7 @@ window.AV_START = (C) => {
   function result(id, won, msg) {
     const c = cab(id), f = S.fails[id] || 0, BY = !!RULES.bypassEnabled, BN = Math.max(1, +RULES.lossesBeforeBypass || 2);
     body.innerHTML = won
-      ? `<div class="res win"><p class="res-k">Access granted</p><h3 class="glitch" data-t="FILE DECRYPTED">FILE DECRYPTED</h3><p>${msg}</p></div>`
+      ? `<div class="res win"><p class="res-k">Access granted${(ST.chapters || {})[id] ? ` · Chapter ${chapN(id)} recovered` : ''}</p><h3 class="glitch" data-t="FILE DECRYPTED">FILE DECRYPTED</h3><p>${msg}</p></div>`
       : `<div class="res lose"><p class="res-k">Signal lost</p><h3 class="glitch" data-t="STILL ENCRYPTED">STILL ENCRYPTED</h3><p>${msg}</p>
           <div class="res-act"><button type="button" class="btn-neon" data-a="retry">Try again</button>${BY && f >= BN ? `<button type="button" class="btn-ghost" data-a="bypass">Bypass the lock</button>` : ''}</div>
           ${BY && f < BN ? `<p class="res-hint">Lose ${BN === 1 ? 'once' : BN === 2 ? 'twice' : BN + ' times'} and a bypass appears.</p>` : ''}</div>`;
@@ -210,11 +238,13 @@ window.AV_START = (C) => {
   function showFile(id, fresh) {
     const c = cab(id); frame(c, false); teardown();
     const nx = nextLocked(id);
-    body.innerHTML = `${FILE[id]()}<div class="file-foot">
+    const all = FILES.every(f => done(f.id));
+    body.innerHTML = `${chap(id)}${FILE[id]()}${all && fresh && ST.epilogue ? `<div class="chapter epi"><p class="ch-k">Epilogue</p><p class="ch-t">${E(ST.epilogue)}</p><a class="btn-neon" href="about/">Write to him →</a></div>` : ''}<div class="file-foot">
       <button type="button" class="btn-ghost" data-a="replay">Play ${c.game} again</button>
       ${nx ? `<button type="button" class="btn-neon" data-a="next" data-id="${nx.id}">Next: ${nx.name} →</button>` : `<button type="button" class="btn-neon" data-a="dossier">Open the dossier</button>`}</div>`;
     stat.textContent = 'DECRYPTED';
     if (fresh && !RM) scramble($('.file', body));
+    hydrate(body);
     body.querySelector('.file-foot').addEventListener('click', e => {
       const b = e.target.closest('[data-a]'); if (!b) return;
       if (b.dataset.a === 'replay') open(id, { play: true, force: true });
@@ -227,10 +257,11 @@ window.AV_START = (C) => {
     frame(null); const n = FILES.filter(f => done(f.id)).length;
     body.innerHTML = `<div class="dos">
       <p class="dos-lede">${n === NF ? 'Every file is decrypted. Here is the whole record.' : `${n} of ${NF} files decrypted. Win the rest to fill in the record.`}</p>
-      ${FILES.map(f => done(f.id) ? `<section class="dos-f" style="--c:${f.c}">${FILE[f.id]()}</section>`
+      ${n === NF && ST.epilogue ? `<div class="chapter epi"><p class="ch-k">Epilogue</p><p class="ch-t">${E(ST.epilogue)}</p><a class="btn-neon" href="about/">Write to him →</a></div>` : ST.prologue ? `<div class="chapter"><p class="ch-k">Prologue</p><p class="ch-t">${E(ST.prologue)}</p></div>` : ''}
+      ${FILES.map(f => done(f.id) ? `<section class="dos-f" style="--c:${f.c}">${chap(f.id)}${FILE[f.id]()}</section>`
         : `<section class="dos-f locked" style="--c:${f.c}"><p class="f-k">File ${f.n} · ${f.name}</p><p class="dos-scr" aria-label="Encrypted">${'█▓▒░ '.repeat(9)}</p><button type="button" class="btn-neon" data-play="${f.id}">Play ${f.game} to decrypt</button></section>`).join('')}
       <div class="file-foot">${n === NF ? '<button type="button" class="btn-neon" data-a="print">Print or save as PDF</button>' : ''}<button type="button" class="btn-ghost" data-a="reset">Lock everything again</button></div></div>`;
-    stat.textContent = `${n}/${NF} DECRYPTED`;
+    stat.textContent = `${n}/${NF} DECRYPTED`; hydrate(body);
     body.querySelector('.dos').addEventListener('click', e => {
       const p = e.target.closest('[data-play]'); if (p) return open(p.dataset.play, { force: true });
       const a = e.target.closest('[data-a]')?.dataset.a;
@@ -240,6 +271,9 @@ window.AV_START = (C) => {
     requestAnimationFrame(() => $('#ovPanel').focus());
   }
   $('#ovX').addEventListener('click', close);
+  skipBtn.addEventListener('click', () => { if (!cur || !cab(cur) || !cab(cur).file) return; const id = cur; teardown(); S.shards[id] = 1; persist(); hud(); SND.ui('glitch'); showFile(id, true); });
+  // no time? open every file at once
+  $('#skipAll').addEventListener('click', () => { FILES.forEach(f => S.shards[f.id] = 1); persist(); hud(); SND.ui('win'); open('dossier'); });
   ov.addEventListener('pointerdown', e => { if (e.target === ov) close(); });
 
   // enlarge screenshots
@@ -277,7 +311,7 @@ window.AV_START = (C) => {
 
   /* ── boot ── */
   const boot = $('#boot'), log = $('#bootLog');
-  const LINES = ['> waking up night city', '> tuning the santur: Shur, Chahargah, Homayoun', `> ${CABS.length} arcade cabinets online`, `> ${NF} files encrypted`, '> one player detected'];
+  const LINES = ['> tehran, 2099. the grid went dark.', '> waking up night city', '> tuning the santur: Shur, Chahargah, Homayoun', `> ${CABS.length} arcade cabinets online`, `> ${NF} files encrypted`, '> one player detected'];
   let li = 0; const typer = setInterval(() => { if (li >= LINES.length) return clearInterval(typer); log.textContent += LINES[li++] + '\n'; }, RM ? 10 : 260);
   function enter(sound) {
     SND.start(); SND.mute(!sound || false); if (!sound) S.muted = true; persist();

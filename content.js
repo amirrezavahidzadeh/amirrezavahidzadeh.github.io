@@ -19,6 +19,7 @@ window.AV_DEFAULT = {
     hint: 'Hover the name, tap anywhere, or press A to L to play along.',
   },
   rules: {
+    skipButton: true,
     bypassEnabled: true,
     lossesBeforeBypass: 2,
     defaultTrack: 0,
@@ -31,9 +32,23 @@ window.AV_DEFAULT = {
     { id: 'siavash', hidden: false, name: 'Siavash', fa: 'سیاوش', game: 'Windshot', how: 'Read the wind. Hit the stag twice.', color: '#ff8a3d' },
     { id: 'edu', hidden: false, name: 'Film school', fa: 'دانشکده سینما', game: 'Splice', how: 'Cut the film on the beat.', color: '#2bffc6' },
     { id: 'crew', hidden: false, name: 'On set', fa: 'سر صحنه', game: 'Echo', how: 'Repeat the director’s cues.', color: '#b06bff' },
+    { id: 'chess', hidden: false, name: 'The burning board', fa: 'شطرنج', game: 'Mate in one', how: 'Find checkmate in one move. Three boards.', color: '#ff5a1f' },
     { id: 'maker', hidden: false, name: 'Make a game', fa: 'بازی بساز', game: 'Level maker', how: 'Build a level and send it as a link.', color: '#ff2bd6' },
     { id: 'beat', hidden: false, name: 'Beat lab', fa: 'آزمایشگاه ضرب', game: 'Sequencer', how: 'Rewrite the drums of this soundtrack.', color: '#ff4d6d' },
   ],
+  story: {
+    prologue: 'Tehran, 2099. The night the grid went dark, one man hid himself inside the city’s arcade machines, a piece of his life in every cabinet. Wake them up and you will find out who he was.',
+    chapters: {
+      about: { title: 'The signal', text: 'The first cabinet hums awake. A name scrolls across the glass. Born in the winter of 2001. Whoever he was, he left himself in pieces.' },
+      writer: { title: 'The pages', text: 'Under the static, a stack of scripts. Before he built any machine, he wrote stories for film and series. Every world in this city started as a page.' },
+      bazar: { title: 'The bazaar', text: 'Behind the next screen, a bazaar. An old scholar with an astrolabe guards a library of prompts that teach machines how to film.' },
+      siavash: { title: 'The painted hunt', text: 'A manuscript page starts to breathe. A young prince draws his bow at the river, and something wakes in the falls. He painted this world by hand.' },
+      edu: { title: 'The school', text: 'A film reel, a university crest, a festival badge. This is where he learned to cut light into stories.' },
+      crew: { title: 'The set', text: 'Voices from a film set: roll, action, cut. He stood beside directors and learned the craft from inside the frame.' },
+      chess: { title: 'The burning board', text: 'In the last cabinet the floor is lava and the board is obsidian. He plays here at 2000. He is waiting for your move.' },
+    },
+    epilogue: 'Every file is recovered. The city’s lights come back, one window at a time. He was never lost. He was waiting for player two.',
+  },
   files: {
     about: {
       kicker: 'Player one',
@@ -106,6 +121,16 @@ window.AV_DEFAULT = {
         { role: 'Writer on his projects', where: 'Mohammad Davoodi' },
         { role: 'Writer on the studio’s projects', where: 'Lahze Studio' },
       ],
+    },
+    chess: {
+      kicker: 'Chess',
+      title: 'Mayor of Nerd City',
+      lede: 'I play rapid chess on chess.com, rated around 2000.',
+      handle: 'mayor_of_nerd_city',
+      profile: 'https://www.chess.com/member/mayor_of_nerd_city',
+      rating: '2000',
+      format: 'Rapid',
+      cta: 'Challenge me on chess.com',
     },
     crew: {
       kicker: 'On set',

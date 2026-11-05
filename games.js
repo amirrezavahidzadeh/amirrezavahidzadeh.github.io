@@ -314,6 +314,56 @@ window.GAMES = (() => {
     return () => { };
   }
 
+  /* ══ 07 · MATE IN ONE: three burning boards ══ */
+  function mate(el, api) {
+    const G = { K: '\u265A', Q: '\u265B', R: '\u265C', B: '\u265D', N: '\u265E', P: '\u265F' };
+    const PZ = [
+      { pos: { g1: 'K', a1: 'R', g8: 'k', f7: 'p', g7: 'p', h7: 'p' }, sol: ['a1a8'], tip: 'The back rank is a trap.' },
+      { pos: { c1: 'K', a7: 'R', b1: 'R', h8: 'k' }, sol: ['b1b8'], tip: 'Two rooks climb a ladder.' },
+      { pos: { g6: 'K', b1: 'Q', h8: 'k' }, sol: ['b1b8'], tip: 'The king and queen work together.' },
+    ];
+    el.innerHTML = `<div class="g g-mate">
+      <p class="g-how">White to move. Each board has a checkmate in one move. Tap a white piece, then the square it should go to. Three boards, three mistakes allowed.</p>
+      <div class="mate-wrap"><div class="mate-frame"><div class="mate-board" role="grid" aria-label="Chess board"></div></div><p class="mate-tip" aria-live="polite"></p></div></div>`;
+    const board = el.querySelector('.mate-board'), tip = el.querySelector('.mate-tip');
+    const files = 'abcdefgh';
+    let pi = 0, sel = null, miss = 0, solved = 0, done = false, pos = {};
+    const st = () => api.stat(`BOARD ${Math.min(pi + 1, 3)}/3 · MISTAKES ${miss}/3`);
+    function draw() {
+      board.innerHTML = '';
+      for (let r = 8; r >= 1; r--) for (let f = 0; f < 8; f++) {
+        const sq = files[f] + r, pc = pos[sq], b = document.createElement('button');
+        b.type = 'button'; b.className = 'sq ' + ((f + r) % 2 ? 'ash' : 'obs'); b.dataset.sq = sq;
+        b.setAttribute('aria-label', sq + (pc ? ' ' + (pc === pc.toUpperCase() ? 'white ' : 'black ') + ({ k: 'king', q: 'queen', r: 'rook', b: 'bishop', n: 'knight', p: 'pawn' })[pc.toLowerCase()] : ''));
+        if (pc) b.innerHTML = `<span class="pc ${pc === pc.toUpperCase() ? 'w' : 'b'}">${G[pc.toUpperCase()]}\uFE0E</span>`;
+        if (sel === sq) b.classList.add('sel');
+        if (f === 0) b.insertAdjacentHTML('beforeend', `<i class="rk">${r}</i>`);
+        if (r === 1) b.insertAdjacentHTML('beforeend', `<i class="fl">${files[f]}</i>`);
+        board.append(b);
+      }
+    }
+    function load(i) { pos = { ...PZ[i].pos }; sel = null; tip.textContent = PZ[i].tip; draw(); st(); }
+    board.addEventListener('click', e => {
+      const b = e.target.closest('.sq'); if (!b || done) return;
+      const sq = b.dataset.sq, pc = pos[sq];
+      if (pc && pc === pc.toUpperCase()) { sel = sq; SND.ui('tick'); draw(); return; }
+      if (!sel) return;
+      const mv = sel + sq;
+      if (PZ[pi].sol.includes(mv)) {
+        pos[sq] = pos[sel]; delete pos[sel]; sel = null; draw(); board.querySelector(`[data-sq="${sq}"]`).classList.add('mate');
+        tip.textContent = 'Checkmate.'; SND.ui('good'); solved++; done = true;
+        setTimeout(() => { if (solved === PZ.length) api.win(`Three mates with ${miss} mistake${miss === 1 ? '' : 's'}.`); else { done = false; pi++; load(pi); } }, 1100);
+      } else {
+        miss++; sel = null; SND.ui('bad'); board.classList.remove('no'); void board.offsetWidth; board.classList.add('no'); draw(); st();
+        tip.textContent = 'Not mate. The king escapes.';
+        if (miss >= 3) { done = true; setTimeout(() => api.lose('Three moves that were not mate.'), 600); }
+      }
+    });
+    load(0);
+    dbg.mate = { PZ, idx: () => pi };
+    return () => { };
+  }
+
   /* ══ BEAT LAB: rewrite the drums of the soundtrack ══ */
   let labEl = null;
   SND.on((type, e) => {
@@ -357,5 +407,5 @@ window.GAMES = (() => {
     return () => { labEl = null; };
   }
 
-  return { dbg, about: sync, bazar: decode, siavash: windshot, edu: splice, crew: echo, writer: plot, beat };
+  return { dbg, about: sync, bazar: decode, siavash: windshot, edu: splice, crew: echo, writer: plot, chess: mate, beat };
 })();
