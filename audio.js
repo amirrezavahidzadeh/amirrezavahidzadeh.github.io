@@ -11,6 +11,15 @@ window.SND = (() => {
   // quarter-tones written as .5 MIDI steps. Melody arrays are indices into
   // the scale, one per 16th step, -1 = rest. Drones replace Western chords.
   const TRACKS = [
+    { name: 'ZAHHAK', mode: 'Dastgah-e Shur, low', bpm: 76, style: 'dark',
+      scale: [50, 51.5, 53, 55, 57, 58, 60, 62, 63.5, 65],
+      drone: [[38, 45], [38, 45], [34, 41], [36, 43]],
+      bass: [38, 38, 34, 36], bassPat: 'x.......x..o....',
+      mel: [[0, -1, -1, -1, -1, -1, 1, -1, 2, -1, -1, -1, 1, -1, 0, -1],
+            [-1, -1, 3, -1, -1, -1, 2, -1, 1, -1, -1, -1, -1, -1, -1, -1],
+            [5, -1, -1, -1, 4, -1, -1, 3, 2, -1, -1, -1, 3, -1, 1, -1],
+            [0, -1, -1, -1, -1, -1, -1, -1, 1, -1, 0, -1, -1, -1, -1, -1]],
+      drums: { k: 'x.........x.....', s: '........x.......', h: '....x.......x...', o: '..............x.', t: '..x.......x..x..' } },
     { name: 'SHUR · NIGHT', mode: 'Dastgah-e Shur', bpm: 92, style: 'riz',
       scale: [62, 63.5, 65, 67, 69, 70, 72, 74, 75.5, 77],
       drone: [[50, 57], [50, 57], [48, 55], [50, 57]],
@@ -127,6 +136,14 @@ window.SND = (() => {
     g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.05, t + .5); g.gain.setValueAtTime(.05, t + dur - .3); g.gain.linearRampToValueAtTime(.0001, t + dur + .4);
     ch.forEach(m => [-8, 8].forEach(dt => { const o = osc('sawtooth', mtof(m), t, dur + .5, lp); o.detune.value = dt; }));
   }
+  function darkLead(m, t, len) {
+    const g = ctx.createGain(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 4;
+    lp.frequency.setValueAtTime(400, t); lp.frequency.linearRampToValueAtTime(1500, t + len * .35); lp.frequency.exponentialRampToValueAtTime(300, t + len);
+    lp.connect(g); g.connect(music); g.connect(rev); g.connect(dly);
+    g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.09, t + .25); g.gain.exponentialRampToValueAtTime(.0001, t + len);
+    [-7, 7].forEach(dt => { const o = osc('sawtooth', mtof(m), t, len + .1, lp); o.detune.value = dt; const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 4.5; lg.gain.value = 9; lfo.connect(lg); lg.connect(o.detune); lfo.start(t + .3); lfo.stop(t + len + .1); });
+    const sub = ctx.createGain(); sub.gain.value = .5; sub.connect(lp); osc('sine', mtof(m - 12), t, len + .1, sub);
+  }
   function lead(m, t = ctx.currentTime, len = .35, dest) {
     const g = ctx.createGain(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(5000, t); lp.frequency.exponentialRampToValueAtTime(900, t + len);
     lp.connect(g); g.connect(dest || sfx); g.connect(dly); env(g, t, .005, .2, len);
@@ -146,6 +163,7 @@ window.SND = (() => {
       if (n >= 0) {
         const m = S[n];
         if (T.style === 'lead') { lead(m, t, d * 1.6, music); santur(t, m - 12, .7); }
+        else if (T.style === 'dark') { darkLead(m, t, d * 7); santur(t, m + 12, .45); }
         else santur(t, m, 1);
         // tahrir: a quick grace flick from the note above, the Persian vocal ornament
         if (i % 8 === 4 && n + 1 < S.length) santur(t - .045, S[n + 1], .45);

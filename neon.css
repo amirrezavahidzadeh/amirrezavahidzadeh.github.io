@@ -24,7 +24,7 @@ kbd{font:400 .78em var(--mono);padding:.05em .4em;border:1px solid currentColor;
 
 #city,#fx{position:fixed;inset:0;width:100vw;height:100vh;display:block}
 #city{z-index:0}
-#fx{z-index:60;pointer-events:none;mix-blend-mode:screen}
+#fx{z-index:60;pointer-events:none}
 
 /* ── buttons ── */
 .btn-neon{display:inline-flex;align-items:center;gap:.6em;font:700 1rem/1 var(--ui);letter-spacing:.12em;text-transform:uppercase;color:#fff;padding:.85em 1.3em;border:2px solid var(--c,var(--cy));border-radius:4px;background:rgba(10,3,24,.55);box-shadow:0 0 10.8px var(--c,var(--cy)),inset 0 0 10.8px color-mix(in srgb,var(--c,var(--cy)) 45%,transparent);text-shadow:0 0 7.2px var(--c,var(--cy));transition:transform .12s,background .2s}
@@ -569,3 +569,24 @@ kbd{font:400 .78em var(--mono);padding:.05em .4em;border:1px solid currentColor;
 @media (prefers-reduced-motion:reduce){.mate-frame::before,.f-chess::after{animation:none}}
 @media (max-width:760px){.ov-top{flex-wrap:wrap}.ov-id{flex:1 1 0;min-width:0}.ov-top h2{font-size:1.3rem;line-height:1.05}.ov-skip{margin-left:0}.ov-x{margin-left:0}.ov-stat{order:3;width:100%}}
 .hero-story{background:rgba(7,3,13,.66);padding:10px 16px;border-radius:4px}
+/* black and white neon name: each letter outlined in its opposite colour so the black ones read */
+.hn-l{-webkit-text-stroke:.022em #000;paint-order:stroke fill}
+.hn-l:nth-child(even),.hn-w:nth-child(even) .hn-l{-webkit-text-stroke:.042em #fff}
+.hn-w:nth-child(even) .hn-l:nth-child(even){-webkit-text-stroke:.022em #000}
+
+/* ── speed: same look, cheaper to draw ── */
+/* the running light on the vines slides with a transform inside a masked strip, instead of repainting */
+.orn-side{-webkit-mask:var(--orn-side) repeat-y top center/56px 112px;mask:var(--orn-side) repeat-y top center/56px 112px;overflow:hidden}
+.orn-side::after{-webkit-mask:none;mask:none;inset:auto;left:0;right:0;top:0;height:300%;background:linear-gradient(180deg,transparent 0 44%,rgba(255,255,255,.95) 50%,transparent 56% 100%);animation:ornrun2 6s linear infinite;will-change:transform}
+@keyframes ornrun2{from{transform:translateY(0)}to{transform:translateY(-66.666%)}}
+@media (max-width:760px){.orn-side{-webkit-mask-size:16px 32px;mask-size:16px 32px}}
+.orn-side{animation:none!important}
+.hero-fa{animation:none!important;will-change:auto}
+.hn-l{will-change:translate}
+/* nothing animates behind an open panel, and the hero stops when it is scrolled away */
+body.ov-open #main *,body.ov-open #main *::before,body.ov-open #main *::after,body.ov-open .orn-side::after,body.ov-open .tk-in,
+body.hero-off .hero *,body.hero-off .hero *::before,body.hero-off .hero *::after{animation-play-state:paused!important}
+/* calmer front page: the letters stay still (only the occasional neon flicker) */
+.hn-l{animation:none}
+.hn-l:nth-child(3n+1){animation:flick 7s infinite}
+.hn-l:nth-child(5n+3){animation:flick 9.5s 1.3s infinite}

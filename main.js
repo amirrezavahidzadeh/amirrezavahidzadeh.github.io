@@ -91,7 +91,7 @@ window.AV_START = (C) => {
     const n = FILES.filter(f => done(f.id)).length;
     shardN.textContent = n; $('#shardT').textContent = NF; gems.innerHTML = FILES.map(f => `<i class="${done(f.id) ? 'on' : ''}" style="--c:${f.c}"></i>`).join('');
     $$('.cab').forEach(b => { const c = cab(b.dataset.id); if (!c.file) return; b.classList.toggle('open', done(c.id)); $('.cab-lock', b).textContent = done(c.id) ? 'Decrypted' : 'Encrypted'; });
-    $('.hero-brief b').textContent = n === NF ? `All ${NF} chapters recovered.` : `Chapter ${n + 1} of ${NF} is waiting.`;
+    $('.hero-brief b').textContent = n === NF ? `All ${NF} files decrypted.` : `${NF - n} of ${NF} files ${NF - n === 1 ? 'is' : 'are'} encrypted.`;
     $('#skipAll').hidden = n === NF || RULES.skipButton === false;
     ticker();
   }
@@ -129,7 +129,7 @@ window.AV_START = (C) => {
   $('.hero-fa').textContent = C.hero.fa;
   $('#roles').innerHTML = C.hero.roles.map(r => `<li><button type="button" data-c="${E(r.color)}" style="--c:${E(r.color)}">${E(r.label)}</button></li>`).join('');
   $('.hero-play').textContent = C.hero.hint;
-  if (ST.prologue) $('.hero-story').textContent = ST.prologue; else $('.hero-story').remove();
+  { const hs = $('.hero-story'); if (hs) { if (ST.prologue) hs.textContent = ST.prologue; else hs.remove(); } }
   $('#arcade').insertAdjacentHTML('afterend', `<section class="contact" aria-label="About me"><h2>Transmit</h2><ul><li><a href="about/">About me · Contact</a></li></ul></section>`);
   const letters = $$('.hn-l');
   function hitLetter(i, sound = true) {
@@ -143,6 +143,9 @@ window.AV_START = (C) => {
     $$('#roles button').forEach(x => x.setAttribute('aria-pressed', x === b)); CITY.setAccent(b.dataset.c);
     document.documentElement.style.setProperty('--acc', b.dataset.c); SND.ui('good');
   });
+
+  // pause the hero's animations when it is off screen
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => document.body.classList.toggle('hero-off', !es[0].isIntersecting)).observe($('.hero'));
 
   /* ── the arcade ── */
   $('#arcade').innerHTML = CABS.map(c => `<button type="button" class="cab${c.file ? '' : ' free'}" data-id="${c.id}" style="--c:${c.c}">
@@ -311,7 +314,7 @@ window.AV_START = (C) => {
 
   /* ── boot ── */
   const boot = $('#boot'), log = $('#bootLog');
-  const LINES = ['> tehran, 2099. the grid went dark.', '> waking up night city', '> tuning the santur: Shur, Chahargah, Homayoun', `> ${CABS.length} arcade cabinets online`, `> ${NF} files encrypted`, '> one player detected'];
+  const LINES = ['> waking up night city', '> tuning the santur: Shur, Chahargah, Homayoun', `> ${CABS.length} arcade cabinets online`, `> ${NF} files encrypted`, '> one player detected'];
   let li = 0; const typer = setInterval(() => { if (li >= LINES.length) return clearInterval(typer); log.textContent += LINES[li++] + '\n'; }, RM ? 10 : 260);
   function enter(sound) {
     SND.start(); SND.mute(!sound || false); if (!sound) S.muted = true; persist();

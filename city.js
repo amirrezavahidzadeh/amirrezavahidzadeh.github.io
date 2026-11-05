@@ -10,12 +10,17 @@ window.CITY = (() => {
   let W = 0, H = 0, dpr = 1, hor = 0, layers = [], drops = [], signs = [];
   let mx = .5, my = .5, tmx = .5, tmy = .5, accent = '#ff2bd6', accent2 = '#22f3ff';
   const ripples = [], trail = [], pulses = [];
+  // render scale: full on desktop; phones and slow machines draw the city a bit smaller and scale it up
+  const COARSE = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
+  let Q = COARSE ? .75 : 1, CAP = COARSE ? 30 : 0, probe = { n: 0, sum: 0, done: COARSE };
+  const bc = document.createElement('canvas'), bx = bc.getContext('2d'), BQ = .5; let bgTick = 0, bgReady = false;
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
   function resize() {
-    dpr = 1; W = innerWidth; H = innerHeight;
-    for (const c of [cv, fx]) { c.width = W * dpr; c.height = H * dpr; }
+    dpr = window.CITY_Q || Q; W = innerWidth; H = innerHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); fx.width = W; fx.height = H;
     hor = Math.round(H * (W < 700 ? .56 : .6));
+    bc.width = Math.ceil(W * BQ); bc.height = Math.ceil(hor * BQ + 1); bgReady = false;
     build();
   }
 
@@ -132,8 +137,11 @@ window.CITY = (() => {
   let skip = 0, fxDirty = true;
   function frame(ts) {
     if (document.body.classList.contains('ov-open') && (skip = (skip + 1) % 4)) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
-    if (LOW && ts - last < 30) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
-    const dt = Math.min(.05, (ts - last) / 1000); last = ts;
+    if (ts - last < (window.CITY_MS || CAP)) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
+    const dt = Math.min(.05, (ts - last) / 1000);
+    // adaptive quality: if this machine cannot hold ~45 fps, draw the city smaller and at 30 fps
+    if (!probe.done && !document.hidden && ts > 2500) { probe.sum += ts - last; if (++probe.n >= 90) { probe.done = true; if (probe.sum / probe.n > 22) { Q = .75; CAP = 30; resize(); } } }
+    last = ts;
     if (window.SND) SND.tick();
     const p = window.SND ? SND.pulse : 0, sp = window.SND && SND.spectrum();
     let bass = 0, hi = 0; if (sp) { for (let i = 1; i < 6; i++) bass += sp[i]; bass /= 1275; for (let i = 40; i < 80; i++) hi += sp[i]; hi /= 10200; }
@@ -141,31 +149,41 @@ window.CITY = (() => {
     const t = ts / 1000;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const sky = cx.createLinearGradient(0, 0, 0, hor);
-    const sh = RM ? 0 : 50 * Math.sin(t * .07) + 20 * Math.sin(t * .19);
-    sky.addColorStop(0, '#030108'); sky.addColorStop(.55, `hsl(${(268 + sh).toFixed(0)},80%,10%)`); sky.addColorStop(1, `hsl(${(290 + sh * 1.4).toFixed(0)},75%,19%)`);
-    cx.fillStyle = sky; cx.fillRect(0, 0, W, hor);
-    if (!RM) { // aurora: slow liquid ribbons of colour across the sky
-      cx.save(); cx.globalCompositeOperation = 'lighter'; cx.lineCap = 'round';
-      const nR = LOW ? 1 : 3, st = LOW ? 80 : 36;
-      for (let i = 0; i < nR; i++) {
-        cx.beginPath(); const base = hor * (.22 + i * .13), amp = 26 + i * 12 + bass * 30;
-        for (let x = -st; x <= W + st; x += st) { const y = base + Math.sin(x * (.0042 + i * .0011) + t * (.35 + i * .12) + i * 2) * amp + Math.sin(x * .013 - t * .6) * 8; x < 0 ? cx.moveTo(x, y) : cx.lineTo(x, y); }
-        cx.strokeStyle = `hsla(${((t * 14 + i * 110) % 360).toFixed(0)},100%,60%,${.07 + p * .05})`; cx.lineWidth = 46 - i * 8; cx.stroke();
-        cx.strokeStyle = `hsla(${((t * 14 + i * 110 + 40) % 360).toFixed(0)},100%,70%,.18)`; cx.lineWidth = 2; cx.stroke();
-      }
-      // sunburst: rays turning behind the medallion
-      const cxs = W * .5 + (mx - .5) * -10, cys = hor - Math.min(W, H) * .16, R = Math.max(W, H) * (LOW ? .6 : .75), nr = LOW ? 12 : 24, rot = -t * .06;
-      for (let k = 0; k < nr; k++) {
-        const a0 = rot + k / nr * Math.PI * 2, a1 = a0 + Math.PI / nr;
-        cx.beginPath(); cx.moveTo(cxs, cys); cx.arc(cxs, cys, R, a0, a1); cx.closePath();
-        cx.fillStyle = `hsla(${((t * 20 + k * (LOW ? 30 : 15)) % 360).toFixed(0)},100%,60%,${(.035 + p * .03).toFixed(3)})`; cx.fill();
-      }
+    // sky, aurora and sunburst are soft light: paint them at half resolution, every other frame
+    const cxs = W * .5 + (mx - .5) * -10, cys = hor - Math.min(W, H) * .16;
+    if ((bgTick = (bgTick + 1) % 2) === 0 || !bgReady) {
+      bgReady = true; bx.setTransform(BQ, 0, 0, BQ, 0, 0);
+      const sky = bx.createLinearGradient(0, 0, 0, hor);
+      const sh = RM ? 0 : 50 * Math.sin(t * .07) + 20 * Math.sin(t * .19);
+      sky.addColorStop(0, '#030108'); sky.addColorStop(.55, `hsl(${(268 + sh).toFixed(0)},80%,10%)`); sky.addColorStop(1, `hsl(${(290 + sh * 1.4).toFixed(0)},75%,19%)`);
+      bx.fillStyle = sky; bx.fillRect(0, 0, W, hor);
+      if (!RM) { // aurora: slow liquid ribbons of colour across the sky
+        bx.save(); bx.globalCompositeOperation = 'lighter'; bx.lineCap = 'round';
+        const nR = LOW ? 1 : 3, st = LOW ? 80 : 36;
+        for (let i = 0; i < nR; i++) {
+          bx.beginPath(); const base = hor * (.22 + i * .13), amp = 26 + i * 12 + bass * 30;
+          for (let x = -st; x <= W + st; x += st) { const y = base + Math.sin(x * (.0042 + i * .0011) + t * (.35 + i * .12) + i * 2) * amp + Math.sin(x * .013 - t * .6) * 8; x < 0 ? bx.moveTo(x, y) : bx.lineTo(x, y); }
+          bx.strokeStyle = `hsla(${((t * 14 + i * 110) % 360).toFixed(0)},100%,60%,${.07 + p * .05})`; bx.lineWidth = 46 - i * 8; bx.stroke();
+          bx.strokeStyle = `hsla(${((t * 14 + i * 110 + 40) % 360).toFixed(0)},100%,70%,.18)`; bx.lineWidth = 2; bx.stroke();
+        }
+        // sunburst: rays turning behind the medallion
+        const R = Math.max(W, H) * (LOW ? .6 : .75), nr = LOW ? 12 : 24, rot = -t * .06;
+        for (let k = 0; k < nr; k++) {
+          const a0 = rot + k / nr * Math.PI * 2, a1 = a0 + Math.PI / nr;
+          bx.beginPath(); bx.moveTo(cxs, cys); bx.arc(cxs, cys, R, a0, a1); bx.closePath();
+          bx.fillStyle = `hsla(${((t * 20 + k * (LOW ? 30 : 15)) % 360).toFixed(0)},100%,60%,${(.035 + p * .03).toFixed(3)})`; bx.fill();
+        }
+          bx.restore();
+        }
+    }
+    cx.drawImage(bc, 0, 0, bc.width, bc.height, 0, 0, bc.width / BQ, bc.height / BQ);
+    if (!RM) {
+      cx.save(); cx.globalCompositeOperation = 'lighter';
       // every kick drum sends a rainbow shockwave out of the sun
       for (let i = pulses.length - 1; i >= 0; i--) {
         const P = pulses[i]; P.a += dt / 1.3; if (P.a >= 1) { pulses.splice(i, 1); continue; }
         cx.beginPath(); cx.arc(cxs, cys, 20 + P.a * Math.max(W, H) * .55, 0, 7);
-        cx.strokeStyle = `hsla(${P.h.toFixed(0)},100%,62%,${((1 - P.a) * .5).toFixed(3)})`; cx.lineWidth = 2 + (1 - P.a) * 10; cx.stroke();
+        cx.strokeStyle = `hsla(${P.h.toFixed(0)},100%,62%,${((1 - P.a) * .22).toFixed(3)})`; cx.lineWidth = 1.5 + (1 - P.a) * 4; cx.stroke();
       }
       cx.restore();
     }
@@ -204,17 +222,15 @@ window.CITY = (() => {
       cx.beginPath();
       for (let k = 0; k < N; k++) {
         const f = (k + phase) / N; if (Math.min(2, Math.floor(f * 3)) !== band) continue;
-        const y = hor + (H - hor) * Math.pow(f, 2.1), amp = wav * (2 + f * 14) * (1 + bass * 1.6);
-        if (!RM) { cx.beginPath(); }
+        const y = hor + (H - hor) * Math.pow(f, 2.1), amp = wav * (1 + f * 7) * (1 + bass * .8);
         cx.moveTo(0, y + Math.sin(t * 1.3 + k) * amp);
         for (let x = step; x <= W + step; x += step) cx.lineTo(x, y + Math.sin(x * .011 + t * 1.3 + k * .9) * amp);
-        if (!RM) { const ga = (.3 + band * .25) * (.55 + p * .45); cx.strokeStyle = `hsl(${((t * 30 + (k - phase) * 28 + 180) % 360).toFixed(0)},100%,60%)`; cx.globalAlpha = ga * .25; cx.lineWidth = 5 + band * 3; cx.stroke(); cx.globalAlpha = ga; cx.lineWidth = .7 + band * .8; cx.stroke(); }
       }
-      if (RM) { const ga = (.3 + band * .25) * (.55 + p * .45); cx.globalAlpha = ga * .25; cx.lineWidth = 5 + band * 3; cx.stroke(); cx.globalAlpha = ga; cx.lineWidth = .7 + band * .8; cx.stroke(); }
+      { const ga = (.3 + band * .25) * (.55 + p * .45); cx.globalAlpha = ga * .25; cx.lineWidth = 5 + band * 3; cx.stroke(); cx.globalAlpha = ga; cx.lineWidth = .7 + band * .8; cx.stroke(); }
     }
     const vx = W * .5 + (mx - .5) * -60;
     cx.beginPath();
-    for (let k = -16; k <= 16; k++) { const ex = W * .5 + k * W * .11, sw = wav * Math.sin(t * .7 + k * .45) * 26; cx.moveTo(vx + k * 6, hor); cx.quadraticCurveTo((vx + k * 6 + ex) / 2 + sw, (hor + H) / 2, ex, H); }
+    for (let k = -16; k <= 16; k++) { const ex = W * .5 + k * W * .11, sw = wav * Math.sin(t * .7 + k * .45) * 12; cx.moveTo(vx + k * 6, hor); cx.quadraticCurveTo((vx + k * 6 + ex) / 2 + sw, (hor + H) / 2, ex, H); }
     cx.globalAlpha = .08 + p * .08; cx.lineWidth = 5; cx.stroke(); cx.globalAlpha = .35 + p * .3; cx.lineWidth = 1; cx.stroke();
     cx.restore();
     // spectrum on the horizon: a thin equaliser skyline
@@ -232,9 +248,10 @@ window.CITY = (() => {
 
     // fx layer: ripples and the cursor trail
     const fxBusy = ripples.length || trail.length;
-    if (!fxBusy && !fxDirty) { requestAnimationFrame(frame); return; }
+    if (!fxBusy && !fxDirty) { if (fx.style.visibility !== 'hidden') fx.style.visibility = 'hidden'; requestAnimationFrame(frame); return; }
+    if (fx.style.visibility) fx.style.visibility = '';
     fxDirty = !!fxBusy;
-    fc.setTransform(dpr, 0, 0, dpr, 0, 0); fc.clearRect(0, 0, W, H);
+    fc.setTransform(1, 0, 0, 1, 0, 0); fc.clearRect(0, 0, W, H);
     for (let i = ripples.length - 1; i >= 0; i--) {
       const R = ripples[i]; R.a += dt; const k = R.a / R.life; if (k >= 1) { ripples.splice(i, 1); continue; }
       fc.strokeStyle = R.c; fc.globalAlpha = (1 - k) * .3; fc.lineWidth = 9 * (1 - k) + 2; fc.beginPath(); fc.arc(R.x, R.y, 6 + k * R.r, 0, 7); fc.stroke();
@@ -253,7 +270,7 @@ window.CITY = (() => {
   addEventListener('resize', resize);
   addEventListener('pointermove', e => { tmx = e.clientX / W; tmy = e.clientY / H; if (e.pointerType === 'mouse' && !RM) trail.push({ x: e.clientX, y: e.clientY, a: 0 }); if (trail.length > 24) trail.shift(); }, { passive: true });
   resize(); requestAnimationFrame(frame);
-  if (window.SND && !RM) SND.on((type, e) => { if (type === 'step' && e.hit.k && !document.body.classList.contains('ov-open')) { pulses.push({ a: 0, h: performance.now() / 20 % 360 }); if (pulses.length > 6) pulses.shift(); } });
+  if (window.SND && !RM) SND.on((type, e) => { if (type === 'step' && e.hit.k && e.step === 0 && !document.body.classList.contains('ov-open')) { pulses.push({ a: 0, h: performance.now() / 20 % 360 }); if (pulses.length > 6) pulses.shift(); } });
   if (document.fonts) document.fonts.ready.then(() => build());
   return {
     ripple(x, y, c = accent2, r = 90, ring2 = false) { fxDirty = true; ripples.push({ x, y, c, r, a: 0, life: .7, ring2 }); if (ripples.length > 40) ripples.shift(); },
