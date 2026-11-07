@@ -226,7 +226,8 @@ window.TEHRAN_WALL = (() => {
         const m = new T.Mesh(geo, mats[sd][k]); m.rotation.y = -sd * Math.PI / 2; m.position.set(sd * W / 2, Hh / 2, zc); scene.add(m);
       });
     }
-    if (document.fonts) document.fonts.ready.then(paint);
+    if (document.fonts) document.fonts.ready.then(() => { paint(); opts.onRepaint && opts.onRepaint([...tex['-1'], ...tex['1']]); });
+    return [...tex['-1'], ...tex['1']];
   }
   return { build, plan, draw };
 })();

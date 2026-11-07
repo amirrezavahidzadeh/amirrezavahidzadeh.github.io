@@ -19,7 +19,7 @@
     let R;
     try { R = new T.WebGLRenderer({ canvas: cv, antialias: !MOBILE, powerPreference: 'high-performance' }); }
     catch (e) { document.body.classList.remove('corridor'); return; }
-    R.setPixelRatio(Math.min(devicePixelRatio || 1, MOBILE ? 1.25 : 1.6));
+    R.setPixelRatio(Math.min(devicePixelRatio || 1, MOBILE ? 1 : 1.6));
     R.outputColorSpace = T.SRGBColorSpace;
     const scene = new T.Scene();
     scene.background = new T.Color(0x05010c);
@@ -66,7 +66,9 @@
     // the walls: a hand-built Tehran panorama in neon line-art, one full panorama per lap on each wall
     const wallBack = new T.MeshBasicMaterial({ color: 0x0b0418 });
     [-1, 1].forEach(sd => { const w = new T.Mesh(new T.PlaneGeometry(zLen, Hh), wallBack); w.rotation.y = -sd * Math.PI / 2; w.position.set(sd * (W / 2 + .02), Hh / 2, zMid); scene.add(w); });
-    TEHRAN_WALL.build(T, { scene, LOOP, Hh, W, zFrom: 12, zTo: END, mobile: MOBILE, rooms: ROOMS.length, start: 8 + START });
+    // upload textures to the GPU up front, so nothing stalls the first time it comes into view
+    const warm = list => { try { list.forEach(t => t && R.initTexture(t)); } catch (e) { } };
+    warm(TEHRAN_WALL.build(T, { scene, LOOP, Hh, W, zFrom: 12, zTo: END, mobile: MOBILE, rooms: ROOMS.length, start: 8 + START, onRepaint: warm }));
     // a dark band at the foot and head of each wall, so the frames and neon tubes still read
     const bandMat = new T.MeshBasicMaterial({ color: 0x07020f });
     [-1, 1].forEach(sd => [[.18, .09], [Hh - .12, .24]].forEach(([y, h]) => { const b = new T.Mesh(new T.PlaneGeometry(zLen, h), bandMat); b.rotation.y = -sd * Math.PI / 2; b.position.set(sd * (W / 2 - .01), y, zMid); scene.add(b); }));
@@ -174,7 +176,7 @@
     };
     ROOMS.forEach((c, i) => makeFrame(c, i, zOf(i)));
     ROOMS.forEach((c, i) => { if (zOf(i) - LOOP > END + 4) makeFrame(c, i, zOf(i) - LOOP, frames[i]); });
-    const posterAll = () => ROOMS.forEach((c, i) => poster(c).then(t => frames.forEach(f => { if (f.c === c) f.mat.uniforms.uMap.value = t; })));
+    const posterAll = () => ROOMS.forEach((c, i) => poster(c).then(t => { warm([t]); frames.forEach(f => { if (f.c === c) f.mat.uniforms.uMap.value = t; }); }));
     posterAll();
     // repaint posters once the web fonts are ready
     if (document.fonts) document.fonts.ready.then(posterAll);
@@ -193,16 +195,27 @@
     const STEP_VH = MOBILE ? 75 : 90;
     // scroll distance maps straight to walking distance; the page is one lap plus some extra hall,
     // so you keep walking past the last room into the next lap, and the page quietly jumps back one lap
-    let ppu = 1;                                         // pixels of scroll per metre walked
-    const sizeTrack = () => { ppu = innerHeight * STEP_VH / 100 / GAP; track.style.height = `${Math.round(LOOP * ppu + innerHeight * 3.2)}px`; };
+    // Phones don't use native page scroll here: a finger drag with its own momentum moves you, so the
+    // address bar never resizes the page, momentum is never cut off, and the loop is a plain modulo.
+    // Desktop keeps native scrolling (wheel, keys, scrollbar).
+    const VIRTUAL = MOBILE;
+    let ppu = 1, refH = innerHeight;                     // pixels of scroll per metre walked
+    const sizeTrack = () => {
+      if (!VIRTUAL || Math.abs(innerWidth - (sizeTrack.w || 0)) > 40) { refH = innerHeight; sizeTrack.w = innerWidth; }
+      ppu = refH * STEP_VH / 100 / GAP; track.style.height = VIRTUAL ? '0px' : `${Math.round(LOOP * ppu + innerHeight * 3.2)}px`;
+    };
     sizeTrack(); addEventListener('resize', sizeTrack);
-    const camZFor = () => 8 - scrollY / ppu;
+    let vy = 0, vv = 0, vTarget = null, dragging = false;
+    const posY = () => VIRTUAL ? vy : scrollY;
+    const camZFor = () => 8 - posY() / ppu;
+    window.VY = VIRTUAL ? 0 : null;
     const progress = () => clamp01(scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight));
     const clamp01 = v => Math.max(0, Math.min(1, v));
     function goTo(id) {
       const i = ROOMS.findIndex(r => r.id === id); if (i < 0) return;
       const z = zOf(i) + 4.2;
-      scrollTo({ top: (8 - z) * ppu, behavior: RM ? 'auto' : 'smooth' });
+      if (VIRTUAL) { vv = 0; vTarget = (8 - z) * ppu; if (vTarget < vy - LOOP * ppu / 2) vTarget += LOOP * ppu; }
+      else scrollTo({ top: (8 - z) * ppu, behavior: RM ? 'auto' : 'smooth' });
     }
     nav.addEventListener('click', e => { const b = e.target.closest('button'); if (b) goTo(ROOMS[+b.dataset.i].id); });
 
@@ -226,6 +239,22 @@
     });
     addEventListener('keydown', e => { if (!$('#ov').hidden || e.target.closest && e.target.closest('input,textarea')) return; if (e.key === 'ArrowDown' || e.key === 'PageDown') { /* native scroll */ } });
 
+    // touch: drag to walk, flick for momentum. Panels, the top bar and buttons keep their own touches.
+    if (VIRTUAL) {
+      let ly = 0, lt = 0, vel = 0, sy0 = 0, moved = false;
+      const skipT = t => t.closest && t.closest('#ov, #hud, #zoom, .near-open, .rooms, button, a, input, textarea');
+      addEventListener('touchstart', e => { if (!document.body.classList.contains('corridor') || skipT(e.target) || e.touches.length > 1) return; dragging = true; moved = false; ly = sy0 = e.touches[0].clientY; lt = performance.now(); vel = 0; vv = 0; vTarget = null; }, { passive: true });
+      addEventListener('touchmove', e => {
+        if (!dragging) return;
+        const y = e.touches[0].clientY, now = performance.now(), dy = ly - y, dtm = Math.max(1, now - lt);
+        if (!moved && Math.abs(y - sy0) < 6) return; moved = true;
+        if (e.cancelable) e.preventDefault();
+        vy += dy * 1.15; vel = vel * .6 + (dy * 1.15 / dtm) * .4; ly = y; lt = now;
+      }, { passive: false });
+      const end = () => { if (!dragging) return; dragging = false; if (performance.now() - lt < 140) vv = vel * 16.7; };
+      addEventListener('touchend', end, { passive: true }); addEventListener('touchcancel', end, { passive: true });
+    }
+
     // ── loop ──
     let camZ = camZFor(), last = performance.now(), on = true, skip = 0;
     const tmpV = new T.Vector3();
@@ -237,18 +266,28 @@
     function wrap() {
       looping = 1;
       const lapPx = LOOP * ppu;
-      scrollTo({ top: scrollY - lapPx, behavior: 'instant' });
+      if (VIRTUAL) { vy -= lapPx; if (vTarget != null) vTarget -= lapPx; }
+      else scrollTo({ top: scrollY - lapPx, behavior: 'instant' });
       camZ += LOOP;
       frames.forEach(f => { if (f.copyOf) { f.copyOf.reveal = Math.max(f.copyOf.reveal, f.reveal); f.reveal = 0; } });
       requestAnimationFrame(() => { looping = 0; });
     }
-    addEventListener('scroll', () => { if (!looping && document.body.classList.contains('corridor') && scrollY >= LOOP * ppu + innerHeight * 1.05) wrap(); }, { passive: true });
+    addEventListener('scroll', () => { if (!VIRTUAL && !looping && document.body.classList.contains('corridor') && scrollY >= LOOP * ppu + innerHeight * 1.05) wrap(); }, { passive: true });
     function loop(ts) {
       requestAnimationFrame(loop);
-      if (!document.body.classList.contains('corridor') || document.hidden) return;
+      const corr = document.body.classList.contains('corridor');
+      if (VIRTUAL) { document.documentElement.classList.toggle('vscroll', corr); window.VY = corr ? vy : null; }
+      if (!corr || document.hidden) return;
       if (document.body.classList.contains('ov-open') && (skip = (skip + 1) % 3)) return;
-      if (MOBILE && ts - last < 30) return;
       const dt = Math.min(.05, (ts - last) / 1000); last = ts;
+      if (VIRTUAL) {
+        const k = dt * 60, before = vy;
+        if (vTarget != null) { vy += (vTarget - vy) * (1 - Math.pow(.88, k)); if (Math.abs(vTarget - vy) < .5) { vy = vTarget; vTarget = null; } }
+        else if (!dragging && Math.abs(vv) > .02) { vy += vv * k; vv *= Math.pow(.955, k); }
+        if (vy < 0) { vy += (0 - vy) * (1 - Math.pow(.8, k)); if (vv < 0) vv = 0; }   // soft stop at the very start
+        if (vy >= LOOP * ppu + refH * 1.05) wrap();
+        if (vy !== before) { window.VY = vy; dispatchEvent(new Event('vscroll')); }
+      }
       const t = ts / 1000, p = window.SND ? SND.pulse : 0;
       const target = camZFor();
       const lerpDt = Math.min(.12, (ts - (loop.prev || ts)) / 1000); loop.prev = ts;
@@ -283,6 +322,7 @@
       document.body.classList.toggle('walking', camZ < 3);
       R.render(scene, cam);
     }
+    try { R.compile(scene, cam); } catch (e) { }
     requestAnimationFrame(loop);
     window.CORRIDOR = { goTo };
   };

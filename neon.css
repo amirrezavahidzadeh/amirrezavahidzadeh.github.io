@@ -687,3 +687,9 @@ body.corridor .near-open:not([hidden]){display:flex}
 .loop-flash.go{animation:loopflash .9s ease-out}
 @keyframes loopflash{0%{opacity:0}28%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.loop-flash.go{animation-duration:.01s}}
+/* phones in the corridor: the page itself doesn't scroll, a drag walks you */
+html.vscroll,html.vscroll body{overflow:hidden;height:100%;overscroll-behavior:none}
+html.vscroll body{touch-action:none;position:fixed;inset:0;width:100%}
+html.vscroll #ov,html.vscroll #ov *{touch-action:pan-y}
+html.vscroll #corridorTrack{display:none}
+@media (pointer:coarse),(max-width:760px){body.corridor .grain{animation:none;opacity:.08}}

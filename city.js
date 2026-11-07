@@ -138,6 +138,8 @@ window.CITY = (() => {
   const LOW = matchMedia('(pointer: coarse)').matches || innerWidth < 760 || (navigator.hardwareConcurrency || 8) <= 4;
   let skip = 0, fxDirty = true;
   function frame(ts) {
+    // in the 3D corridor the 2D city isn't shown, so only keep the music clock running
+    if (document.body.classList.contains('corridor')) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
     if (document.body.classList.contains('ov-open') && (skip = (skip + 1) % 4)) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
     if (ts - last < (window.CITY_MS || Math.max(CAP, scrolling > ts ? 30 : 0))) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
     const dt = Math.min(.05, (ts - last) / 1000);

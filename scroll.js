@@ -13,7 +13,8 @@
 
   // only touch the DOM when a value actually changes
   const put = (el, prop, v) => { const c = el.__c || (el.__c = {}); if (c[prop] !== v) { c[prop] = v; el.style[prop] = v; } };
-  let vh = innerHeight, sy = scrollY, vel = 0, lastY = scrollY;
+  const Y = () => window.VY != null ? window.VY : scrollY;
+  let vh = innerHeight, sy = Y(), vel = 0, lastY = sy;
   let secs = [], hero = null, free = [];
 
   // per-section entrance, written as transforms of e (0 = off below, 1 = in place)
@@ -49,7 +50,7 @@
   }
 
   function frame() {
-    sy = scrollY;
+    sy = Y();
     const dy = sy - lastY; lastY = sy;
     vel += (Math.abs(dy) - vel) * .12;
     if (window.CITY && CITY.boost) CITY.boost(Math.min(6, vel / 6));
@@ -69,7 +70,8 @@
     }
 
     // sections: themed entrance, children drifting in, and a recede as they leave
-    for (const s of secs) {
+    const corrMode = document.body.classList.contains('corridor');
+    for (const s of corrMode ? [] : secs) {
       if (s.top > sy + vh * 1.6 || s.top + s.h < sy - vh * .6) continue;
       const te = clamp((sy + vh - s.top) / (vh * (MOBILE ? .7 : .85)));
       const tx = clamp((sy + vh * .15 - (s.top + s.h - vh * .25)) / (vh * .75));
@@ -109,6 +111,7 @@
 
   function start() { setup(); kick(); }
   addEventListener('scroll', kick, { passive: true });
+  addEventListener('vscroll', kick);
   addEventListener('resize', () => { measure(); kick(); });
   addEventListener('load', () => { measure(); kick(); });
   if ('ResizeObserver' in window) { let t = 0; new ResizeObserver(() => { clearTimeout(t); t = setTimeout(() => { measure(); kick(); }, 120); }).observe(document.body); }
