@@ -648,3 +648,42 @@ html,body{overflow-x:hidden;overflow-x:clip}#main{overflow-x:clip}
 @keyframes grain{0%{transform:translate(0,0)}17%{transform:translate(-37px,21px)}33%{transform:translate(23px,-41px)}50%{transform:translate(-11px,53px)}67%{transform:translate(47px,9px)}83%{transform:translate(-53px,-27px)}100%{transform:translate(0,0)}}
 @media (prefers-reduced-motion:reduce){.grain{animation:none}}
 @media print{.grain{display:none}}
+
+/* ── 3D corridor ── */
+#corridor{position:fixed;inset:0;width:100vw;height:100vh;display:none;z-index:1}
+body.corridor #corridor{display:block}
+body.corridor #city{visibility:hidden}
+body.corridor .resume,body.corridor .arc-h,body.corridor #arcade,body.corridor .orn-div{display:none!important}
+body:not(.corridor) #corridorTrack{display:none}
+#corridorTrack{position:relative;z-index:0;pointer-events:none}
+body.corridor #main{pointer-events:none;position:absolute;left:0;right:0;top:0}
+body.corridor #main .hero{pointer-events:auto}
+body.corridor.walking #main .hero{pointer-events:none}
+.hud-view{font:700 .78rem/1 var(--ui);letter-spacing:.14em;text-transform:uppercase;color:#ffe9a8;padding:10px 12px;border:1px solid rgba(255,225,77,.55);border-radius:6px;background:rgba(10,3,24,.6);white-space:nowrap}
+.hud-view:hover{background:rgba(255,225,77,.15);color:#fff}
+.rooms{position:fixed;z-index:35;right:70px;top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:6px}
+body.corridor .rooms{display:flex}
+.rooms button{display:flex;align-items:center;justify-content:flex-end;gap:10px;color:var(--dim);font:700 .72rem var(--ui);letter-spacing:.12em;text-transform:uppercase;padding:2px 0}
+.rooms span{opacity:0;transform:translateX(6px);transition:.25s;white-space:nowrap;text-shadow:0 1px 6px #000}
+.rooms i{width:9px;height:9px;transform:rotate(45deg);border:1.5px solid var(--c);transition:.25s}
+.rooms:hover span,.rooms button.on span{opacity:1;transform:none}
+.rooms button.on{color:#fff}
+.rooms button.on i{background:var(--c);box-shadow:0 0 10px var(--c)}
+@media (max-width:760px){
+  .hud-view{order:2;padding:8px 9px;font-size:.66rem}
+  .rooms{right:auto;left:50%;top:auto;bottom:46px;transform:translateX(-50%);flex-direction:row;gap:10px}
+  .rooms span{display:none}
+}
+body.corridor .contact{display:none}
+.near-open{position:fixed;z-index:36;left:50%;bottom:62px;transform:translateX(-50%);display:none;align-items:center;gap:12px;padding:12px 18px;border:1.5px solid var(--c);border-radius:6px;background:rgba(7,3,13,.85);color:#fff;box-shadow:0 0 18px color-mix(in srgb,var(--c) 55%,transparent);font:700 .9rem var(--ui);letter-spacing:.12em;text-transform:uppercase;animation:chipIn .3s ease}
+body.corridor .near-open:not([hidden]){display:flex}
+.near-open span{color:var(--c);font-size:.75rem}
+.near-open b{font:900 1.3rem/1 var(--disp);letter-spacing:.04em}
+.near-open i{font-style:normal;color:var(--c)}
+@keyframes chipIn{from{opacity:0;transform:translate(-50%,10px)}}
+@media (max-width:760px){.near-open{bottom:76px;padding:10px 14px}}
+/* end of the hall: a flash, and you are back at the start */
+.loop-flash{position:fixed;inset:0;z-index:58;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 45%,#fff 0,rgba(255,255,255,.85) 18%,rgba(34,243,255,.55) 40%,rgba(255,43,214,.35) 65%,rgba(5,1,12,0) 85%)}
+.loop-flash.go{animation:loopflash .9s ease-out}
+@keyframes loopflash{0%{opacity:0}28%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.loop-flash.go{animation-duration:.01s}}

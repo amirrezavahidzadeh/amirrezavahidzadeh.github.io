@@ -1,0 +1,290 @@
+/* ─────────────────────────────────────────────────────────────
+   CORRIDOR: walk down a neon Persian arcade (three.js).
+   Scroll, drag or tilt your phone to move. Every résumé section hangs
+   on the wall as a glowing frame that paints itself in as you approach;
+   click it to open. At the end of the hall, the Tehran skyline.
+   ───────────────────────────────────────────────────────────── */
+(() => {
+  const start = () => {
+    const T = window.THREE; if (!T || !window.AV || !AV.files) return setTimeout(start, 80);
+    const $ = s => document.querySelector(s);
+    const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
+    const C = AV.content, FILES = AV.files, CABS = AV.cabs;
+    const FREE = CABS.filter(c => !c.file);
+    const ROOMS = [...FILES, ...FREE];
+
+    // ── renderer ──
+    const cv = document.getElementById('corridor');
+    let R;
+    try { R = new T.WebGLRenderer({ canvas: cv, antialias: !MOBILE, powerPreference: 'high-performance' }); }
+    catch (e) { document.body.classList.remove('corridor'); return; }
+    R.setPixelRatio(Math.min(devicePixelRatio || 1, MOBILE ? 1.25 : 1.6));
+    R.outputColorSpace = T.SRGBColorSpace;
+    const scene = new T.Scene();
+    scene.background = new T.Color(0x05010c);
+    scene.fog = new T.FogExp2(0x0a0318, MOBILE ? .055 : .045);
+    const cam = new T.PerspectiveCamera(MOBILE ? 72 : 62, innerWidth / innerHeight, .1, 220);
+
+    // ── layout ──
+    const W = 7, Hh = 4.6, GAP = 10, START = 6;
+    const zOf = i => -(START + i * GAP);
+    // the hall is a loop: after the last room it repeats from the first, so the end looks exactly like the start
+    const LOOP = GAP * ROOMS.length;
+    const END = 8 - LOOP - 70;                  // geometry runs this far so the repeat is fully built
+    const zMid = (12 + END) / 2, zLen = 12 - END;
+    const glowMat = c => new T.MeshBasicMaterial({ color: c, transparent: true, opacity: .95, blending: T.AdditiveBlending, depthWrite: false, fog: true });
+
+    // floor: neon grid generated in the shader, so it stays crisp at any distance
+    const floorMat = new T.ShaderMaterial({
+      transparent: false, fog: true,
+      uniforms: T.UniformsUtils.merge([T.UniformsLib.fog, { uTime: { value: 0 }, uPulse: { value: 0 } }]),
+      vertexShader: `varying vec3 vW;
+#include <fog_pars_vertex>
+        void main(){ vec4 w = modelMatrix * vec4(position,1.); vW = w.xyz; vec4 mvPosition = viewMatrix * w; gl_Position = projectionMatrix * mvPosition;
+#include <fog_vertex>
+}`,
+      fragmentShader: `uniform float uTime; uniform float uPulse; varying vec3 vW;
+#include <fog_pars_fragment>
+        float line(float v, float w){ float d = abs(fract(v) - .5); return smoothstep(.5 - w, .5, d); }
+        void main(){
+          vec2 g = vW.xz / 1.4;
+          float l = max(line(g.x, .035), line(g.y + uTime * .25, .035));
+          vec3 base = vec3(.03,.01,.07);
+          vec3 neon = mix(vec3(.13,.95,1.), vec3(1.,.17,.84), .5 + .5 * sin(vW.z * .08 + uTime * .3));
+          vec3 col = base + neon * l * (.55 + uPulse * .45);
+          float centre = 1. - smoothstep(.0, 3.4, abs(vW.x));
+          col += vec3(.5,.1,.6) * centre * .06;
+          gl_FragColor = vec4(col, 1.);
+#include <fog_fragment>
+        }`,
+    });
+    const floor = new T.Mesh(new T.PlaneGeometry(W, zLen), floorMat);
+    floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, zMid); scene.add(floor);
+    const ceil = new T.Mesh(new T.PlaneGeometry(W, zLen), new T.MeshBasicMaterial({ color: 0x06020d }));
+    ceil.rotation.x = Math.PI / 2; ceil.position.set(0, Hh, zMid); scene.add(ceil);
+    // the walls: a hand-built Tehran panorama in neon line-art, one full panorama per lap on each wall
+    const wallBack = new T.MeshBasicMaterial({ color: 0x0b0418 });
+    [-1, 1].forEach(sd => { const w = new T.Mesh(new T.PlaneGeometry(zLen, Hh), wallBack); w.rotation.y = -sd * Math.PI / 2; w.position.set(sd * (W / 2 + .02), Hh / 2, zMid); scene.add(w); });
+    TEHRAN_WALL.build(T, { scene, LOOP, Hh, W, zFrom: 12, zTo: END, mobile: MOBILE, rooms: ROOMS.length, start: 8 + START });
+    // a dark band at the foot and head of each wall, so the frames and neon tubes still read
+    const bandMat = new T.MeshBasicMaterial({ color: 0x07020f });
+    [-1, 1].forEach(sd => [[.18, .09], [Hh - .12, .24]].forEach(([y, h]) => { const b = new T.Mesh(new T.PlaneGeometry(zLen, h), bandMat); b.rotation.y = -sd * Math.PI / 2; b.position.set(sd * (W / 2 - .01), y, zMid); scene.add(b); }));
+
+    // neon tubes running the length of the hall
+    const tube = (pts, r, c) => new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), Math.max(8, pts.length * 6), r, 6, false), glowMat(c));
+    const len = [new T.Vector3(0, 0, 12), new T.Vector3(0, 0, END)];
+    [[-W / 2 + .02, .03, 0x22f3ff], [W / 2 - .02, .03, 0xff2bd6], [-W / 2 + .02, Hh - .05, 0xb06bff], [W / 2 - .02, Hh - .05, 0xb06bff]].forEach(([x, y, c]) => scene.add(tube(len.map(v => new T.Vector3(x, y, v.z)), .025, c)));
+
+    // Persian pointed arches (an ogee) every few metres, like a neon bazaar
+    // a Persian pointed arch: straight legs, two arcs meeting in a point, and a small ogee tip
+    function archPts(w, h, spring) {
+      const hw = w / 2, e = hw * .28, r = hw + e, pts = [];
+      for (let i = 0; i <= 6; i++) pts.push(new T.Vector3(-hw, spring * i / 6, 0));
+      const th0 = Math.PI, th1 = Math.acos(-e / r);
+      for (let i = 1; i <= 22; i++) { const th = th0 + (th1 - th0) * i / 22; pts.push(new T.Vector3(e + r * Math.cos(th), spring + r * Math.sin(th) * ((h - spring) / (r * Math.sin(th1))), 0)); }
+      pts.push(new T.Vector3(0, h + .22, 0));
+      const right = pts.slice(0, -1).reverse().map(p => new T.Vector3(-p.x, p.y, 0));
+      return [...pts, ...right];
+    }
+    const archShape = archPts(W - .5, Hh - .5, Hh * .45);
+    const archColors = [0x22f3ff, 0xff2bd6, 0xffc94d, 0x7dff6a, 0xb06bff];
+    const arches = [];
+    const AS = LOOP / Math.round(LOOP / (MOBILE ? 7 : 5));   // spacing divides the loop exactly
+    const nArch = Math.ceil((2 - END) / AS);
+    for (let i = 0; i < nArch; i++) {
+      const m = tube(archShape, .035, archColors[i % archColors.length]);
+      m.position.z = 2 - i * AS; scene.add(m); arches.push(m);
+    }
+
+    // a soft glow texture shared by sprites
+    const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); const r = g.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.25, 'rgba(255,255,255,.35)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t; })();
+
+    // ── rain inside the hall ──
+    const NR = MOBILE ? 500 : 1200, rp = new Float32Array(NR * 3);
+    for (let i = 0; i < NR; i++) { rp[i * 3] = (Math.random() - .5) * W; rp[i * 3 + 1] = Math.random() * Hh; rp[i * 3 + 2] = 12 - Math.random() * zLen; }
+    const rg = new T.BufferGeometry(); rg.setAttribute('position', new T.BufferAttribute(rp, 3));
+    const rainMat = new T.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: T.AdditiveBlending,
+      uniforms: { uTime: { value: 0 }, uH: { value: Hh }, uPx: { value: R.getPixelRatio() } },
+      vertexShader: `uniform float uTime; uniform float uH; uniform float uPx; varying float vA;
+        void main(){ vec3 p = position; p.y = mod(p.y - uTime * 6.5, uH); vec4 mv = modelViewMatrix * vec4(p,1.); gl_Position = projectionMatrix * mv; gl_PointSize = uPx * 22. / -mv.z; vA = clamp(1. - (-mv.z) / 40., 0., 1.); }`,
+      fragmentShader: `varying float vA; void main(){ vec2 c = gl_PointCoord - .5; float a = smoothstep(.06, 0., abs(c.x)) * smoothstep(.5, .1, abs(c.y)); gl_FragColor = vec4(.6,.85,1., a * .35 * vA); }`,
+    });
+    scene.add(new T.Points(rg, rainMat));
+
+    // ── the frames: one poster per résumé section ──
+    const img = {}; const loadImg = src => img[src] || (img[src] = new Promise(res => { if (!src) return res(null); const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; }));
+    const F = C.files;
+    const poster = async (c) => {
+      const cw = 1024, ch = 640, cnv = document.createElement('canvas'); cnv.width = cw; cnv.height = ch; const g = cnv.getContext('2d');
+      const col = c.c || '#22f3ff';
+      g.fillStyle = '#07030f'; g.fillRect(0, 0, cw, ch);
+      const bg = g.createRadialGradient(cw * .8, ch * .2, 10, cw * .8, ch * .2, cw * .9); bg.addColorStop(0, col + '40'); bg.addColorStop(1, 'transparent'); g.fillStyle = bg; g.fillRect(0, 0, cw, ch);
+      const pic = { bazar: F.bazar && F.bazar.hero, siavash: F.siavash && F.siavash.hero }[c.id];
+      const im = await loadImg(pic);
+      if (im) { const s = Math.max(cw * .55 / im.width, ch / im.height); const w = im.width * s, h = im.height * s; g.save(); g.beginPath(); g.rect(cw * .45, 0, cw * .55, ch); g.clip(); g.drawImage(im, cw * .45 + (cw * .55 - w) / 2, (ch - h) / 2, w, h); const fade = g.createLinearGradient(cw * .45, 0, cw * .62, 0); fade.addColorStop(0, '#07030f'); fade.addColorStop(1, 'rgba(7,3,15,0)'); g.fillStyle = fade; g.fillRect(cw * .45, 0, cw * .2, ch); g.restore(); }
+      const idx = FILES.indexOf(c);
+      g.fillStyle = col; g.font = '400 26px "Share Tech Mono", monospace'; g.fillText(c.file ? `${String(idx + 1).padStart(2, '0')} / ${String(FILES.length).padStart(2, '0')}` : 'FREE PLAY', 56, 78);
+      g.shadowColor = col; g.shadowBlur = 24; g.fillStyle = '#fff'; g.font = '900 104px "Big Shoulders Display", Impact, sans-serif';
+      const words = String(c.name).toUpperCase().split(' '); let line = '', y = 196; const maxW = im ? cw * .5 : cw - 110;
+      for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (g.measureText(t).width > maxW && line) { g.fillText(line, 56, y); y += 96; line = wd; } else line = t; } g.fillText(line, 56, y);
+      g.shadowBlur = 0;
+      if (c.fa) { g.fillStyle = col; g.font = '64px Sahand, Vazirmatn, sans-serif'; g.textAlign = 'left'; g.fillText(c.fa, 56, y + 84); }
+      const sub = { about: (F.about && F.about.stats || []).map(x => x.value).slice(0, 2).join(' · '), writer: F.writer && F.writer.lede, bazar: F.bazar && F.bazar.role, siavash: F.siavash && F.siavash.tagline, edu: 'B.A. Cinema · Art University of Tehran', crew: (F.crew && F.crew.roles || []).map(r => r.where).join(' · '), chess: F.chess && `${F.chess.format} ${F.chess.rating} · @${F.chess.handle}` }[c.id] || c.how;
+      g.fillStyle = '#d9d4f5'; g.font = '500 30px "Chakra Petch", sans-serif';
+      const sw = String(sub || '').split(' '); let sl = '', sy2 = Math.min(ch - 110, y + (c.fa ? 150 : 70));
+      for (const wd of sw) { const t = sl ? sl + ' ' + wd : wd; if (g.measureText(t).width > maxW && sl) { g.fillText(sl, 56, sy2); sy2 += 40; sl = wd; } else sl = t; } if (sl) g.fillText(sl, 56, sy2);
+      g.fillStyle = col; g.font = '700 26px "Chakra Petch", sans-serif'; g.fillText(c.file ? 'CLICK TO OPEN  ·  ▶ ' + String(c.game).toUpperCase() + ' (OPTIONAL)' : '▶ PLAY', 56, ch - 44);
+      const t = new T.CanvasTexture(cnv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = Math.min(8, R.capabilities.getMaxAnisotropy()); return t;
+    };
+    // paint-in reveal: a scanline wipes the frame from ink to full colour as you approach
+    const frameMat = (tex, col) => new T.ShaderMaterial({
+      uniforms: { uMap: { value: tex }, uReveal: { value: 0 }, uHover: { value: 0 }, uCol: { value: new T.Color(col) }, uTime: { value: 0 } },
+      vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }`,
+      fragmentShader: `uniform sampler2D uMap; uniform float uReveal; uniform float uHover; uniform vec3 uCol; uniform float uTime; varying vec2 vUv;
+        void main(){
+          vec4 t = texture2D(uMap, vUv);
+          float lum = dot(t.rgb, vec3(.3,.59,.11));
+          vec3 ink = uCol * lum * 1.6 * (.6 + .4 * step(.5, fract(vUv.y * 160.)));
+          float edge = 1. - vUv.y;
+          float shown = smoothstep(uReveal - .02, uReveal, edge) ;
+          vec3 col = mix(t.rgb, ink * .5, shown);
+          float scan = smoothstep(.03, 0., abs(edge - uReveal)) * step(uReveal, .999) * step(.001, uReveal);
+          col += uCol * scan * 1.4 + uCol * uHover * .12;
+          gl_FragColor = vec4(col, 1.);
+        }`,
+    });
+    const frames = [];
+    const FW = 3.3, FH = FW * 640 / 1024;
+    const makeFrame = (c, i, z, copyOf) => {
+      const side = i % 2 ? 1 : -1;
+      const grp = new T.Group(); grp.position.set(side * (W / 2 - .03), 1.95, z); grp.rotation.y = -side * Math.PI / 2; scene.add(grp);
+      const mat = frameMat(glowTex, c.c || '#22f3ff');
+      const plane = new T.Mesh(new T.PlaneGeometry(FW, FH), mat); plane.position.z = .02; grp.add(plane);
+      const bw = FW / 2 + .07, bh = FH / 2 + .07, path = new T.CurvePath();
+      [[-bw, -bh], [bw, -bh], [bw, bh], [-bw, bh], [-bw, -bh]].reduce((a, b) => { path.add(new T.LineCurve3(new T.Vector3(a[0], a[1], 0), new T.Vector3(b[0], b[1], 0))); return b; });
+      const border = new T.Mesh(new T.TubeGeometry(path, 64, .022, 5, false), glowMat(c.c || '#22f3ff'));
+      border.position.z = .03; grp.add(border);
+      const halo = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: c.c || '#22f3ff', transparent: true, opacity: .35, blending: T.AdditiveBlending, depthWrite: false }));
+      halo.scale.set(FW * 1.9, FH * 2.1, 1); halo.position.z = -.01; grp.add(halo);
+      plane.userData.id = c.id;
+      const f = { c, grp, plane, mat, border, halo, z, side, reveal: 0, hover: 0, copyOf };
+      frames.push(f); return f;
+    };
+    ROOMS.forEach((c, i) => makeFrame(c, i, zOf(i)));
+    ROOMS.forEach((c, i) => { if (zOf(i) - LOOP > END + 4) makeFrame(c, i, zOf(i) - LOOP, frames[i]); });
+    const posterAll = () => ROOMS.forEach((c, i) => poster(c).then(t => frames.forEach(f => { if (f.c === c) f.mat.uniforms.uMap.value = t; })));
+    posterAll();
+    // repaint posters once the web fonts are ready
+    if (document.fonts) document.fonts.ready.then(posterAll);
+
+    // ── room list: jump anywhere ──
+    const nav = document.createElement('nav'); nav.className = 'rooms'; nav.setAttribute('aria-label', 'Rooms');
+    nav.innerHTML = ROOMS.map((c, i) => `<button type="button" data-i="${i}" style="--c:${c.c}"><i></i><span>${c.name}</span></button>`).join('');
+    document.body.append(nav);
+
+    const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'near-open'; chip.hidden = true; chip.innerHTML = '<span>Open</span><b></b><i>→</i>';
+    chip.addEventListener('click', () => { const f = chip.__f; if (!f) return; if (f.c.file) AV.openFile(f.c.id); else AV.open(f.c.id, { play: true }); });
+    document.body.append(chip);
+
+    // ── scroll → walk ──
+    const track = document.getElementById('corridorTrack');
+    const STEP_VH = MOBILE ? 75 : 90;
+    // scroll distance maps straight to walking distance; the page is one lap plus some extra hall,
+    // so you keep walking past the last room into the next lap, and the page quietly jumps back one lap
+    let ppu = 1;                                         // pixels of scroll per metre walked
+    const sizeTrack = () => { ppu = innerHeight * STEP_VH / 100 / GAP; track.style.height = `${Math.round(LOOP * ppu + innerHeight * 3.2)}px`; };
+    sizeTrack(); addEventListener('resize', sizeTrack);
+    const camZFor = () => 8 - scrollY / ppu;
+    const progress = () => clamp01(scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight));
+    const clamp01 = v => Math.max(0, Math.min(1, v));
+    function goTo(id) {
+      const i = ROOMS.findIndex(r => r.id === id); if (i < 0) return;
+      const z = zOf(i) + 4.2;
+      scrollTo({ top: (8 - z) * ppu, behavior: RM ? 'auto' : 'smooth' });
+    }
+    nav.addEventListener('click', e => { const b = e.target.closest('button'); if (b) goTo(ROOMS[+b.dataset.i].id); });
+
+    // look around: mouse on desktop, tilt on phones
+    let lookX = 0, lookY = 0, tlx = 0, tly = 0;
+    addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; tlx = (e.clientX / innerWidth - .5) * 2; tly = (e.clientY / innerHeight - .5) * 2; }, { passive: true });
+    const onTilt = e => { if (e.gamma == null) return; tlx = Math.max(-1, Math.min(1, e.gamma / 25)); tly = Math.max(-1, Math.min(1, (e.beta - 45) / 30)); };
+    const askTilt = () => { const D = window.DeviceOrientationEvent; if (D && typeof D.requestPermission === 'function') D.requestPermission().then(s => { if (s === 'granted') addEventListener('deviceorientation', onTilt); }).catch(() => { }); else addEventListener('deviceorientation', onTilt); };
+    if (MOBILE) { const jb = document.getElementById('jackIn'), js = document.getElementById('jackSilent'); [jb, js].forEach(b => b && b.addEventListener('click', askTilt, { once: true })); }
+
+    // click a frame to open it
+    const ray = new T.Raycaster(), ndc = new T.Vector2(); let hoverF = null;
+    const pick = (x, y) => { ndc.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1); ray.setFromCamera(ndc, cam); const hit = ray.intersectObjects(frames.map(f => f.plane))[0]; return hit && hit.distance < 22 ? frames.find(f => f.plane === hit.object) : null; };
+    cv.addEventListener('pointermove', e => { const f = pick(e.clientX, e.clientY); if (f !== hoverF) { hoverF = f; cv.style.cursor = f ? 'pointer' : ''; if (f) SND.ui('blip'); } });
+    let downAt = null;
+    cv.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+    cv.addEventListener('pointerup', e => {
+      if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 8) return; downAt = null;
+      const f = pick(e.clientX, e.clientY); if (!f) return;
+      if (f.c.file) AV.openFile(f.c.id); else AV.open(f.c.id, { play: true });
+    });
+    addEventListener('keydown', e => { if (!$('#ov').hidden || e.target.closest && e.target.closest('input,textarea')) return; if (e.key === 'ArrowDown' || e.key === 'PageDown') { /* native scroll */ } });
+
+    // ── loop ──
+    let camZ = camZFor(), last = performance.now(), on = true, skip = 0;
+    const tmpV = new T.Vector3();
+    function resize() { R.setSize(innerWidth, innerHeight, false); cam.aspect = innerWidth / innerHeight; cam.fov = innerWidth < innerHeight ? 78 : MOBILE ? 72 : 62; cam.updateProjectionMatrix(); }
+    addEventListener('resize', resize); resize();
+    // the loop: one lap after the start (plus a screen of walking, so the hero has already faded),
+    // jump back exactly one lap. The hall there is identical, so nothing visibly changes.
+    let looping = 0, wallTick = 0;
+    function wrap() {
+      looping = 1;
+      const lapPx = LOOP * ppu;
+      scrollTo({ top: scrollY - lapPx, behavior: 'instant' });
+      camZ += LOOP;
+      frames.forEach(f => { if (f.copyOf) { f.copyOf.reveal = Math.max(f.copyOf.reveal, f.reveal); f.reveal = 0; } });
+      requestAnimationFrame(() => { looping = 0; });
+    }
+    addEventListener('scroll', () => { if (!looping && document.body.classList.contains('corridor') && scrollY >= LOOP * ppu + innerHeight * 1.05) wrap(); }, { passive: true });
+    function loop(ts) {
+      requestAnimationFrame(loop);
+      if (!document.body.classList.contains('corridor') || document.hidden) return;
+      if (document.body.classList.contains('ov-open') && (skip = (skip + 1) % 3)) return;
+      if (MOBILE && ts - last < 30) return;
+      const dt = Math.min(.05, (ts - last) / 1000); last = ts;
+      const t = ts / 1000, p = window.SND ? SND.pulse : 0;
+      const target = camZFor();
+      const lerpDt = Math.min(.12, (ts - (loop.prev || ts)) / 1000); loop.prev = ts;
+      camZ += (target - camZ) * (RM ? 1 : 1 - Math.exp(-lerpDt * 5.5));
+      lookX += (tlx - lookX) * .05; lookY += (tly - lookY) * .05;
+      // drift toward the nearest frame so each one turns to face you as you pass
+      let near = null, nd = 99;
+      for (const f of frames) { const d = camZ - f.z; if (d > -1 && d < nd) { nd = d; near = f; } }
+      let yaw = -lookX * .22;
+      // turn to look at the frame you are passing (on a phone held upright, look straight at it)
+      const portrait = innerWidth < innerHeight, wPeak = portrait ? 5.2 : 3.8, wSpan = portrait ? 4.2 : 3.8;
+      let w = 0; if (near && nd < 9.5) { w = Math.max(0, 1 - Math.abs(nd - wPeak) / wSpan); const ws = w * w * (3 - 2 * w), aim = Math.atan2(W / 2 - .03, Math.max(.6, nd)); yaw += -near.side * aim * ws * (portrait ? 1 : .62); }
+      // a button for the frame you are looking at
+      const show = near && w > .45 ? near : null;
+      if (chip.__f !== show) { chip.__f = show; chip.hidden = !show; if (show) { chip.style.setProperty('--c', show.c.c); chip.querySelector('b').textContent = show.c.name; chip.querySelector('span').textContent = show.c.file ? 'Open' : 'Play'; } }
+      cam.position.set(Math.sin(t * .4) * .06 + lookX * .25, 1.75 + Math.sin(t * .9) * .02 - lookY * .08, camZ);
+      cam.rotation.set(-lookY * .08, yaw, 0, 'YXZ');
+      // frames paint themselves in as you approach; the nearest one glows
+      for (const f of frames) {
+        const d = camZ - f.z, target = d < 16 ? Math.min(1, Math.max(0, (16 - d) / 9)) : 0;
+        f.reveal += ((d < -2 ? 1 : target) - f.reveal) * .08;
+        f.hover += ((f === hoverF ? 1 : 0) - f.hover) * .15;
+        f.mat.uniforms.uReveal.value = f.reveal; f.mat.uniforms.uHover.value = f.hover;
+        f.halo.material.opacity = (.18 + f.reveal * .25 + f.hover * .25) * (1 + p * .3);
+      }
+      arches.forEach((a, i) => { a.material.opacity = .65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2; });
+      floorMat.uniforms.uTime.value = t; floorMat.uniforms.uPulse.value = p;
+      rainMat.uniforms.uTime.value = t;
+      // room list follows you
+      let ri = 0; frames.forEach((f, i) => { if (!f.copyOf && camZ < f.z + 6) ri = i; });
+      if (nav.__ri !== ri) { nav.__ri = ri; nav.querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', i === ri)); }
+      document.body.classList.toggle('walking', camZ < 3);
+      R.render(scene, cam);
+    }
+    requestAnimationFrame(loop);
+    window.CORRIDOR = { goTo };
+  };
+  if (window.THREE) start(); else addEventListener('three-ready', start, { once: true });
+})();

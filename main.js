@@ -210,7 +210,7 @@ window.AV_START = (C) => {
   function frame(c, game) {
     skipBtn.hidden = true;
     $('#ovPanel').style.setProperty('--c', c ? c.c : '#22f3ff');
-    $('#ovKick').textContent = c ? (c.file ? `File ${c.n} · ${game ? c.game : 'decrypted'}` : c.game) : 'All files';
+    $('#ovKick').textContent = c ? (c.file ? (game ? `${c.game} · optional game` : `${String(FILES.indexOf(c) + 1).padStart(2, '0')} / ${String(NF).padStart(2, '0')}`) : c.game) : 'All files';
     $('#ovTitle').textContent = c ? c.name : 'Dossier'; stat.textContent = '';
   }
   function open(id, opts = {}) {
@@ -245,7 +245,8 @@ window.AV_START = (C) => {
       : `<div class="res lose"><p class="res-k">${E(c.game)}</p><h3 class="glitch" data-t="GAME OVER">GAME OVER</h3><p>${msg}</p>
           <div class="res-act"><button type="button" class="btn-neon" data-a="retry">Try again</button><button type="button" class="btn-ghost" data-a="close">Back to the résumé</button></div></div>`;
     stat.textContent = won ? 'WON' : `ATTEMPT ${f}`;
-    if (won) { const my = token; setTimeout(() => { if (my === token && cur === id) { close(); const sec = $('#sec-' + id); if (sec) sec.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' }); } }, 1500); }
+    if (won && document.body.classList.contains('corridor')) { const my = token; setTimeout(() => { if (my === token && cur === id) showFile(id, true); }, 1500); }
+    else if (won) { const my = token; setTimeout(() => { if (my === token && cur === id) { close(); const sec = $('#sec-' + id); if (sec) sec.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' }); } }, 1500); }
     else body.querySelector('.res-act').addEventListener('click', e => {
       const a = e.target.closest('[data-a]')?.dataset.a;
       if (a === 'retry') { frame(c, true); runGame(id, {}); }
@@ -255,18 +256,18 @@ window.AV_START = (C) => {
   function nextLocked(id) { const i = FILES.findIndex(f => f.id === id); for (let k = 1; k <= FILES.length; k++) { const f = FILES[(i + k) % FILES.length]; if (!done(f.id)) return f; } return null; }
   function showFile(id, fresh) {
     const c = cab(id); frame(c, false); teardown();
-    const nx = nextLocked(id);
+    const ix = FILES.findIndex(f => f.id === id), nx = FILES[(ix + 1) % FILES.length];
     const all = FILES.every(f => done(f.id));
     body.innerHTML = `${chap(id)}${FILE[id]()}${all && fresh && ST.epilogue ? `<div class="chapter epi"><p class="ch-k">Epilogue</p><p class="ch-t">${E(ST.epilogue)}</p><a class="btn-neon" href="about/">Write to him →</a></div>` : ''}<div class="file-foot">
-      <button type="button" class="btn-ghost" data-a="replay">Play ${c.game} again</button>
+      <button type="button" class="btn-ghost" data-a="replay">▶ Play ${E(c.game)} <small>(optional)</small></button>
       ${nx ? `<button type="button" class="btn-neon" data-a="next" data-id="${nx.id}">Next: ${nx.name} →</button>` : `<button type="button" class="btn-neon" data-a="dossier">Open the dossier</button>`}</div>`;
-    stat.textContent = 'DECRYPTED';
+    stat.textContent = '';
     if (fresh && !RM) scramble($('.file', body));
     hydrate(body);
     body.querySelector('.file-foot').addEventListener('click', e => {
       const b = e.target.closest('[data-a]'); if (!b) return;
       if (b.dataset.a === 'replay') open(id, { play: true, force: true });
-      if (b.dataset.a === 'next') open(b.dataset.id, { force: true });
+      if (b.dataset.a === 'next') { openFile(b.dataset.id); if (window.CORRIDOR) CORRIDOR.goTo(b.dataset.id); }
       if (b.dataset.a === 'dossier') open('dossier', { force: true });
     });
     body.scrollTop = 0;
@@ -342,7 +343,13 @@ window.AV_START = (C) => {
   $('#jackIn').focus();
 
   hud(); deck();
-  window.AV = { open, close, state: S, content: C };
+  // open a résumé section in the panel (used by the 3D corridor)
+  function openFile(id) {
+    if (!cab(id) || !cab(id).file) return open(id, { play: true });
+    teardown(); cur = id; if (ov.hidden) { lastFocus = document.activeElement; ov.hidden = false; document.body.classList.add('ov-open'); SND.ui('open'); }
+    showFile(id, false); requestAnimationFrame(() => $('#ovPanel').focus());
+  }
+  window.AV = { open, close, openFile, state: S, content: C, files: FILES, cabs: CABS };
 };
 
 /* load content.json (written by the admin), fall back to the defaults */

@@ -17,10 +17,11 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Amirreza Vahidzadeh","alternateName":"امیررضا وحیدزاده","birthDate":"2001-02","jobTitle":["Writer","Filmmaker","Director","Game maker","AI specialist"],"alumniOf":{"@type":"CollegeOrUniversity","name":"Art University of Tehran"},"knowsAbout":["Screenwriting","Filmmaking","Directing","Game development","Generative AI video"],"url":"https://amirrezavahidzadeh.github.io/","image":"https://amirrezavahidzadeh.github.io/img/og.jpg"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%2307030d%22/%3E%3Ctext x=%2232%22 y=%2244%22 font-family=%22Impact,sans-serif%22 font-size=%2234%22 text-anchor=%22middle%22 fill=%22%23fff%22 stroke=%22%23ff2bd6%22 stroke-width=%221.5%22%3EAV%3C/text%3E%3C/svg%3E">
 <meta name="theme-color" content="#07030d">
-<link rel="stylesheet" href="neon.css?v=57cec900">
+<link rel="stylesheet" href="neon.css?v=6db2f117">
 </head>
-<body>
+<body class="corridor">
 <canvas id="city" aria-hidden="true"></canvas>
+<canvas id="corridor" aria-label="A neon corridor. Scroll to walk, click a frame to open it."></canvas>
 
 <div id="boot" role="dialog" aria-label="Start">
   <div class="boot-in">
@@ -43,6 +44,7 @@
     <canvas id="dViz" width="96" height="28" aria-hidden="true"></canvas>
     <button type="button" id="dMute" class="d-btn" aria-label="Mute"><i class="ic-snd"></i></button>
   </div>
+  <button type="button" class="hud-view" id="viewToggle" aria-pressed="false">Classic view</button>
   <a class="hud-about" href="about/">About me</a>
   <button type="button" id="hudShards" class="hud-shards" aria-label="Games won. Open the printable résumé"><span class="hs-gems" id="gems"></span><b><span id="shardN">0</span>/<span id="shardT">7</span></b><span class="hs-l">Games</span></button>
 </header>
@@ -59,7 +61,7 @@
       <li><button type="button" data-c="#7dff6a">Game maker</button></li>
       <li><button type="button" data-c="#ffe14d">AI specialist</button></li>
     </ul>
-    <p class="hero-brief"><b>Scroll for the résumé.</b> Every section has a small game you can play if you feel like it. <span class="hero-play">Hover the name, tap anywhere, or press <kbd>A</kbd> to <kbd>L</kbd> to play along.</span></p>
+    <p class="hero-brief"><b>Scroll to walk the hall.</b> Every frame on the wall is a part of my résumé. Click one to open it; each has a small optional game. <span class="hero-play">Hover the name, tap anywhere, or press <kbd>A</kbd> to <kbd>L</kbd> to play along.</span></p>
     <a class="scroll-cue" href="#resume" aria-label="Scroll to the résumé"><span></span></a>
   </section>
 
@@ -68,6 +70,7 @@
   <section class="arcade" id="arcade" aria-label="Arcade"></section>
 </main>
 
+<div id="corridorTrack" aria-hidden="true"></div>
 <footer id="ticker" aria-hidden="true"><div class="tk-in" id="tkIn"></div></footer>
 
 <div id="ov" hidden role="dialog" aria-modal="true" aria-labelledby="ovTitle">
@@ -89,8 +92,12 @@
 <script src="games.js?v=295af45d"></script>
 <script src="maker.js?v=15e0d402"></script>
 <script src="content.js?v=c81a75a6"></script>
-<script src="main.js?v=b17c7864"></script>
+<script src="main.js?v=94752987"></script>
 <script src="scroll.js?v=83829e2b"></script>
+<script type="module">import * as THREE from "./vendor/three.module.min.js"; window.THREE = THREE; dispatchEvent(new Event("three-ready"));</script>
+<script src="tehranwall.js?v=f88f383d"></script>
+<script src="corridor.js?v=d1b5dde4"></script>
+<script src="view.js?v=d92ba74d"></script>
 <script src="ornament.js?v=653bcb25"></script>
 </body>
 </html>
