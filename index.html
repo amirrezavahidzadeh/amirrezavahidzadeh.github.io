@@ -15,8 +15,9 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://amirrezavahidzadeh.github.io/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Amirreza Vahidzadeh","alternateName":"امیررضا وحیدزاده","birthDate":"2001-02","jobTitle":["Writer","Filmmaker","Director","Game maker","AI specialist"],"alumniOf":{"@type":"CollegeOrUniversity","name":"Art University of Tehran"},"knowsAbout":["Screenwriting","Filmmaking","Directing","Game development","Generative AI video"],"url":"https://amirrezavahidzadeh.github.io/","image":"https://amirrezavahidzadeh.github.io/img/og.jpg"}</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%2307030d%22/%3E%3Ctext x=%2232%22 y=%2244%22 font-family=%22Impact,sans-serif%22 font-size=%2234%22 text-anchor=%22middle%22 fill=%22%23fff%22 stroke=%22%23ff2bd6%22 stroke-width=%221.5%22%3EAV%3C/text%3E%3C/svg%3E">
 <meta name="theme-color" content="#07030d">
-<link rel="stylesheet" href="neon.css?v=6480f500">
+<link rel="stylesheet" href="neon.css?v=57cec900">
 </head>
 <body>
 <canvas id="city" aria-hidden="true"></canvas>
@@ -43,7 +44,7 @@
     <button type="button" id="dMute" class="d-btn" aria-label="Mute"><i class="ic-snd"></i></button>
   </div>
   <a class="hud-about" href="about/">About me</a>
-  <button type="button" id="hudShards" class="hud-shards" aria-label="Open the dossier"><span class="hs-gems" id="gems"></span><b><span id="shardN">0</span>/<span id="shardT">7</span></b><span class="hs-l">Dossier</span></button>
+  <button type="button" id="hudShards" class="hud-shards" aria-label="Games won. Open the printable résumé"><span class="hs-gems" id="gems"></span><b><span id="shardN">0</span>/<span id="shardT">7</span></b><span class="hs-l">Games</span></button>
 </header>
 
 <noscript><p style="position:relative;z-index:20;padding:120px 20px;color:#fff">Amirreza Vahidzadeh: film and series writer, filmmaker, director, game maker and AI specialist. This site is an arcade and needs JavaScript.</p></noscript>
@@ -58,10 +59,12 @@
       <li><button type="button" data-c="#7dff6a">Game maker</button></li>
       <li><button type="button" data-c="#ffe14d">AI specialist</button></li>
     </ul>
-    <p class="hero-brief"><b>Files are encrypted.</b> Each arcade cabinet holds one. Win its game, or skip it, to open the file. <span class="hero-play">Hover the name, tap anywhere, or press <kbd>A</kbd> to <kbd>L</kbd> to play along.</span></p>
-    <button type="button" class="btn-ghost skip-all" id="skipAll">No time? Open every file ⏭</button>
+    <p class="hero-brief"><b>Scroll for the résumé.</b> Every section has a small game you can play if you feel like it. <span class="hero-play">Hover the name, tap anywhere, or press <kbd>A</kbd> to <kbd>L</kbd> to play along.</span></p>
+    <a class="scroll-cue" href="#resume" aria-label="Scroll to the résumé"><span></span></a>
   </section>
 
+  <div class="resume" id="resume"></div>
+  <h2 class="arc-h">Free play <span>Make a game, or remix the soundtrack</span></h2>
   <section class="arcade" id="arcade" aria-label="Arcade"></section>
 </main>
 
@@ -79,13 +82,15 @@
   </div>
 </div>
 <canvas id="fx" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
 
 <script src="audio.js?v=a95000ab"></script>
-<script src="city.js?v=abcf066c"></script>
+<script src="city.js?v=ddda999f"></script>
 <script src="games.js?v=295af45d"></script>
 <script src="maker.js?v=15e0d402"></script>
 <script src="content.js?v=c81a75a6"></script>
-<script src="main.js?v=023daa10"></script>
-<script src="ornament.js?v=3539a3ef"></script>
+<script src="main.js?v=b17c7864"></script>
+<script src="scroll.js?v=83829e2b"></script>
+<script src="ornament.js?v=653bcb25"></script>
 </body>
 </html>

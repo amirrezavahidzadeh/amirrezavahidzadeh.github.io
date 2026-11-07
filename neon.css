@@ -475,7 +475,7 @@ kbd{font:400 .78em var(--mono);padding:.05em .4em;border:1px solid currentColor;
 .plot-slots li.on{border-style:solid;border-color:#5c8dff;color:#fff;background:rgba(92,141,255,.1);box-shadow:0 0 10.8px rgba(92,141,255,.35)}
 .plot-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:6px}
 .plot-card{padding:14px;min-height:110px;text-align:left;border:1.5px solid #5c8dff;border-radius:6px;background:#0e0a1f;color:#e9e6ff;font:500 .95rem/1.4 var(--ui);box-shadow:0 0 9px rgba(92,141,255,.35);transition:transform .15s,opacity .3s;touch-action:manipulation;background-image:repeating-linear-gradient(transparent 0 23px,rgba(92,141,255,.12) 23px 24px)}
-.plot-card:hover:not(:disabled){transform:translateY(-3px) rotate(-.6deg)}
+@media (hover:hover){.plot-card:hover:not(:disabled){transform:translateY(-3px) rotate(-.6deg)}}
 .plot-card.used{opacity:.18;transform:scale(.96)}
 .plot-card.no{animation:shake .35s;border-color:var(--mg)}
 .f-writer .f-lede{font-size:1.25rem}
@@ -590,3 +590,61 @@ body.hero-off .hero *,body.hero-off .hero *::before,body.hero-off .hero *::after
 .hn-l{animation:none}
 .hn-l:nth-child(3n+1){animation:flick 7s infinite}
 .hn-l:nth-child(5n+3){animation:flick 9.5s 1.3s infinite}
+
+/* ── scroll-based résumé: each file is a full section; its game is optional ── */
+.hero{min-height:calc(100vh - 110px);min-height:calc(100svh - 110px);align-content:center}
+.scroll-cue{display:block;width:26px;height:42px;border:2px solid rgba(255,255,255,.55);border-radius:14px;position:relative;margin-top:10px}
+.scroll-cue span{position:absolute;left:50%;top:8px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:#fff;animation:cue 1.6s ease-in-out infinite}
+@keyframes cue{0%{transform:translateY(0);opacity:1}80%{transform:translateY(14px);opacity:0}100%{opacity:0}}
+.resume{display:grid;gap:clamp(48px,9vh,110px);max-width:1100px;margin:0 auto}
+.rsec{--c:var(--cy);position:relative;scroll-margin-top:96px;padding:clamp(18px,3vw,34px);border:1.5px solid color-mix(in srgb,var(--c) 70%,transparent);border-radius:8px;background:linear-gradient(rgba(12,4,26,.9),rgba(4,2,10,.94));box-shadow:0 0 22px color-mix(in srgb,var(--c) 30%,transparent),inset 0 0 30px color-mix(in srgb,var(--c) 7%,transparent)}
+.rsec::before,.rsec::after{content:"";position:absolute;top:3px;width:46px;height:46px;background:var(--orn-corner) center/contain no-repeat;pointer-events:none;opacity:.8}
+.rsec::before{left:3px}.rsec::after{right:3px;transform:scaleX(-1)}
+.rsec-body .file > .f-k:first-child,.rsec-body .f-head .f-k,.rsec-body .f-main .f-k{font-size:.85rem}
+.rsec-foot{display:flex;align-items:center;justify-content:flex-end;gap:14px;margin-top:26px;padding-top:18px;border-top:1px solid rgba(255,255,255,.1)}
+.rsec-or{font:400 .72rem var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.r-play{display:grid;grid-template-columns:150px auto;align-items:center;gap:14px;padding:8px 18px 8px 8px;border-radius:8px;text-align:left}
+.r-play .cab-screen{margin:0;border-radius:6px}
+.r-play-t{display:grid;gap:2px}
+.r-play-t b{font:700 1rem var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+.r-play-t span{font-size:.88rem;color:var(--dim)}
+.r-won{font:700 .75rem var(--mono);font-style:normal;letter-spacing:.14em;color:var(--lm)}
+.arc-h{max-width:1100px;margin:clamp(60px,10vh,120px) auto 18px;font:900 2.4rem/1 var(--disp);text-transform:uppercase;color:#fff;text-align:center;text-shadow:0 0 .3em var(--mg)}
+.arc-h span{display:block;margin-top:8px;font:500 .95rem var(--ui);text-transform:none;color:var(--dim);text-shadow:none}
+.arcade{max-width:1100px;margin:0 auto;grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+@media (max-width:760px){
+  .resume{gap:44px}
+  .rsec{scroll-margin-top:150px;padding:18px 14px}
+  .rsec::before,.rsec::after{width:30px;height:30px}
+  .rsec-foot{justify-content:stretch;flex-direction:column;align-items:stretch;gap:8px}
+  .rsec-or{text-align:center}
+  .r-play{grid-template-columns:110px 1fr}
+  .arcade{grid-template-columns:1fr 1fr}
+  .arc-h{font-size:1.9rem}
+}
+@media (prefers-reduced-motion:reduce){.scroll-cue span{animation:none}}
+@media print{.rsec-foot{display:none}}
+
+/* ── scroll-linked scenes: everything below is driven continuously by scroll.js ── */
+.rsec{overflow:hidden;isolation:isolate}
+.rfx{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0}
+.rsec[data-fx="about"] .rfx{background:repeating-linear-gradient(transparent 0 3px,rgba(34,243,255,.22) 3px 4px),rgba(34,243,255,.08)}
+.rsec[data-fx="writer"] .rfx{left:auto;width:6px;background:#5c8dff;box-shadow:0 0 14px #5c8dff}
+.rsec[data-fx="bazar"] .rfx{background:linear-gradient(105deg,transparent 38%,rgba(255,215,120,.55) 50%,transparent 62%) 0 0/250% 100% no-repeat}
+.rsec[data-fx="siavash"] .rfx{background:linear-gradient(rgba(150,105,45,.55),rgba(110,70,25,.55)),linear-gradient(transparent calc(100% - 14px),rgba(214,170,90,.95) calc(100% - 14px))}
+.rsec[data-fx="edu"] .rfx{background:radial-gradient(circle at 70% 40%,rgba(255,190,90,.7),rgba(255,90,20,.22) 40%,transparent 70%)}
+.rsec[data-fx="crew"]{transform-origin:50% 0}
+.rsec[data-fx="crew"] .rfx{height:22px;bottom:auto;background:repeating-linear-gradient(-45deg,#fff 0 18px,#111 18px 36px)}
+.rsec[data-fx="chess"] .rfx{background:radial-gradient(ellipse at 50% 120%,rgba(255,110,20,.85),transparent 62%)}
+.rsec-in{position:relative;transform-origin:0 0}
+#city{transform-origin:50% 60%}
+@media print{.rfx{display:none}}
+html,body{overflow-x:hidden;overflow-x:clip}#main{overflow-x:clip}
+
+/* the Tehran artwork shows through the résumé: lighter panels, plus film grain over everything */
+.rsec{background:linear-gradient(rgba(10,4,24,.58),rgba(4,2,12,.66))}
+.rsec .f-stats div,.rsec .f-feats li,.rsec .f-quill li,.rsec .f-roles li,.rsec .f-badge,.rsec .f-row{background:rgba(6,2,14,.72)}
+.grain{position:fixed;inset:-64px;z-index:55;pointer-events:none;background:url(img/grain.png) 0 0/128px 128px;opacity:.11;animation:grain .6s steps(6) infinite;will-change:transform}
+@keyframes grain{0%{transform:translate(0,0)}17%{transform:translate(-37px,21px)}33%{transform:translate(23px,-41px)}50%{transform:translate(-11px,53px)}67%{transform:translate(47px,9px)}83%{transform:translate(-53px,-27px)}100%{transform:translate(0,0)}}
+@media (prefers-reduced-motion:reduce){.grain{animation:none}}
+@media print{.grain{display:none}}

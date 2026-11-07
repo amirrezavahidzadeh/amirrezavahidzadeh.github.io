@@ -9,7 +9,9 @@ window.CITY = (() => {
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let W = 0, H = 0, dpr = 1, hor = 0, layers = [], drops = [], signs = [];
   let mx = .5, my = .5, tmx = .5, tmy = .5, accent = '#ff2bd6', accent2 = '#22f3ff';
-  const ripples = [], trail = [], pulses = [];
+  const ripples = [], trail = [], pulses = []; let boostV = 0, scrolling = 0;
+  // while the page is being scrolled, the city redraws at 30 fps so scrolling stays smooth
+  addEventListener('scroll', () => { scrolling = performance.now() + 180; }, { passive: true });
   // render scale: full on desktop; phones and slow machines draw the city a bit smaller and scale it up
   const COARSE = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
   let Q = COARSE ? .75 : 1, CAP = COARSE ? 30 : 0, probe = { n: 0, sum: 0, done: COARSE };
@@ -137,7 +139,7 @@ window.CITY = (() => {
   let skip = 0, fxDirty = true;
   function frame(ts) {
     if (document.body.classList.contains('ov-open') && (skip = (skip + 1) % 4)) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
-    if (ts - last < (window.CITY_MS || CAP)) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
+    if (ts - last < (window.CITY_MS || Math.max(CAP, scrolling > ts ? 30 : 0))) { if (window.SND) SND.tick(); requestAnimationFrame(frame); return; }
     const dt = Math.min(.05, (ts - last) / 1000);
     // adaptive quality: if this machine cannot hold ~45 fps, draw the city smaller and at 30 fps
     if (!probe.done && !document.hidden && ts > 2500) { probe.sum += ts - last; if (++probe.n >= 90) { probe.done = true; if (probe.sum / probe.n > 22) { Q = .75; CAP = 30; resize(); } } }
@@ -214,7 +216,7 @@ window.CITY = (() => {
     const fl = cx.createLinearGradient(0, hor, 0, H); fl.addColorStop(0, '#0d0220'); fl.addColorStop(1, '#020006');
     cx.fillStyle = fl; cx.fillRect(0, hor, W, H - hor);
     const speed = (window.SND && SND.playing ? SND.bpm / 60 : .25) * (RM ? .2 : 1);
-    phase = (phase + dt * speed * .5) % 1;
+    phase = (phase + dt * speed * .5 * (1 + boostV)) % 1; boostV *= .94;
     const gh = RM ? 0 : 40 * Math.sin(t * .11) + 25 * Math.sin(t * .037);
     cx.save(); cx.strokeStyle = gh ? `hsl(${(186 + gh).toFixed(0)},100%,57%)` : accent2;
     const N = 14, wav = RM ? 0 : 1, step = LOW ? 48 : 28;
@@ -274,6 +276,7 @@ window.CITY = (() => {
   if (document.fonts) document.fonts.ready.then(() => build());
   return {
     ripple(x, y, c = accent2, r = 90, ring2 = false) { fxDirty = true; ripples.push({ x, y, c, r, a: 0, life: .7, ring2 }); if (ripples.length > 40) ripples.shift(); },
+    boost(v) { boostV = Math.max(boostV, v); },
     setAccent(a, b) { accent = a; if (b) accent2 = b; },
   };
 })();

@@ -60,7 +60,7 @@
   // corner lunettes on the boot screen and the game panel
   for (const host of [document.querySelector('.boot-in'), document.getElementById('ovPanel')]) if (host) ['tl', 'tr', 'bl', 'br'].forEach(k => { const c = document.createElement('i'); c.className = `orn-c ${k}`; c.setAttribute('aria-hidden', 'true'); host.append(c); });
   // a medallion divider between the hero and the arcade
-  const arc = document.getElementById('arcade'); if (arc) { const d = document.createElement('div'); d.className = 'orn-div'; d.setAttribute('aria-hidden', 'true'); d.innerHTML = '<span></span><i></i><span></span>'; arc.before(d); }
+  const arc = document.getElementById('resume') || document.getElementById('arcade'); if (arc) { const d = document.createElement('div'); d.className = 'orn-div'; d.setAttribute('aria-hidden', 'true'); d.innerHTML = '<span></span><i></i><span></span>'; arc.before(d); }
 
   // the vines flare on every kick drum
   const strips = document.querySelectorAll('.orn-side, .orn-div'); let kickT = 0;

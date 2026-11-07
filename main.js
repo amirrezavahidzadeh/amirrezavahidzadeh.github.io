@@ -28,7 +28,7 @@ window.AV_START = (C) => {
   const FILES = CABS.filter(c => c.file), NF = FILES.length;
   const cab = id => CABS.find(c => c.id === id);
   const done = id => !!S.shards[id];
-  const kick = (id, k) => `<p class="f-k">File ${cab(id) ? cab(id).n : ''} · ${E(k)}</p>`;
+  const kick = (id, k) => `<p class="f-k">${String(FILES.findIndex(f => f.id === id) + 1).padStart(2, '0')} · ${E(k)}</p>`;
   const fa = t => t ? `<span lang="fa" dir="rtl">${E(t)}</span>` : '';
   // fix links typed without a scheme: bare emails become mailto:, bare domains become https://
   const link = u => { u = String(u || '').trim(); if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return u; if (/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(u)) return 'mailto:' + u; if (/^\+?[\d\s()-]{7,}$/.test(u)) return 'tel:' + u.replace(/[^\d+]/g, ''); if (u && !/^[a-z][a-z0-9+.-]*:/i.test(u) && !u.startsWith('/') && !u.startsWith('#')) return 'https://' + u; return u; };
@@ -89,10 +89,8 @@ window.AV_START = (C) => {
   const gems = $('#gems'), shardN = $('#shardN');
   function hud() {
     const n = FILES.filter(f => done(f.id)).length;
-    shardN.textContent = n; $('#shardT').textContent = NF; gems.innerHTML = FILES.map(f => `<i class="${done(f.id) ? 'on' : ''}" style="--c:${f.c}"></i>`).join('');
-    $$('.cab').forEach(b => { const c = cab(b.dataset.id); if (!c.file) return; b.classList.toggle('open', done(c.id)); $('.cab-lock', b).textContent = done(c.id) ? 'Decrypted' : 'Encrypted'; });
-    $('.hero-brief b').textContent = n === NF ? `All ${NF} files decrypted.` : `${NF - n} of ${NF} files ${NF - n === 1 ? 'is' : 'are'} encrypted.`;
-    $('#skipAll').hidden = n === NF || RULES.skipButton === false;
+    shardN.textContent = n; $('#shardT').textContent = NF; $$('.r-play').forEach(b => { $('.r-won', b).hidden = !done(b.dataset.id); }); gems.innerHTML = FILES.map(f => `<i class="${done(f.id) ? 'on' : ''}" style="--c:${f.c}"></i>`).join('');
+
     ticker();
   }
   function deck() {
@@ -104,7 +102,7 @@ window.AV_START = (C) => {
   }
   function ticker() {
     const T = SND.TRACKS[SND.track], n = FILES.filter(f => done(f.id)).length;
-    const bits = [`♪ Now playing: ${T.name} · ${T.mode} · ${T.bpm} BPM`, 'Original melodies in the Persian modes, played on synth santur', `${n}/${NF} files decrypted`, 'Tap anywhere to play a note', 'Press A to L to jam', 'Build a level and send it as a link', 'Rewrite the drums in the Beat Lab', 'Night city, Tehran, 2099'];
+    const bits = [`♪ Now playing: ${T.name} · ${T.mode} · ${T.bpm} BPM`, 'Original melodies in the Persian modes, played on synth santur', `${n}/${NF} games won`, 'Tap anywhere to play a note', 'Press A to L to jam', 'Build a level and send it as a link', 'Rewrite the drums in the Beat Lab', 'Night city, Tehran, 2099'];
     const s = bits.map(b => `<span>${b}</span><i>✦</i>`).join('');
     $('#tkIn').innerHTML = s + s;
   }
@@ -148,15 +146,33 @@ window.AV_START = (C) => {
   if ('IntersectionObserver' in window) new IntersectionObserver(es => document.body.classList.toggle('hero-off', !es[0].isIntersecting)).observe($('.hero'));
 
   /* ── the arcade ── */
-  $('#arcade').innerHTML = CABS.map(c => `<button type="button" class="cab${c.file ? '' : ' free'}" data-id="${c.id}" style="--c:${c.c}">
-      <span class="cab-sign"><span class="cab-n">${c.n}</span><b>${E(c.name)}</b><i lang="fa" dir="rtl">${E(c.fa)}</i></span>
-      <span class="cab-screen"><canvas width="240" height="140" aria-hidden="true"></canvas><span class="cab-lock">${c.file ? 'Encrypted' : 'Free play'}</span></span>
+  // the résumé: every file is a full section you reach by scrolling; its game is an optional extra
+  const playBtn = c => `<button type="button" class="r-play cab" data-id="${c.id}" style="--c:${c.c}">
+      <span class="cab-screen"><canvas width="240" height="140" aria-hidden="true"></canvas></span>
+      <span class="r-play-t"><b>▶ Play ${E(c.game)}</b><span>${E(c.how)}</span><i class="r-won" hidden>✓ Won</i></span></button>`;
+  $('#resume').innerHTML = FILES.map(c => `<article class="rsec" id="sec-${c.id}" style="--c:${c.c}" aria-label="${E(c.name)}">
+      <div class="rsec-in"><div class="rsec-body">${FILE[c.id]()}</div>
+      <footer class="rsec-foot"><span class="rsec-or">Optional</span>${playBtn(c)}</footer></div>
+    </article>`).join('');
+  hydrate($('#resume'));
+  const FREE = CABS.filter(c => !c.file);
+  $('#arcade').innerHTML = FREE.map(c => `<button type="button" class="cab free" data-id="${c.id}" style="--c:${c.c}">
+      <span class="cab-sign"><b>${E(c.name)}</b><i lang="fa" dir="rtl">${E(c.fa)}</i></span>
+      <span class="cab-screen"><canvas width="240" height="140" aria-hidden="true"></canvas><span class="cab-lock">Free play</span></span>
       <span class="cab-foot"><span class="cab-game">▶ ${E(c.game)}</span><span class="cab-how">${E(c.how)}</span></span>
     </button>`).join('');
+  if (!FREE.length) { $('#arcade').remove(); $('.arc-h') && $('.arc-h').remove(); }
   $$('.cab').forEach(b => {
-    b.addEventListener('click', () => open(b.dataset.id));
+    b.addEventListener('click', () => open(b.dataset.id, { play: true }));
     b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') SND.ui('blip'); });
   });
+  // sections slide in as you scroll to them
+  // each section arrives with its own transition (CRT boot, typed page, bazaar doors, unrolling manuscript, film strip, clapperboard, rising from lava)
+  $$('.rsec').forEach(sec => {
+    sec.dataset.fx = sec.id.slice(4); $('.rsec-in', sec).insertAdjacentHTML('afterbegin', '<span class="rfx" aria-hidden="true"></span>');
+    $$('.f-stats > div, .f-feats li, .f-pair figure, .f-row, .f-badge, .f-quill li, .f-roles li, .f-genres li, .cz-card, .cz-main, .rsec-foot', sec).forEach(el => el.classList.add('stg'));
+  });
+  $('#resume').addEventListener('click', e => { const z = e.target.closest('[data-zoom]'); if (z) { const im = $('img', zoom); im.src = z.dataset.zoom; im.alt = $('img', z)?.alt || ''; zoom.hidden = false; SND.ui('open'); } });
 
   // attract-mode screens
   const imgs = {}; const getImg = k => imgs[k] || (imgs[k] = Object.assign(new Image(), { src: IMG[k] }));
@@ -192,7 +208,7 @@ window.AV_START = (C) => {
   function teardown() { if (cleanup) { try { cleanup(); } catch (e) { } cleanup = null; } token++; }
   const skipBtn = $('#ovSkip');
   function frame(c, game) {
-    skipBtn.hidden = !(c && c.file && game && RULES.skipButton !== false);
+    skipBtn.hidden = true;
     $('#ovPanel').style.setProperty('--c', c ? c.c : '#22f3ff');
     $('#ovKick').textContent = c ? (c.file ? `File ${c.n} · ${game ? c.game : 'decrypted'}` : c.game) : 'All files';
     $('#ovTitle').textContent = c ? c.name : 'Dossier'; stat.textContent = '';
@@ -202,7 +218,7 @@ window.AV_START = (C) => {
     teardown(); cur = id; if (ov.hidden) { lastFocus = document.activeElement; ov.hidden = false; document.body.classList.add('ov-open'); SND.ui('open'); }
     if (id === 'dossier') return dossier();
     const c = cab(id);
-    if (c.file && done(id) && !opts.play) return showFile(id, false);
+    if (c.file && !opts.play) { close(); const sec = $('#sec-' + id); if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     frame(c, true); runGame(id, opts);
     requestAnimationFrame(() => $('#ovPanel').focus());
   }
@@ -225,16 +241,15 @@ window.AV_START = (C) => {
   function result(id, won, msg) {
     const c = cab(id), f = S.fails[id] || 0, BY = !!RULES.bypassEnabled, BN = Math.max(1, +RULES.lossesBeforeBypass || 2);
     body.innerHTML = won
-      ? `<div class="res win"><p class="res-k">Access granted${(ST.chapters || {})[id] ? ` · Chapter ${chapN(id)} recovered` : ''}</p><h3 class="glitch" data-t="FILE DECRYPTED">FILE DECRYPTED</h3><p>${msg}</p></div>`
-      : `<div class="res lose"><p class="res-k">Signal lost</p><h3 class="glitch" data-t="STILL ENCRYPTED">STILL ENCRYPTED</h3><p>${msg}</p>
-          <div class="res-act"><button type="button" class="btn-neon" data-a="retry">Try again</button>${BY && f >= BN ? `<button type="button" class="btn-ghost" data-a="bypass">Bypass the lock</button>` : ''}</div>
-          ${BY && f < BN ? `<p class="res-hint">Lose ${BN === 1 ? 'once' : BN === 2 ? 'twice' : BN + ' times'} and a bypass appears.</p>` : ''}</div>`;
-    stat.textContent = won ? 'DECRYPTED' : `ATTEMPT ${f}`;
-    if (won) { const my = token; setTimeout(() => { if (my === token && cur === id) showFile(id, true); }, 1300); }
+      ? `<div class="res win"><p class="res-k">${E(c.game)}</p><h3 class="glitch" data-t="YOU WIN">YOU WIN</h3><p>${msg}</p></div>`
+      : `<div class="res lose"><p class="res-k">${E(c.game)}</p><h3 class="glitch" data-t="GAME OVER">GAME OVER</h3><p>${msg}</p>
+          <div class="res-act"><button type="button" class="btn-neon" data-a="retry">Try again</button><button type="button" class="btn-ghost" data-a="close">Back to the résumé</button></div></div>`;
+    stat.textContent = won ? 'WON' : `ATTEMPT ${f}`;
+    if (won) { const my = token; setTimeout(() => { if (my === token && cur === id) { close(); const sec = $('#sec-' + id); if (sec) sec.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' }); } }, 1500); }
     else body.querySelector('.res-act').addEventListener('click', e => {
       const a = e.target.closest('[data-a]')?.dataset.a;
       if (a === 'retry') { frame(c, true); runGame(id, {}); }
-      if (a === 'bypass') { S.shards[id] = 1; persist(); hud(); SND.ui('glitch'); showFile(id, true); }
+      if (a === 'close') close();
     });
   }
   function nextLocked(id) { const i = FILES.findIndex(f => f.id === id); for (let k = 1; k <= FILES.length; k++) { const f = FILES[(i + k) % FILES.length]; if (!done(f.id)) return f; } return null; }
@@ -258,13 +273,13 @@ window.AV_START = (C) => {
   }
   function dossier() {
     frame(null); const n = FILES.filter(f => done(f.id)).length;
+    $('#ovKick').textContent = 'Print view'; $('#ovTitle').textContent = 'Résumé';
     body.innerHTML = `<div class="dos">
-      <p class="dos-lede">${n === NF ? 'Every file is decrypted. Here is the whole record.' : `${n} of ${NF} files decrypted. Win the rest to fill in the record.`}</p>
+      <p class="dos-lede">The whole résumé on one page, ready to print.</p>
       ${n === NF && ST.epilogue ? `<div class="chapter epi"><p class="ch-k">Epilogue</p><p class="ch-t">${E(ST.epilogue)}</p><a class="btn-neon" href="about/">Write to him →</a></div>` : ST.prologue ? `<div class="chapter"><p class="ch-k">Prologue</p><p class="ch-t">${E(ST.prologue)}</p></div>` : ''}
-      ${FILES.map(f => done(f.id) ? `<section class="dos-f" style="--c:${f.c}">${chap(f.id)}${FILE[f.id]()}</section>`
-        : `<section class="dos-f locked" style="--c:${f.c}"><p class="f-k">File ${f.n} · ${f.name}</p><p class="dos-scr" aria-label="Encrypted">${'█▓▒░ '.repeat(9)}</p><button type="button" class="btn-neon" data-play="${f.id}">Play ${f.game} to decrypt</button></section>`).join('')}
-      <div class="file-foot">${n === NF ? '<button type="button" class="btn-neon" data-a="print">Print or save as PDF</button>' : ''}<button type="button" class="btn-ghost" data-a="reset">Lock everything again</button></div></div>`;
-    stat.textContent = `${n}/${NF} DECRYPTED`; hydrate(body);
+      ${FILES.map(f => `<section class="dos-f" style="--c:${f.c}">${FILE[f.id]()}</section>`).join('')}
+      <div class="file-foot"><button type="button" class="btn-neon" data-a="print">Print or save as PDF</button></div></div>`;
+    stat.textContent = ''; hydrate(body);
     body.querySelector('.dos').addEventListener('click', e => {
       const p = e.target.closest('[data-play]'); if (p) return open(p.dataset.play, { force: true });
       const a = e.target.closest('[data-a]')?.dataset.a;
@@ -276,7 +291,7 @@ window.AV_START = (C) => {
   $('#ovX').addEventListener('click', close);
   skipBtn.addEventListener('click', () => { if (!cur || !cab(cur) || !cab(cur).file) return; const id = cur; teardown(); S.shards[id] = 1; persist(); hud(); SND.ui('glitch'); showFile(id, true); });
   // no time? open every file at once
-  $('#skipAll').addEventListener('click', () => { FILES.forEach(f => S.shards[f.id] = 1); persist(); hud(); SND.ui('win'); open('dossier'); });
+
   ov.addEventListener('pointerdown', e => { if (e.target === ov) close(); });
 
   // enlarge screenshots
@@ -314,7 +329,7 @@ window.AV_START = (C) => {
 
   /* ── boot ── */
   const boot = $('#boot'), log = $('#bootLog');
-  const LINES = ['> waking up night city', '> tuning the santur: Shur, Chahargah, Homayoun', `> ${CABS.length} arcade cabinets online`, `> ${NF} files encrypted`, '> one player detected'];
+  const LINES = ['> waking up night city', '> tuning the santur: Shur, Chahargah, Homayoun', `> ${CABS.length} arcade cabinets online`, `> ${NF} chapters of a résumé`, '> one player detected'];
   let li = 0; const typer = setInterval(() => { if (li >= LINES.length) return clearInterval(typer); log.textContent += LINES[li++] + '\n'; }, RM ? 10 : 260);
   function enter(sound) {
     SND.start(); SND.mute(!sound || false); if (!sound) S.muted = true; persist();
