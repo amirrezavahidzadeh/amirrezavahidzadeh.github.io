@@ -207,16 +207,22 @@ window.TEHRAN_WALL = (() => {
     const place = (side, names) => { const g = gaps(side), o = {}; names.forEach((k, i) => { if (g[i] != null) o[k] = U(side, g[i]); }); return o; };
     const atL = place(-1, ['tabiat', 'azadi', 'milad', 'metro', 'damavand']);
     const atR = place(1, ['bazaar', 'mosque', 'shams', 'towers', 'tochal']);
-    const tex = { '-1': [], '1': [] }, plans = { '-1': plan(LA, -1, HA, atL), '1': plan(LA, 1, HA, atR) };
+    const plans = { '-1': plan(LA, -1, HA, atL), '1': plan(LA, 1, HA, atR) };
     const nSeg = Math.round(LOOP / SEG);
-    const paint = () => [-1, 1].forEach(sd => tex[sd].forEach((t, k) => {
-      const c = t.image, g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height);
+    // Nothing is painted here. Each tile starts as a plain dark wall and the caller paints the tiles one
+    // at a time (nearest first), so loading never freezes the page. paint(sd, k) returns a fresh texture.
+    const blank = new T.DataTexture(new Uint8Array([11, 4, 24, 255]), 1, 1); blank.colorSpace = T.SRGBColorSpace; blank.needsUpdate = true;
+    const mats = { '-1': [], '1': [] };
+    [-1, 1].forEach(sd => { for (let k = 0; k < nSeg; k++) mats[sd].push(new T.MeshBasicMaterial({ map: blank, color: new T.Color(1, 1, 1) })); });
+    const paint = (sd, k) => {
+      const c = document.createElement('canvas'); c.width = Math.round(SEG * ppm); c.height = Math.round(Hh * ppm);
+      const g = c.getContext('2d'); if (!g) return null;
       const a0 = sd < 0 ? k * SA : LA - (k + 1) * SA;      // right wall runs the other way round
-      draw(g, plans[sd], a0, a0 + SA, ppa, HA); t.needsUpdate = true;
-    }));
-    [-1, 1].forEach(sd => { for (let k = 0; k < nSeg; k++) { const c = document.createElement('canvas'); c.width = Math.round(SEG * ppm); c.height = Math.round(Hh * ppm); const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4; tex[sd].push(t); } });
-    paint();
-    const mats = { '-1': tex['-1'].map(t => new T.MeshBasicMaterial({ map: t, color: new T.Color(1, 1, 1) })), '1': tex['1'].map(t => new T.MeshBasicMaterial({ map: t, color: new T.Color(1, 1, 1) })) };
+      draw(g, plans[sd], a0, a0 + SA, ppa, HA);
+      const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4; return t;
+    };
+    const tiles = [];
+    for (let k = 0; k < nSeg; k++) [-1, 1].forEach(sd => tiles.push({ sd, k, mat: mats[sd][k], paint: () => paint(sd, k) }));
     const geo = new T.PlaneGeometry(SEG, Hh);
     // lay tiles from the start of the hall to beyond the end; distance u = 8 - z is the art coordinate
     for (let lap = -1; lap * LOOP < 8 - zTo + LOOP; lap++) for (let k = 0; k < nSeg; k++) {
@@ -226,8 +232,7 @@ window.TEHRAN_WALL = (() => {
         const m = new T.Mesh(geo, mats[sd][k]); m.rotation.y = -sd * Math.PI / 2; m.position.set(sd * W / 2, Hh / 2, zc); scene.add(m);
       });
     }
-    if (document.fonts) document.fonts.ready.then(() => { paint(); opts.onRepaint && opts.onRepaint([...tex['-1'], ...tex['1']]); });
-    return [...tex['-1'], ...tex['1']];
+    return tiles;
   }
   return { build, plan, draw };
 })();

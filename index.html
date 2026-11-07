@@ -17,6 +17,9 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Amirreza Vahidzadeh","alternateName":"امیررضا وحیدزاده","birthDate":"2001-02","jobTitle":["Writer","Filmmaker","Director","Game maker","AI specialist"],"alumniOf":{"@type":"CollegeOrUniversity","name":"Art University of Tehran"},"knowsAbout":["Screenwriting","Filmmaking","Directing","Game development","Generative AI video"],"url":"https://amirrezavahidzadeh.github.io/","image":"https://amirrezavahidzadeh.github.io/img/og.jpg"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%2307030d%22/%3E%3Ctext x=%2232%22 y=%2244%22 font-family=%22Impact,sans-serif%22 font-size=%2234%22 text-anchor=%22middle%22 fill=%22%23fff%22 stroke=%22%23ff2bd6%22 stroke-width=%221.5%22%3EAV%3C/text%3E%3C/svg%3E">
 <meta name="theme-color" content="#07030d">
+<link rel="modulepreload" href="vendor/three.min.js">
+<link rel="preload" href="fonts/bsd.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/sahand.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="neon.css?v=5f24c078">
 </head>
 <body class="corridor">
@@ -35,6 +38,7 @@
     <p class="boot-hint">Best with headphones. The soundtrack is generated live in your browser.</p>
   </div>
 </div>
+<script>/* remember a tap on the start buttons made before the scripts are ready; main.js acts on it */document.getElementById("boot").addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("button");if(b&&!window.AV_BOOTED)window.AV_PICK=b.id;});</script>
 
 <header id="hud">
   <a class="hud-logo" href="#" aria-label="Amirreza Vahidzadeh, top"><b>AV</b><span>// amirreza.vahidzadeh</span></a>
@@ -92,12 +96,12 @@
 <script src="games.js?v=295af45d"></script>
 <script src="maker.js?v=15e0d402"></script>
 <script src="content.js?v=c81a75a6"></script>
-<script src="main.js?v=94752987"></script>
+<script src="main.js?v=3f669ea7"></script>
 <script src="scroll.js?v=35f545b2"></script>
-<script type="module">import * as THREE from "./vendor/three.module.min.js"; window.THREE = THREE; dispatchEvent(new Event("three-ready"));</script>
-<script src="tehranwall.js?v=5b2934d3"></script>
-<script src="corridor.js?v=a57d799f"></script>
-<script src="view.js?v=d92ba74d"></script>
+<script type="module">import * as THREE from "./vendor/three.min.js"; window.THREE = THREE; dispatchEvent(new Event("three-ready"));</script>
+<script src="tehranwall.js?v=402bdeed"></script>
+<script src="corridor.js?v=4644956a"></script>
+<script src="view.js?v=06ac03e8"></script>
 <script src="ornament.js?v=653bcb25"></script>
 </body>
 </html>

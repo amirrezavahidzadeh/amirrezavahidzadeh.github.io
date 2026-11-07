@@ -1,7 +1,8 @@
 /* switch between the 3D corridor and the classic scrolling résumé (remembered per visitor) */
 (() => {
   const b = document.getElementById('viewToggle'), body = document.body;
-  const gl = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } })();
+  // no test context here (creating one costs time and GPU memory); corridor.js falls back to classic if WebGL fails
+  const gl = !!(window.WebGL2RenderingContext || window.WebGLRenderingContext);
   let pref = null; try { pref = localStorage.getItem('av-view'); } catch (e) { }
   const set = corr => {
     body.classList.toggle('corridor', corr);

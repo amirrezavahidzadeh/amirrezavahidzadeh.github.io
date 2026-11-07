@@ -57,14 +57,14 @@ window.AV_START = (C) => {
       <h3>${E(d.title)}</h3>${d.fa ? `<p class="f-fa" lang="fa" dir="rtl">${E(d.fa)}</p>` : ''}
       <dl class="f-stats">${d.stats.map(x => `<div><dt>${E(x.label)}</dt><dd>${E(x.value)}</dd></div>`).join('')}</dl></div>`; },
     bazar: () => { const d = F.bazar; return `<div class="file f-pb">
-      ${d.hero ? `<button type="button" class="f-cover" data-zoom="${E(d.hero)}" aria-label="Enlarge: ${E(d.heroAlt)}"><img src="${E(d.hero)}" alt="${E(d.heroAlt)}"></button>` : ''}
+      ${d.hero ? `<button type="button" class="f-cover" data-zoom="${E(d.hero)}" aria-label="Enlarge: ${E(d.heroAlt)}"><img src="${E(d.hero)}" alt="${E(d.heroAlt)}" loading="lazy" decoding="async"></button>` : ''}
       <header class="f-head">${kick('bazar', d.kicker)}<h3>${E(d.title)} ${fa(d.fa)}</h3>${d.role ? `<p class="f-role">${E(d.role)}</p>` : ''}</header>
       <p class="f-lede">${E(d.lede)}</p>${d.body ? `<p class="f-body">${E(d.body)}</p>` : ''}
       ${(d.features || []).length ? `<ul class="f-feats">${d.features.map(x => `<li><b>${E(x.title)}</b><span>${E(x.text)}</span></li>`).join('')}</ul>` : ''}
       ${(d.shots || []).length ? `<div class="f-pair">${d.shots.map(x => `<figure><button type="button" data-zoom="${E(x.image)}" aria-label="Enlarge: ${E(x.caption)}"><img src="${E(x.image)}" alt="${E(x.caption)}" loading="lazy"></button><figcaption>${E(x.caption)}</figcaption></figure>`).join('')}</div>` : ''}
       ${d.footnote ? `<p class="f-tech">${E(d.footnote)}</p>` : ''}${more(d.link)}</div>`; },
     siavash: () => { const d = F.siavash; return `<div class="file f-sia2">
-      ${d.hero ? `<button type="button" class="f-cover" data-zoom="${E(d.hero)}" aria-label="Enlarge: ${E(d.heroAlt)}"><img src="${E(d.hero)}" alt="${E(d.heroAlt)}"></button>` : ''}
+      ${d.hero ? `<button type="button" class="f-cover" data-zoom="${E(d.hero)}" aria-label="Enlarge: ${E(d.heroAlt)}"><img src="${E(d.hero)}" alt="${E(d.heroAlt)}" loading="lazy" decoding="async"></button>` : ''}
       <header class="f-head">${kick('siavash', d.kicker)}<h3>${E(d.title)} ${fa(d.fa)}</h3>${d.tagline ? `<p class="f-role">${E(d.tagline)}</p>` : ''}</header>
       <p class="f-lede">${E(d.lede)}</p>
       ${(d.features || []).length ? `<div class="f-rows">${d.features.map((x, i) => `<article class="f-row${i % 2 ? ' flip' : ''}">${x.image ? `<button type="button" data-zoom="${E(x.image)}" aria-label="Enlarge: ${E(x.title)}"><img src="${E(x.image)}" alt="${E(x.title)}" loading="lazy"></button>` : ''}<div><p class="f-n">${String(i + 1).padStart(2, '0')}</p><h4>${E(x.title)}</h4><p>${E(x.text)}</p></div></article>`).join('')}</div>` : ''}
@@ -341,6 +341,9 @@ window.AV_START = (C) => {
   $('#jackIn').addEventListener('click', () => enter(true));
   $('#jackSilent').addEventListener('click', () => enter(false));
   $('#jackIn').focus();
+  // tapped before this script was ready: go in now (the sound starts on the next tap, since browsers need a fresh gesture for audio)
+  window.AV_BOOTED = true;
+  if (window.AV_PICK) { const snd = window.AV_PICK === 'jackIn'; enter(snd); if (snd) addEventListener('pointerdown', () => { SND.start(); SND.mute(false); }, { once: true }); }
 
   hud(); deck();
   // open a résumé section in the panel (used by the 3D corridor)

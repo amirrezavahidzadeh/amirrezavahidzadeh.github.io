@@ -18,7 +18,7 @@
     const cv = document.getElementById('corridor');
     let R;
     try { R = new T.WebGLRenderer({ canvas: cv, antialias: !MOBILE, powerPreference: 'high-performance' }); }
-    catch (e) { document.body.classList.remove('corridor'); return; }
+    catch (e) { document.body.classList.remove('corridor'); const vt = document.getElementById('viewToggle'); if (vt) vt.hidden = true; return; }
     R.setPixelRatio(Math.min(devicePixelRatio || 1, MOBILE ? 1 : 1.6));
     R.outputColorSpace = T.SRGBColorSpace;
     const scene = new T.Scene();
@@ -66,9 +66,8 @@
     // the walls: a hand-built Tehran panorama in neon line-art, one full panorama per lap on each wall
     const wallBack = new T.MeshBasicMaterial({ color: 0x0b0418 });
     [-1, 1].forEach(sd => { const w = new T.Mesh(new T.PlaneGeometry(zLen, Hh), wallBack); w.rotation.y = -sd * Math.PI / 2; w.position.set(sd * (W / 2 + .02), Hh / 2, zMid); scene.add(w); });
-    // upload textures to the GPU up front, so nothing stalls the first time it comes into view
-    const warm = list => { try { list.forEach(t => t && R.initTexture(t)); } catch (e) { } };
-    warm(TEHRAN_WALL.build(T, { scene, LOOP, Hh, W, zFrom: 12, zTo: END, mobile: MOBILE, rooms: ROOMS.length, start: 8 + START, onRepaint: warm }));
+    // the wall tiles start dark and are painted a few at a time once the page is up (see "textures" below)
+    const wallTiles = TEHRAN_WALL.build(T, { scene, LOOP, Hh, W, zFrom: 12, zTo: END, mobile: MOBILE, rooms: ROOMS.length, start: 8 + START });
     // a dark band at the foot and head of each wall, so the frames and neon tubes still read
     const bandMat = new T.MeshBasicMaterial({ color: 0x07020f });
     [-1, 1].forEach(sd => [[.18, .09], [Hh - .12, .24]].forEach(([y, h]) => { const b = new T.Mesh(new T.PlaneGeometry(zLen, h), bandMat); b.rotation.y = -sd * Math.PI / 2; b.position.set(sd * (W / 2 - .01), y, zMid); scene.add(b); }));
@@ -116,15 +115,21 @@
     scene.add(new T.Points(rg, rainMat));
 
     // ── the frames: one poster per résumé section ──
-    const img = {}; const loadImg = src => img[src] || (img[src] = new Promise(res => { if (!src) return res(null); const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; }));
+    // poster pictures: a copy cropped and sized to exactly the part the poster shows (img/x-p.webp), falling back to the full image
+    const img = {}; const loadImg = src => img[src] || (img[src] = new Promise(res => {
+      if (!src) return res(null);
+      const tryLoad = (u, next) => { const i = new Image(); i.decoding = 'async'; i.onload = () => res(i); i.onerror = () => next ? tryLoad(next) : res(null); i.src = u; };
+      const small = src.replace(/(\.\w+)$/, '-p$1'); tryLoad(small, small !== src ? src : null);
+    }));
     const F = C.files;
-    const poster = async (c) => {
+    const posterPic = c => ({ bazar: F.bazar && F.bazar.hero, siavash: F.siavash && F.siavash.hero }[c.id]);
+    ROOMS.forEach(c => { const p = posterPic(c); if (p) loadImg(p).then(i => { img[p].el = i; img[p].done = true; }); });
+    const poster = (c, im) => {
       const cw = 1024, ch = 640, cnv = document.createElement('canvas'); cnv.width = cw; cnv.height = ch; const g = cnv.getContext('2d');
+      if (!g) return null;
       const col = c.c || '#22f3ff';
       g.fillStyle = '#07030f'; g.fillRect(0, 0, cw, ch);
       const bg = g.createRadialGradient(cw * .8, ch * .2, 10, cw * .8, ch * .2, cw * .9); bg.addColorStop(0, col + '40'); bg.addColorStop(1, 'transparent'); g.fillStyle = bg; g.fillRect(0, 0, cw, ch);
-      const pic = { bazar: F.bazar && F.bazar.hero, siavash: F.siavash && F.siavash.hero }[c.id];
-      const im = await loadImg(pic);
       if (im) { const s = Math.max(cw * .55 / im.width, ch / im.height); const w = im.width * s, h = im.height * s; g.save(); g.beginPath(); g.rect(cw * .45, 0, cw * .55, ch); g.clip(); g.drawImage(im, cw * .45 + (cw * .55 - w) / 2, (ch - h) / 2, w, h); const fade = g.createLinearGradient(cw * .45, 0, cw * .62, 0); fade.addColorStop(0, '#07030f'); fade.addColorStop(1, 'rgba(7,3,15,0)'); g.fillStyle = fade; g.fillRect(cw * .45, 0, cw * .2, ch); g.restore(); }
       const idx = FILES.indexOf(c);
       g.fillStyle = col; g.font = '400 26px "Share Tech Mono", monospace'; g.fillText(c.file ? `${String(idx + 1).padStart(2, '0')} / ${String(FILES.length).padStart(2, '0')}` : 'FREE PLAY', 56, 78);
@@ -176,10 +181,36 @@
     };
     ROOMS.forEach((c, i) => makeFrame(c, i, zOf(i)));
     ROOMS.forEach((c, i) => { if (zOf(i) - LOOP > END + 4) makeFrame(c, i, zOf(i) - LOOP, frames[i]); });
-    const posterAll = () => ROOMS.forEach((c, i) => poster(c).then(t => { warm([t]); frames.forEach(f => { if (f.c === c) f.mat.uniforms.uMap.value = t; }); }));
-    posterAll();
-    // repaint posters once the web fonts are ready
-    if (document.fonts) document.fonts.ready.then(posterAll);
+
+    // ── textures, a little at a time ──
+    // Every poster and wall tile is painted once, after the web fonts arrive, nearest first and about one per
+    // frame. Each is then uploaded to the GPU on its own frame and its canvas memory is released, so loading
+    // never freezes the page and phones stay far below their canvas memory limit.
+    const jobs = [];
+    const upload = (t, keep) => { try { R.initTexture(t); } catch (e) { } if (!keep && t.image && t.image.getContext) t.image.width = t.image.height = 1; };
+    const swapPoster = (c, t) => { let old = null; frames.forEach(f => { if (f.c === c) { old = f.mat.uniforms.uMap.value; f.mat.uniforms.uMap.value = t; } }); if (old && old !== glowTex && old !== t) old.dispose(); };
+    const posterJob = c => () => {
+      const p = posterPic(c), rec = p && img[p], waiting = !!p && !(rec && rec.done);
+      const t = poster(c, rec && rec.el); if (!t) return;
+      jobs.unshift(() => { upload(t); swapPoster(c, t); });
+      if (waiting) loadImg(p).then(i => { if (i) jobs.push(posterJob(c)); });   // the picture is still coming: repaint when it lands
+    };
+    const tileJob = tile => () => {
+      const t = tile.paint(); if (!t) return;
+      jobs.unshift(() => { upload(t); const old = tile.mat.map; tile.mat.map = t; if (old && old.isCanvasTexture) old.dispose(); });
+    };
+    const queueAll = () => {
+      jobs.length = 0;
+      const list = [...ROOMS.map((c, i) => [START + 8 + i * GAP, posterJob(c)]), ...wallTiles.map(tl => [tl.k * (LOOP / (wallTiles.length / 2)), tileJob(tl)])];
+      list.sort((a, b) => a[0] - b[0]).forEach(x => jobs.push(x[1]));
+    };
+    const runJobs = () => { const t0 = performance.now(); do { jobs.shift()(); } while (jobs.length && performance.now() - t0 < 4); };
+    const FONTS = ['900 104px "Big Shoulders Display"', '400 26px "Share Tech Mono"', '500 30px "Chakra Petch"', '700 26px "Chakra Petch"', '64px Sahand', '800 64px Vazirmatn'];
+    let fontsIn = false, timedOut = false;
+    const fontsLoaded = document.fonts ? Promise.all(FONTS.map(f => document.fonts.load(f).catch(() => { }))) : Promise.resolve();
+    fontsLoaded.then(() => { if (!fontsIn) { fontsIn = true; queueAll(); } else if (timedOut) queueAll(); });   // very slow fonts: paint again once they land
+    setTimeout(() => { if (!fontsIn) { fontsIn = timedOut = true; queueAll(); } }, 3000);
+    cv.addEventListener('webglcontextrestored', () => queueAll());
 
     // ── room list: jump anywhere ──
     const nav = document.createElement('nav'); nav.className = 'rooms'; nav.setAttribute('aria-label', 'Rooms');
@@ -278,6 +309,7 @@
       const corr = document.body.classList.contains('corridor');
       if (VIRTUAL) { document.documentElement.classList.toggle('vscroll', corr); window.VY = corr ? vy : null; }
       if (!corr || document.hidden) return;
+      if (jobs.length) runJobs();
       if (document.body.classList.contains('ov-open') && (skip = (skip + 1) % 3)) return;
       const dt = Math.min(.05, (ts - last) / 1000); last = ts;
       if (VIRTUAL) {
@@ -322,7 +354,6 @@
       document.body.classList.toggle('walking', camZ < 3);
       R.render(scene, cam);
     }
-    try { R.compile(scene, cam); } catch (e) { }
     requestAnimationFrame(loop);
     window.CORRIDOR = { goTo };
   };
