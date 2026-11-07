@@ -19,12 +19,14 @@
     let R;
     try { R = new T.WebGLRenderer({ canvas: cv, antialias: !MOBILE, powerPreference: 'high-performance' }); }
     catch (e) { document.body.classList.remove('corridor'); const vt = document.getElementById('viewToggle'); if (vt) vt.hidden = true; return; }
-    R.setPixelRatio(Math.min(devicePixelRatio || 1, MOBILE ? 1 : 1.6));
+    // phones start sharp (up to 2x) and only step down if the frame rate actually suffers (see the loop)
+    let PR = Math.min(devicePixelRatio || 1, MOBILE ? 2 : 1.6);
+    R.setPixelRatio(PR);
     R.outputColorSpace = T.SRGBColorSpace;
     const scene = new T.Scene();
     scene.background = new T.Color(0x05010c);
-    scene.fog = new T.FogExp2(0x0a0318, MOBILE ? .055 : .045);
-    const cam = new T.PerspectiveCamera(MOBILE ? 72 : 62, innerWidth / innerHeight, .1, 220);
+    scene.fog = new T.FogExp2(0x0a0318, .045);
+    const cam = new T.PerspectiveCamera(MOBILE ? 72 : 62, innerWidth / innerHeight, .25, 220);
 
     // ── layout ──
     const W = 7, Hh = 4.6, GAP = 10, START = 6;
@@ -65,7 +67,7 @@
     ceil.rotation.x = Math.PI / 2; ceil.position.set(0, Hh, zMid); scene.add(ceil);
     // the walls: a hand-built Tehran panorama in neon line-art, one full panorama per lap on each wall
     const wallBack = new T.MeshBasicMaterial({ color: 0x0b0418 });
-    [-1, 1].forEach(sd => { const w = new T.Mesh(new T.PlaneGeometry(zLen, Hh), wallBack); w.rotation.y = -sd * Math.PI / 2; w.position.set(sd * (W / 2 + .02), Hh / 2, zMid); scene.add(w); });
+    [-1, 1].forEach(sd => { const w = new T.Mesh(new T.PlaneGeometry(zLen, Hh), wallBack); w.rotation.y = -sd * Math.PI / 2; w.position.set(sd * (W / 2 + .5), Hh / 2, zMid); scene.add(w); });   // well behind the art: phones with a coarse depth buffer let a plane 2 cm behind bleed through it
     // the wall tiles start dark and are painted a few at a time once the page is up (see "textures" below)
     const wallTiles = TEHRAN_WALL.build(T, { scene, LOOP, Hh, W, zFrom: 12, zTo: END, mobile: MOBILE, rooms: ROOMS.length, start: 8 + START });
     // a dark band at the foot and head of each wall, so the frames and neon tubes still read
@@ -310,6 +312,12 @@
       if (VIRTUAL) { document.documentElement.classList.toggle('vscroll', corr); window.VY = corr ? vy : null; }
       if (!corr || document.hidden) return;
       if (jobs.length) runJobs();
+      // sharpness guard: if this phone can't hold a smooth frame rate at full sharpness, step down a notch
+      else if (MOBILE && PR > 1.25 && !document.body.classList.contains('ov-open')) {
+        const fd = ts - (loop.fp || ts); loop.fp = ts; const fs = loop.fs || (loop.fs = []);
+        if (fd > 0 && fd < 200) fs.push(fd);
+        if (fs.length >= 90) { fs.sort((a, b) => a - b); if (fs[45] > 24) { PR = PR > 1.5 ? 1.5 : 1.25; R.setPixelRatio(PR); R.setSize(innerWidth, innerHeight, false); rainMat.uniforms.uPx.value = PR; } fs.length = 0; }
+      }
       if (document.body.classList.contains('ov-open') && (skip = (skip + 1) % 3)) return;
       const dt = Math.min(.05, (ts - last) / 1000); last = ts;
       if (VIRTUAL) {
@@ -340,9 +348,10 @@
       // frames paint themselves in as you approach; the nearest one glows
       for (const f of frames) {
         const d = camZ - f.z, target = d < 16 ? Math.min(1, Math.max(0, (16 - d) / 9)) : 0;
-        f.reveal += ((d < -2 ? 1 : target) - f.reveal) * .08;
-        f.hover += ((f === hoverF ? 1 : 0) - f.hover) * .15;
-        f.mat.uniforms.uReveal.value = f.reveal; f.mat.uniforms.uHover.value = f.hover;
+        // timed in seconds, not frames, so a slower phone paints the frame in just as fast; and it finishes all the way
+        const rt = d < -2 ? 1 : target; f.reveal += (rt - f.reveal) * (1 - Math.pow(.92, dt * 60)); if (Math.abs(rt - f.reveal) < .004) f.reveal = rt;
+        f.hover += ((f === hoverF ? 1 : 0) - f.hover) * (1 - Math.pow(.85, dt * 60));
+        f.mat.uniforms.uReveal.value = f.reveal >= 1 ? 1.05 : f.reveal; f.mat.uniforms.uHover.value = f.hover;
         f.halo.material.opacity = (.18 + f.reveal * .25 + f.hover * .25) * (1 + p * .3);
       }
       arches.forEach((a, i) => { a.material.opacity = .65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2; });

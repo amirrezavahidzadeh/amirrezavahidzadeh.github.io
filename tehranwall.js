@@ -191,7 +191,7 @@ window.TEHRAN_WALL = (() => {
   function build(T, opts) {
     const { scene, LOOP, Hh, W, zFrom, zTo, mobile } = opts;
     const SEG = LOOP / Math.max(1, Math.round(LOOP / 15));
-    const ppm = mobile ? 72 : 136, S = .62;           // 1 unit of art = 0.62 m of wall, so more city fits in view
+    const ppm = 136, S = .62;                    // same detail on phones as on desktop (tiles are painted progressively, so it costs no load time)           // 1 unit of art = 0.62 m of wall, so more city fits in view
     const LA = LOOP / S, HA = Hh / S, SA = SEG / S, ppa = ppm * S;
     // put each landmark in an empty stretch of wall between the frames (frames hang every 10 m, alternating sides)
     const U = (side, u) => (side < 0 ? u : LOOP - u) / S;
@@ -212,8 +212,8 @@ window.TEHRAN_WALL = (() => {
     // Nothing is painted here. Each tile starts as a plain dark wall and the caller paints the tiles one
     // at a time (nearest first), so loading never freezes the page. paint(sd, k) returns a fresh texture.
     const blank = new T.DataTexture(new Uint8Array([11, 4, 24, 255]), 1, 1); blank.colorSpace = T.SRGBColorSpace; blank.needsUpdate = true;
-    const mats = { '-1': [], '1': [] };
-    [-1, 1].forEach(sd => { for (let k = 0; k < nSeg; k++) mats[sd].push(new T.MeshBasicMaterial({ map: blank, color: new T.Color(1, 1, 1) })); });
+    const mats = { '-1': [], '1': [] };   // polygonOffset: the art always loses depth ties, so frames and bands in front of it stay clean
+    [-1, 1].forEach(sd => { for (let k = 0; k < nSeg; k++) mats[sd].push(new T.MeshBasicMaterial({ map: blank, color: new T.Color(1, 1, 1), polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 4 })); });
     const paint = (sd, k) => {
       const c = document.createElement('canvas'); c.width = Math.round(SEG * ppm); c.height = Math.round(Hh * ppm);
       const g = c.getContext('2d'); if (!g) return null;
