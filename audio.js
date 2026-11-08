@@ -53,7 +53,7 @@ window.SND = (() => {
   let drums = DEF.map(d => Object.fromEntries(Object.entries(d).map(([k, v]) => [k, v.slice()])));
   const parts = { bass: true, arp: true, pad: true, drums: true };
 
-  let ctx = null, out, comp, an, vol, music, sfx, rev, dly, noiseBuf;
+  let ctx = null, out, comp, an, vol, music, sfx, noiseBuf, irBuf, bus = null;
   let playing = false, track = 0, step = 0, nextT = 0, timer = 0, muted = false, volume = .8;
   const q = [], fns = [];
   let pulse = 0, spec = null;
@@ -69,20 +69,39 @@ window.SND = (() => {
     vol.connect(comp); comp.connect(an); an.connect(ctx.destination);
     music = ctx.createGain(); music.connect(vol);
     sfx = ctx.createGain(); sfx.gain.value = .7; sfx.connect(vol);
-    // reverb from generated noise
-    rev = ctx.createConvolver(); const len = ctx.sampleRate * 2.6, ir = ctx.createBuffer(2, len, ctx.sampleRate);
-    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
-    rev.buffer = ir; const rg = ctx.createGain(); rg.gain.value = .32; rev.connect(rg); rg.connect(vol);
-    // dotted-eighth delay with a dark feedback loop
-    dly = ctx.createDelay(1.5); const fb = ctx.createGain(), lp = ctx.createBiquadFilter(), dg = ctx.createGain();
-    fb.gain.value = .38; lp.type = 'lowpass'; lp.frequency.value = 2600; dg.gain.value = .3;
-    dly.connect(lp); lp.connect(fb); fb.connect(dly); lp.connect(dg); dg.connect(vol);
+    // reverb impulse from generated noise (each song bus gets its own reverb and delay that use it)
+    const len = ctx.sampleRate * 2.6; irBuf = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = irBuf.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    bus = makeBus();
     noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate); const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
     setDelay();
     document.addEventListener('visibilitychange', () => { if (!ctx) return; if (document.hidden) ctx.suspend(); else ctx.resume(); });
   }
   const sd = () => 60 / TRACKS[track].bpm / 4;
-  function setDelay() { if (dly) dly.delayTime.setValueAtTime(Math.min(1.4, sd() * 3), ctx.currentTime); }
+  function setDelay() { if (bus) bus.dly.delayTime.setValueAtTime(Math.min(1.4, sd() * 3), ctx.currentTime); }
+  // A song bus: everything one song plays goes through it, its reverb and echo tails included. Changing the
+  // track (or pausing) fades the old bus out in a third of a second and starts a fresh one, so nothing lingers.
+  function makeBus() {
+    const G = v => { const g = ctx.createGain(); g.gain.value = v; return g; };
+    const b = { dry: G(1), wet: G(1), echo: G(1), drum: G(1), out: G(1) };
+    b.dry.connect(music);                                   // the shared music bus carries the kick's sidechain pump
+    const r = ctx.createConvolver(); r.buffer = irBuf; const rg = G(.32); b.wet.connect(r); r.connect(rg); rg.connect(b.out);
+    // dotted-eighth delay with a dark feedback loop
+    const d = ctx.createDelay(1.5), fb = G(.38), lp = ctx.createBiquadFilter(), dg = G(.3); lp.type = 'lowpass'; lp.frequency.value = 2600;
+    b.echo.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(dg); dg.connect(b.out);
+    b.drum.connect(b.out); b.out.connect(vol);
+    b.dly = d; b.nodes = [b.dry, b.wet, b.echo, b.drum, b.out, r, rg, d, fb, lp, dg];
+    d.delayTime.value = Math.min(1.4, sd() * 3);
+    return b;
+  }
+  function freshBus() {
+    if (!ctx) return; const old = bus, t = ctx.currentTime;
+    if (old) {
+      [old.dry, old.out].forEach(g => { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(0, t + .35); });
+      setTimeout(() => old.nodes.forEach(n => { try { n.disconnect(); } catch (e) { } }), 700);
+    }
+    bus = makeBus();
+  }
 
   /* ── voices ── */
   function env(g, t, a, peak, d, end = .0001) { g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(end, t + a + d); }
@@ -90,63 +109,63 @@ window.SND = (() => {
   function noise(t, dur, dest) { const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.connect(dest); s.start(t, Math.random() * .5); s.stop(t + dur); return s; }
 
   function kick(t) {
-    const g = ctx.createGain(); g.connect(vol); env(g, t, .002, 1, .38);
+    const g = ctx.createGain(); g.connect(bus.drum); env(g, t, .002, 1, .38);
     const o = osc('sine', 150, t, .4, g); o.frequency.exponentialRampToValueAtTime(42, t + .13);
-    const c = ctx.createGain(); c.connect(vol); env(c, t, .001, .25, .02); osc('square', 900, t, .03, c);
+    const c = ctx.createGain(); c.connect(bus.drum); env(c, t, .001, .25, .02); osc('square', 900, t, .03, c);
     // sidechain pump on the music bus
     music.gain.cancelScheduledValues(t); music.gain.setValueAtTime(.28, t); music.gain.linearRampToValueAtTime(1, t + sd() * 2.6);
   }
   function snare(t) {
     const g = ctx.createGain(), bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2100; bp.Q.value = .7;
-    bp.connect(g); g.connect(vol); g.connect(rev); env(g, t, .001, .55, .22); noise(t, .3, bp);
-    const tg = ctx.createGain(); tg.connect(vol); env(tg, t, .001, .35, .09); osc('triangle', 196, t, .12, tg);
+    bp.connect(g); g.connect(bus.drum); g.connect(bus.wet); env(g, t, .001, .55, .22); noise(t, .3, bp);
+    const tg = ctx.createGain(); tg.connect(bus.drum); env(tg, t, .001, .35, .09); osc('triangle', 196, t, .12, tg);
   }
   function hat(t, open, acc) {
     const g = ctx.createGain(), hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7600;
-    hp.connect(g); g.connect(vol); env(g, t, .001, open ? .22 : acc ? .2 : .1, open ? .26 : .035); noise(t, open ? .3 : .06, hp);
+    hp.connect(g); g.connect(bus.drum); env(g, t, .001, open ? .22 : acc ? .2 : .1, open ? .26 : .035); noise(t, open ? .3 : .06, hp);
   }
   function bass(t, m, dur) {
     const g = ctx.createGain(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 7;
     lp.frequency.setValueAtTime(180, t); lp.frequency.exponentialRampToValueAtTime(track === 2 ? 1400 : 900, t + .015); lp.frequency.exponentialRampToValueAtTime(160, t + dur);
-    lp.connect(g); g.connect(music); env(g, t, .004, .34, dur);
+    lp.connect(g); g.connect(bus.dry); env(g, t, .004, .34, dur);
     osc('sawtooth', mtof(m), t, dur, lp); const o2 = osc('square', mtof(m), t, dur, lp); o2.detune.value = 9;
   }
   function pluck(t, m, hij) {
     const g = ctx.createGain(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(hij ? 3800 : 2600, t); lp.frequency.exponentialRampToValueAtTime(500, t + .2);
-    lp.connect(g); g.connect(music); g.connect(dly); env(g, t, .002, hij ? .16 : .11, hij ? .32 : .2);
+    lp.connect(g); g.connect(bus.dry); g.connect(bus.echo); env(g, t, .002, hij ? .16 : .11, hij ? .32 : .2);
     osc(hij ? 'triangle' : 'square', mtof(m), t, .4, lp);
     if (hij) { const o = osc('sawtooth', mtof(m + 12), t, .2, lp); o.detune.value = 4; }
   }
   // santur-like hammered string: bright partials, fast decay
-  function santur(t, m, vel = 1, dest = music) {
+  function santur(t, m, vel = 1, dest = bus.dry) {
     const g = ctx.createGain(), bp = ctx.createBiquadFilter(); bp.type = 'highpass'; bp.frequency.value = 180;
-    bp.connect(g); g.connect(dest); g.connect(dly); env(g, t, .002, .15 * vel, .55);
+    bp.connect(g); g.connect(dest); g.connect(bus.echo); env(g, t, .002, .15 * vel, .55);
     const f = mtof(m);
     [[1, 'triangle', 1], [2.003, 'sine', .45], [3.01, 'sine', .18]].forEach(([r, ty, a]) => { const og = ctx.createGain(); og.gain.value = a; og.connect(bp); const o = ctx.createOscillator(); o.type = ty; o.frequency.setValueAtTime(f * r, t); o.detune.value = (Math.random() - .5) * 6; o.connect(og); o.start(t); o.stop(t + .7); });
   }
   // tombak: 'tom' is the deep centre stroke, 'bak' the sharp rim
   function tombak(t, tom) {
-    const g = ctx.createGain(); g.connect(vol);
+    const g = ctx.createGain(); g.connect(bus.drum);
     if (tom) { env(g, t, .002, .5, .26); const o = osc('sine', 150, t, .3, g); o.frequency.exponentialRampToValueAtTime(70, t + .1); }
-    else { const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 3; bp.connect(g); env(g, t, .001, .35, .06); noise(t, .08, bp); const c = ctx.createGain(); c.connect(vol); env(c, t, .001, .12, .04); osc('sine', 620, t, .06, c); }
+    else { const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 3; bp.connect(g); env(g, t, .001, .35, .06); noise(t, .08, bp); const c = ctx.createGain(); c.connect(bus.drum); env(c, t, .001, .12, .04); osc('sine', 620, t, .06, c); }
   }
   function pad(t, ch, dur) {
     const g = ctx.createGain(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(500, t); lp.frequency.linearRampToValueAtTime(1300, t + dur * .6);
-    lp.connect(g); g.connect(music); g.connect(rev);
+    lp.connect(g); g.connect(bus.dry); g.connect(bus.wet);
     g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.05, t + .5); g.gain.setValueAtTime(.05, t + dur - .3); g.gain.linearRampToValueAtTime(.0001, t + dur + .4);
     ch.forEach(m => [-8, 8].forEach(dt => { const o = osc('sawtooth', mtof(m), t, dur + .5, lp); o.detune.value = dt; }));
   }
   function darkLead(m, t, len) {
     const g = ctx.createGain(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 4;
     lp.frequency.setValueAtTime(400, t); lp.frequency.linearRampToValueAtTime(1500, t + len * .35); lp.frequency.exponentialRampToValueAtTime(300, t + len);
-    lp.connect(g); g.connect(music); g.connect(rev); g.connect(dly);
+    lp.connect(g); g.connect(bus.dry); g.connect(bus.wet); g.connect(bus.echo);
     g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.09, t + .25); g.gain.exponentialRampToValueAtTime(.0001, t + len);
     [-7, 7].forEach(dt => { const o = osc('sawtooth', mtof(m), t, len + .1, lp); o.detune.value = dt; const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 4.5; lg.gain.value = 9; lfo.connect(lg); lg.connect(o.detune); lfo.start(t + .3); lfo.stop(t + len + .1); });
     const sub = ctx.createGain(); sub.gain.value = .5; sub.connect(lp); osc('sine', mtof(m - 12), t, len + .1, sub);
   }
   function lead(m, t = ctx.currentTime, len = .35, dest) {
     const g = ctx.createGain(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(5000, t); lp.frequency.exponentialRampToValueAtTime(900, t + len);
-    lp.connect(g); g.connect(dest || sfx); g.connect(dly); env(g, t, .005, .2, len);
+    lp.connect(g); g.connect(dest || sfx); g.connect(bus.echo); env(g, t, .005, .2, len);
     const o = osc('sawtooth', mtof(m), t, len + .1, lp); const o2 = osc('square', mtof(m), t, len + .1, lp); o2.detune.value = -12;
     const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 6; lg.gain.value = 7; lfo.connect(lg); lg.connect(o.detune); lfo.start(t); lfo.stop(t + len + .1);
   }
@@ -181,7 +200,7 @@ window.SND = (() => {
     if (playing) return; playing = true; step = 0; nextT = ctx.currentTime + .08;
     clearInterval(timer); timer = setInterval(sched, 25); sched(); emit('state');
   }
-  function stop() { playing = false; clearInterval(timer); q.length = 0; if (music) { music.gain.cancelScheduledValues(ctx.currentTime); music.gain.setValueAtTime(1, ctx.currentTime); } emit('state'); }
+  function stop() { playing = false; clearInterval(timer); q.length = 0; freshBus(); if (music) { music.gain.cancelScheduledValues(ctx.currentTime); music.gain.setValueAtTime(1, ctx.currentTime); } emit('state'); }
 
   // called every animation frame by the page
   function tick() {
@@ -215,7 +234,15 @@ window.SND = (() => {
     toggle() { playing ? stop() : start(); },
     get playing() { return playing; }, get ready() { return !!ctx; },
     get track() { return track; },
-    setTrack(i) { track = (i + TRACKS.length) % TRACKS.length; if (ctx) setDelay(); emit('track'); },
+    setTrack(i) {
+      const nt = (i + TRACKS.length) % TRACKS.length, changed = nt !== track; track = nt;
+      if (ctx && changed) {
+        freshBus(); q.length = 0;
+        // the new song starts from its first bar, drone and all, right away
+        if (playing) { step = 0; nextT = ctx.currentTime + .06; }
+      }
+      emit('track');
+    },
     get bpm() { return TRACKS[track].bpm; },
     stepDur: sd,
     now: () => ctx ? ctx.currentTime : performance.now() / 1000,
