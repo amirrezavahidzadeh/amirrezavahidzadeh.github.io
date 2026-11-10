@@ -227,7 +227,7 @@
       const halo = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: c.c || '#22f3ff', transparent: true, opacity: .35, blending: T.AdditiveBlending, depthWrite: false }));
       halo.scale.set(FW * 1.9, FH * 2.1, 1); halo.position.z = -.01; grp.add(halo);
       plane.userData.id = c.id;
-      const f = { c, grp, plane, mat, border, halo, z, side, reveal: 0, hover: 0, copyOf };
+      const f = { c, grp, plane, mat, border, halo, z, side, reveal: 0, hover: 0, copyOf, wallP: grp.position.clone(), wallQ: grp.quaternion.clone(), up: 0, top: false };
       frames.push(f); return f;
     };
     ROOMS.forEach((c, i) => makeFrame(c, i, zOf(i)));
@@ -295,7 +295,9 @@
     const clamp01 = v => Math.max(0, Math.min(1, v));
     function goTo(id) {
       const i = ROOMS.findIndex(r => r.id === id); if (i < 0) return;
-      const z = zOf(i) + 4.2;
+      goZ(zOf(i) + 4.2);
+    }
+    function goZ(z) {
       if (VIRTUAL) { vv = 0; vTarget = (8 - z) * ppu; if (vTarget < vy - LOOP * ppu / 2) vTarget += LOOP * ppu; }
       else scrollTo({ top: (8 - z) * ppu, behavior: RM ? 'auto' : 'smooth' });
     }
@@ -309,6 +311,18 @@
     if (MOBILE) { const jb = document.getElementById('jackIn'), js = document.getElementById('jackSilent'); [jb, js].forEach(b => b && b.addEventListener('click', askTilt, { once: true })); }
 
     // click a frame to open it
+    // ── the tablet: at each résumé stop the frame lifts off the wall and floats up in front of you,
+    // facing you square on like a tablet held at reading distance; walk on and it settles back onto the wall ──
+    const TAB_D = 2;                                                   // metres in front of the camera
+    const smooth = x => { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); };
+    // d = how far the frame is ahead of you; the button stop is d = 4.2
+    const lift = d => d > 6.2 ? smooth((8.6 - d) / 2.4) : d > 2.6 ? 1 : smooth((d - 1.2) / 1.4);
+    const tabP = new T.Vector3(), tabOff = new T.Vector3();
+    const setTop = (f, top) => {   // while lifted, draw it over everything (arches, rain) the way a held tablet would be
+      if (f.top === top) return; f.top = top;
+      f.mat.transparent = top; f.mat.depthTest = !top; f.border.material.depthTest = !top; f.halo.material.depthTest = !top;
+      f.halo.renderOrder = top ? 9000 : 0; f.plane.renderOrder = top ? 9001 : 0; f.border.renderOrder = top ? 9002 : 0;
+    };
     const ray = new T.Raycaster(), ndc = new T.Vector2(); let hoverF = null;
     const pick = (x, y) => { ndc.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1); ray.setFromCamera(ndc, cam); const hit = ray.intersectObjects(frames.map(f => f.plane))[0]; return hit && hit.distance < 22 ? frames.find(f => f.plane === hit.object) : null; };
     cv.addEventListener('pointermove', e => { const f = pick(e.clientX, e.clientY); if (f !== hoverF) { hoverF = f; cv.style.cursor = f ? 'pointer' : ''; if (f) SND.ui('blip'); } });
@@ -389,11 +403,29 @@
       // turn to look at the frame you are passing (on a phone held upright, look straight at it)
       const portrait = innerWidth < innerHeight, wPeak = portrait ? 5.2 : 3.8, wSpan = portrait ? 4.2 : 3.8;
       let w = 0; if (near && nd < 9.5) { w = Math.max(0, 1 - Math.abs(nd - wPeak) / wSpan); const ws = w * w * (3 - 2 * w), aim = Math.atan2(W / 2 - .03, Math.max(.6, nd)); yaw += -near.side * aim * ws * (portrait ? 1 : .62); }
+      // while a frame is up in front of you, look down the hall rather than at the wall
+      let upNow = 0; for (const f of frames) { f.up = RM ? (lift(camZ - f.z) > .5 ? 1 : 0) : lift(camZ - f.z); if (f.up > upNow) upNow = f.up; }
+      yaw *= 1 - .9 * upNow;
       // a button for the frame you are looking at
       const show = near && w > .45 ? near : null;
       if (chip.__f !== show) { chip.__f = show; chip.hidden = !show; if (show) { chip.style.setProperty('--c', show.c.c); chip.querySelector('b').textContent = show.c.name; chip.querySelector('span').textContent = show.c.file ? 'Open' : 'Play'; } }
       cam.position.set(Math.sin(t * .4) * .06 + lookX * .25, 1.75 + Math.sin(t * .9) * .02 - lookY * .08, camZ);
       cam.rotation.set(-lookY * .08, yaw, 0, 'YXZ');
+      // place the lifted frame: centred a little low (clear of the top bar), sized to sit comfortably in the screen
+      if (upNow > 0) {
+        const vH = 2 * Math.tan(cam.fov * Math.PI / 360) * TAB_D, vW = vH * cam.aspect;
+        const ts = Math.min(.9 * vW / FW, (portrait ? .5 : .64) * vH / FH);
+        tabOff.set(0, -vH * (portrait ? .06 : .03) + Math.sin(t * 1.3) * .012, -TAB_D);
+        tabP.copy(tabOff).applyQuaternion(cam.quaternion).add(cam.position);
+        for (const f of frames) {
+          const e = f.up; if (e <= 0) continue;
+          f.grp.position.lerpVectors(f.wallP, tabP, e);
+          f.grp.quaternion.slerpQuaternions(f.wallQ, cam.quaternion, e);
+          f.grp.scale.setScalar(1 + (ts - 1) * e);
+          setTop(f, e > .02); f.posed = true;
+        }
+      }
+      for (const f of frames) if (f.posed && f.up <= 0) { f.grp.position.copy(f.wallP); f.grp.quaternion.copy(f.wallQ); f.grp.scale.setScalar(1); setTop(f, false); f.posed = false; }
       // frames paint themselves in as you approach; the nearest one glows
       for (const f of frames) {
         const d = camZ - f.z, target = d < 16 ? Math.min(1, Math.max(0, (16 - d) / 9)) : 0;
@@ -416,7 +448,7 @@
       R.render(scene, cam);
     }
     requestAnimationFrame(loop);
-    window.CORRIDOR = { goTo };
+    window.CORRIDOR = { goTo, goZ };
   };
   if (window.THREE) start(); else addEventListener('three-ready', start, { once: true });
 })();
