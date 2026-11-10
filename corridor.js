@@ -274,7 +274,7 @@
 
     // ── scroll → walk ──
     const track = document.getElementById('corridorTrack');
-    const STEP_VH = MOBILE ? 75 : 90;
+    const STEP_VH = MOBILE ? 84 : 100;   // how far you scroll per metre walked (higher = slower walk)
     // scroll distance maps straight to walking distance; the page is one lap plus some extra hall,
     // so you keep walking past the last room into the next lap, and the page quietly jumps back one lap
     // Phones don't use native page scroll here: a finger drag with its own momentum moves you, so the
