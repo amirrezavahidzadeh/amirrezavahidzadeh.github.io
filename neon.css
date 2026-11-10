@@ -693,3 +693,6 @@ html.vscroll body{touch-action:none;position:fixed;inset:0;width:100%}
 html.vscroll #ov,html.vscroll #ov *{touch-action:pan-y}
 html.vscroll #corridorTrack{display:none}
 @media (pointer:coarse),(max-width:760px){body.corridor .grain{animation:none;opacity:.08}}
+
+/* the 3D corridor carries its own 35 mm grain (in WebGL), so the CSS grain sits that one out */
+body.corridor .grain{display:none}

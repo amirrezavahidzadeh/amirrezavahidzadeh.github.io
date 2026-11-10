@@ -116,6 +116,53 @@
     });
     scene.add(new T.Points(rg, rainMat));
 
+    // ── a night sky painted on the roof: tiny stars, twinkling ──
+    // one lap of stars, repeated every lap, so the loop jump never shows
+    const lapStars = [], rnd = (s => () => (s = (s * 16807) % 2147483647) / 2147483647)(20010202);
+    const NS = Math.round(LOOP * W * (MOBILE ? 4 : 5));
+    for (let i = 0; i < NS; i++) {
+      const big = rnd() < .06, warm = rnd();
+      lapStars.push([(rnd() - .5) * (W - .3), rnd() * LOOP, big ? 2.8 + rnd() * 1.6 : 1.2 + rnd() * 1.2, rnd() * 6.283, .6 + rnd() * 2.4, warm < .1 ? 1 : warm < .2 ? 2 : 0]);
+    }
+    const sp = [], sa = [];
+    for (let lap = -1; 8 - lap * LOOP > END; lap++) lapStars.forEach(s => { const z = 8 - s[1] - lap * LOOP; if (z > 12 || z < END) return; sp.push(s[0], Hh - .015, z); sa.push(s[2], s[3], s[4], s[5]); });
+    const sg = new T.BufferGeometry(); sg.setAttribute('position', new T.BufferAttribute(new Float32Array(sp), 3)); sg.setAttribute('star', new T.BufferAttribute(new Float32Array(sa), 4));
+    const starMat = new T.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: T.AdditiveBlending,
+      uniforms: { uTime: { value: 0 }, uPx: { value: R.getPixelRatio() } },
+      vertexShader: `uniform float uTime; uniform float uPx; attribute vec4 star; varying float vA; varying vec3 vC;
+        void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); gl_Position = projectionMatrix * mv;
+          float d = -mv.z, tw = .55 + .45 * sin(uTime * star.z + star.y);
+          gl_PointSize = max(1.5, uPx * star.x * clamp(6. / d, .5, 1.7));
+          vA = tw * exp(-pow(d * .04, 2.)) * (star.x > 2.5 ? 1.6 : 1.1);
+          vC = star.w > 1.5 ? vec3(.55,.9,1.) : star.w > .5 ? vec3(1.,.72,.85) : vec3(1.,.96,.9); }`,
+      fragmentShader: `varying float vA; varying vec3 vC; void main(){ float r = length(gl_PointCoord - .5); float a = smoothstep(.5, .15, r); gl_FragColor = vec4(vC * a * vA, 1.); }`,
+    });
+    const stars = new T.Points(sg, starMat); stars.frustumCulled = false; scene.add(stars);
+
+    // ── 35 mm film look over the 3D view: organic grain at 24 frames a second, a breath of exposure flicker, soft vignette ──
+    // drawn as one full-screen pass on top (no extra render target, so it costs little and keeps the anti-aliasing)
+    const grainMat = new T.ShaderMaterial({
+      transparent: true, depthTest: false, depthWrite: false,
+      uniforms: { uSeed: { value: 0 }, uFlick: { value: 0 }, uPx: { value: R.getPixelRatio() }, uRes: { value: new T.Vector2(innerWidth, innerHeight) } },
+      vertexShader: `void main(){ gl_Position = vec4(position.xy, 0., 1.); }`,
+      fragmentShader: `uniform float uSeed; uniform float uFlick; uniform float uPx; uniform vec2 uRes;
+        float h(vec2 p){ p = fract(p * vec2(443.897, 441.423)); p += dot(p, p.yx + 19.19); return fract((p.x + p.y) * p.x); }
+        float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+          return mix(mix(h(i), h(i + vec2(1,0)), f.x), mix(h(i + vec2(0,1)), h(i + vec2(1,1)), f.x), f.y); }
+        void main(){
+          vec2 q = gl_FragCoord.xy / uPx;                       // CSS pixels, so the grain is the same size on every screen
+          vec2 o = vec2(h(vec2(uSeed, 1.7)), h(vec2(2.3, uSeed))) * 917.;
+          float g = vn(q / .95 + o) * .7 + vn(q / 1.8 + o.yx) * .3 - .5;   // fine clumps on coarser clumps, like silver halide
+          vec2 uv = gl_FragCoord.xy / (uRes * uPx) - .5;
+          float vig = smoothstep(.35, .95, length(uv * vec2(uRes.x / uRes.y, 1.) * .9)) * .42;
+          float s = g * .19 + uFlick - vig;                     // >0 lifts toward white, <0 sinks toward black
+          gl_FragColor = s > 0. ? vec4(1., .97, .9, s) : vec4(0., 0., 0., -s);
+        }`,
+    });
+    const grain = new T.Mesh(new T.PlaneGeometry(2, 2), grainMat); grain.frustumCulled = false; grain.renderOrder = 1e4; scene.add(grain);
+    let grainFrame = -1;
+
     // ── the frames: one poster per résumé section ──
     // poster pictures: a copy cropped and sized to exactly the part the poster shows (img/x-p.webp), falling back to the full image
     const img = {}; const loadImg = src => img[src] || (img[src] = new Promise(res => {
@@ -291,7 +338,7 @@
     // ── loop ──
     let camZ = camZFor(), last = performance.now(), on = true, skip = 0;
     const tmpV = new T.Vector3();
-    function resize() { R.setSize(innerWidth, innerHeight, false); cam.aspect = innerWidth / innerHeight; cam.fov = innerWidth < innerHeight ? 78 : MOBILE ? 72 : 62; cam.updateProjectionMatrix(); }
+    function resize() { R.setSize(innerWidth, innerHeight, false); grainMat.uniforms.uRes.value.set(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.fov = innerWidth < innerHeight ? 78 : MOBILE ? 72 : 62; cam.updateProjectionMatrix(); }
     addEventListener('resize', resize); resize();
     // the loop: one lap after the start (plus a screen of walking, so the hero has already faded),
     // jump back exactly one lap. The hall there is identical, so nothing visibly changes.
@@ -316,7 +363,7 @@
       else if (MOBILE && PR > 1.25 && !document.body.classList.contains('ov-open')) {
         const fd = ts - (loop.fp || ts); loop.fp = ts; const fs = loop.fs || (loop.fs = []);
         if (fd > 0 && fd < 200) fs.push(fd);
-        if (fs.length >= 90) { fs.sort((a, b) => a - b); if (fs[45] > 24) { PR = PR > 1.5 ? 1.5 : 1.25; R.setPixelRatio(PR); R.setSize(innerWidth, innerHeight, false); rainMat.uniforms.uPx.value = PR; } fs.length = 0; }
+        if (fs.length >= 90) { fs.sort((a, b) => a - b); if (fs[45] > 24) { PR = PR > 1.5 ? 1.5 : 1.25; R.setPixelRatio(PR); R.setSize(innerWidth, innerHeight, false); rainMat.uniforms.uPx.value = starMat.uniforms.uPx.value = grainMat.uniforms.uPx.value = PR; } fs.length = 0; }
       }
       if (document.body.classList.contains('ov-open') && (skip = (skip + 1) % 3)) return;
       const dt = Math.min(.05, (ts - last) / 1000); last = ts;
@@ -356,7 +403,10 @@
       }
       arches.forEach((a, i) => { a.material.opacity = .65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2; });
       floorMat.uniforms.uTime.value = t; floorMat.uniforms.uPulse.value = p;
-      rainMat.uniforms.uTime.value = t;
+      rainMat.uniforms.uTime.value = t; starMat.uniforms.uTime.value = t;
+      // film runs at 24 frames a second: the grain and the flicker change on that beat, whatever the screen's rate
+      const gf = RM ? 0 : Math.floor(t * 24);
+      if (gf !== grainFrame) { grainFrame = gf; grainMat.uniforms.uSeed.value = gf % 997 + .37; grainMat.uniforms.uFlick.value = RM ? 0 : (Math.random() - .5) * .018; }
       // room list follows you
       let ri = 0; frames.forEach((f, i) => { if (!f.copyOf && camZ < f.z + 6) ri = i; });
       if (nav.__ri !== ri) { nav.__ri = ri; nav.querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', i === ri)); }
