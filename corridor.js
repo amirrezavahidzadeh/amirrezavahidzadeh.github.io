@@ -93,7 +93,9 @@
     const archShape = archPts(W - .5, Hh - .5, Hh * .45);
     const archColors = [0x22f3ff, 0xff2bd6, 0xffc94d, 0x7dff6a, 0xb06bff];
     const arches = [];
-    const AS = LOOP / Math.round(LOOP / (MOBILE ? 7 : 5));   // spacing divides the loop exactly
+    // every 5 m from z = 2: with frames every 10 m from z = -6, each frame sits between two arches
+    // (one 3 m before it, one 2 m past it), so no arch ever crosses a frame, on any screen
+    const AS = LOOP / Math.round(LOOP / 5);
     const nArch = Math.ceil((2 - END) / AS);
     for (let i = 0; i < nArch; i++) {
       const m = tube(archShape, .035, archColors[i % archColors.length]);
