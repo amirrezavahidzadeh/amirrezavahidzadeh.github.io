@@ -295,7 +295,7 @@
     const clamp01 = v => Math.max(0, Math.min(1, v));
     function goTo(id) {
       const i = ROOMS.findIndex(r => r.id === id); if (i < 0) return;
-      const z = zOf(i) + 4.2;
+      const z = zOf(i) + STOP;
       if (VIRTUAL) { vv = 0; vTarget = (8 - z) * ppu; if (vTarget < vy - LOOP * ppu / 2) vTarget += LOOP * ppu; }
       else scrollTo({ top: (8 - z) * ppu, behavior: RM ? 'auto' : 'smooth' });
     }
@@ -303,6 +303,8 @@
 
     // look around: mouse on desktop, tilt on phones
     let lookX = 0, lookY = 0, tlx = 0, tly = 0;
+    const STOP = 4.2;   // where a room button parks you: this far before the frame
+    const LEAN_P = 1.05, LEAN_L = 1.6, TURN_L = .8;   // metres the camera steps toward the wall (phone upright / landscape), and how far it turns
     addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; tlx = (e.clientX / innerWidth - .5) * 2; tly = (e.clientY / innerHeight - .5) * 2; }, { passive: true });
     const onTilt = e => { if (e.gamma == null) return; tlx = Math.max(-1, Math.min(1, e.gamma / 25)); tly = Math.max(-1, Math.min(1, (e.beta - 45) / 30)); };
     const askTilt = () => { const D = window.DeviceOrientationEvent; if (D && typeof D.requestPermission === 'function') D.requestPermission().then(s => { if (s === 'granted') addEventListener('deviceorientation', onTilt); }).catch(() => { }); else addEventListener('deviceorientation', onTilt); };
@@ -388,11 +390,19 @@
       let yaw = -lookX * .22;
       // turn to look at the frame you are passing (on a phone held upright, look straight at it)
       const portrait = innerWidth < innerHeight, wPeak = portrait ? 5.2 : 3.8, wSpan = portrait ? 4.2 : 3.8;
-      let w = 0; if (near && nd < 9.5) { w = Math.max(0, 1 - Math.abs(nd - wPeak) / wSpan); const ws = w * w * (3 - 2 * w), aim = Math.atan2(W / 2 - .03, Math.max(.6, nd)); yaw += -near.side * aim * ws * (portrait ? 1 : .62); }
+      // and step in toward its wall, so the wall comes close while you read it, then drift back to the middle
+      let w = 0, lean = 0;
+      if (near && nd < 9.5) {
+        w = Math.max(0, 1 - Math.abs(nd - wPeak) / wSpan); const ws = w * w * (3 - 2 * w);
+        // full step-in at the reading spot; as you walk on past the frame, ease back to the middle so it doesn't loom
+        const lw = nd < STOP ? Math.min(1, Math.max(0, (nd - 1) / (STOP - 1))) : 1, ls = Math.min(ws, lw * lw * (3 - 2 * lw));
+        lean = ls * (portrait ? LEAN_P : LEAN_L);
+        const aim = Math.atan2(W / 2 - .03 - lean, Math.max(.6, nd)); yaw += -near.side * aim * ws * (portrait ? 1 : TURN_L);
+      }
       // a button for the frame you are looking at
       const show = near && w > .45 ? near : null;
       if (chip.__f !== show) { chip.__f = show; chip.hidden = !show; if (show) { chip.style.setProperty('--c', show.c.c); chip.querySelector('b').textContent = show.c.name; chip.querySelector('span').textContent = show.c.file ? 'Open' : 'Play'; } }
-      cam.position.set(Math.sin(t * .4) * .06 + lookX * .25, 1.75 + Math.sin(t * .9) * .02 - lookY * .08, camZ);
+      cam.position.set(Math.sin(t * .4) * .06 + lookX * .25 + (near ? near.side * lean : 0), 1.75 + Math.sin(t * .9) * .02 - lookY * .08, camZ);
       cam.rotation.set(-lookY * .08, yaw, 0, 'YXZ');
       // frames paint themselves in as you approach; the nearest one glows
       for (const f of frames) {
