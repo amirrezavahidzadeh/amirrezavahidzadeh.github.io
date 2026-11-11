@@ -12,7 +12,10 @@
     const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
     const C = AV.content, FILES = AV.files, CABS = AV.cabs;
     const FREE = CABS.filter(c => !c.file);
-    const ROOMS = [...FILES, ...FREE];
+    // the last stop of the hall is not a résumé section: it's the atomic button (see "the atomic button" below)
+    const ATOM = { id: 'atomic', name: 'Atomic Button', fa: 'دکمه‌ی اتمی', c: '#ff2a2a', atomic: true };
+    const ROOMS = [...FILES, ...FREE, ATOM];
+    let nukeLook = 'armed';   // what the button's panel shows: 'armed' or 'rebuild'
 
     // ── renderer ──
     const cv = document.getElementById('corridor');
@@ -175,7 +178,47 @@
     const F = C.files;
     const posterPic = c => ({ bazar: F.bazar && F.bazar.hero, siavash: F.siavash && F.siavash.hero }[c.id]);
     ROOMS.forEach(c => { const p = posterPic(c); if (p) loadImg(p).then(i => { img[p].el = i; img[p].done = true; }); });
+    // the atomic button's panel: steel plate, hazard stripes, and a big glossy red button under the label
+    const atomPoster = () => {
+      const cw = 1024, ch = 640, cnv = document.createElement('canvas'); cnv.width = cw; cnv.height = ch; const g = cnv.getContext('2d');
+      if (!g) return null;
+      const rebuild = nukeLook === 'rebuild';
+      const st = g.createLinearGradient(0, 0, 0, ch); st.addColorStop(0, '#24232a'); st.addColorStop(1, '#0d0c11'); g.fillStyle = st; g.fillRect(0, 0, cw, ch);
+      g.globalAlpha = .06; for (let y = 0; y < ch; y += 3) { g.fillStyle = y % 6 ? '#fff' : '#000'; g.fillRect(0, y, cw, 1); } g.globalAlpha = 1;   // brushed steel
+      // hazard stripes round the edge
+      g.save(); g.beginPath(); g.rect(0, 0, cw, ch); g.rect(34, 34, cw - 68, ch - 68); g.clip('evenodd');
+      g.fillStyle = '#ffcf1a'; g.fillRect(0, 0, cw, ch); g.fillStyle = '#111';
+      for (let x = -ch; x < cw + ch; x += 64) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 32, 0); g.lineTo(x + 32 - ch, ch); g.lineTo(x - ch, ch); g.closePath(); g.fill(); }
+      g.restore();
+      // rivets
+      g.fillStyle = '#4a4852'; [[58, 58], [cw - 58, 58], [58, ch - 58], [cw - 58, ch - 58]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill(); });
+      // radiation trefoil
+      const tre = (x, y, r) => { g.save(); g.translate(x, y); g.fillStyle = '#ffcf1a'; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill(); g.fillStyle = '#111';
+        for (let k = 0; k < 3; k++) { const a = -Math.PI / 2 + k * Math.PI * 2 / 3; g.beginPath(); g.moveTo(Math.cos(a - .52) * r * .24, Math.sin(a - .52) * r * .24); g.arc(0, 0, r * .86, a - .52, a + .52); g.arc(0, 0, r * .24, a + .52, a - .52, true); g.fill(); }
+        g.beginPath(); g.arc(0, 0, r * .16, 0, 7); g.fill(); g.restore(); };
+      tre(104, 112, 34);
+      g.fillStyle = '#ffcf1a'; g.font = '400 24px "Share Tech Mono", monospace'; g.fillText(rebuild ? 'AFTER // EVERYTHING' : 'CLASSIFIED // DO NOT PRESS', 152, 122);
+      g.shadowColor = '#ff2a2a'; g.shadowBlur = rebuild ? 0 : 26; g.fillStyle = '#fff'; g.font = '900 112px "Big Shoulders Display", Impact, sans-serif';
+      g.fillText(rebuild ? 'REBUILD' : 'ATOMIC', 74, 262); g.fillText(rebuild ? 'THE CITY' : 'BUTTON', 74, 366); g.shadowBlur = 0;
+      g.fillStyle = '#ff4a3a'; g.font = '64px Sahand, Vazirmatn, sans-serif'; g.fillText(rebuild ? 'بازسازی' : 'دکمه‌ی اتمی', 74, 452);
+      g.fillStyle = '#cfcbd8'; g.font = '500 28px "Chakra Petch", sans-serif'; g.fillText(rebuild ? 'Press to put it all back.' : 'Ends everything. Then something remains.', 74, 512);
+      g.fillStyle = '#ffcf1a'; g.font = '700 26px "Chakra Petch", sans-serif'; g.fillText(rebuild ? 'PRESS  ·  ↺ REBUILD' : 'PRESS  ·  ☢ NOT OPTIONAL', 74, 574);
+      // the button: a black collar, a red dome, a hard highlight
+      const bx = 778, by = 330;
+      const col = g.createRadialGradient(bx, by + 10, 120, bx, by + 10, 196); col.addColorStop(0, '#000'); col.addColorStop(.7, '#1b1a20'); col.addColorStop(1, '#5c5a66');
+      g.fillStyle = col; g.beginPath(); g.arc(bx, by + 10, 196, 0, 7); g.fill();
+      g.fillStyle = '#060509'; g.beginPath(); g.arc(bx, by + 10, 158, 0, 7); g.fill();
+      const dome = g.createRadialGradient(bx - 50, by - 60, 10, bx, by, 150);
+      if (rebuild) { dome.addColorStop(0, '#e9fff0'); dome.addColorStop(.25, '#4dff8a'); dome.addColorStop(.75, '#0f8c3c'); dome.addColorStop(1, '#043d19'); }
+      else { dome.addColorStop(0, '#ffd4cc'); dome.addColorStop(.22, '#ff4a36'); dome.addColorStop(.72, '#b50d08'); dome.addColorStop(1, '#4a0000'); }
+      g.shadowColor = rebuild ? '#4dff8a' : '#ff2a2a'; g.shadowBlur = 40; g.fillStyle = dome; g.beginPath(); g.arc(bx, by, 142, 0, 7); g.fill(); g.shadowBlur = 0;
+      g.fillStyle = 'rgba(255,255,255,.55)'; g.beginPath(); g.ellipse(bx - 44, by - 70, 62, 30, -.5, 0, 7); g.fill();
+      g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.ellipse(bx - 62, by - 82, 18, 8, -.5, 0, 7); g.fill();
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.font = '900 64px "Big Shoulders Display", Impact, sans-serif'; g.textAlign = 'center'; g.fillText(rebuild ? '↺' : 'PUSH', bx, by + 70); g.textAlign = 'left';
+      const t = new T.CanvasTexture(cnv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = Math.min(8, R.capabilities.getMaxAnisotropy()); return t;
+    };
     const poster = (c, im) => {
+      if (c.atomic) return atomPoster();
       const cw = 1024, ch = 640, cnv = document.createElement('canvas'); cnv.width = cw; cnv.height = ch; const g = cnv.getContext('2d');
       if (!g) return null;
       const col = c.c || '#22f3ff';
@@ -227,7 +270,7 @@
       const halo = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: c.c || '#22f3ff', transparent: true, opacity: .35, blending: T.AdditiveBlending, depthWrite: false }));
       halo.scale.set(FW * 1.9, FH * 2.1, 1); halo.position.z = -.01; grp.add(halo);
       plane.userData.id = c.id;
-      const f = { c, grp, plane, mat, border, halo, z, side, reveal: 0, hover: 0, copyOf, wallP: grp.position.clone(), wallQ: grp.quaternion.clone(), up: 0, top: false };
+      const f = { c, grp, plane, mat, border, halo, z, side, reveal: 0, hover: 0, copyOf, wallP: grp.position.clone(), wallQ: grp.quaternion.clone(), rp: grp.position.clone(), rq: grp.quaternion.clone(), up: 0, top: false, i };
       frames.push(f); return f;
     };
     ROOMS.forEach((c, i) => makeFrame(c, i, zOf(i)));
@@ -269,7 +312,7 @@
     document.body.append(nav);
 
     const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'near-open'; chip.hidden = true; chip.innerHTML = '<span>Open</span><b></b><i>→</i>';
-    chip.addEventListener('click', () => { const f = chip.__f; if (!f) return; if (f.c.file) AV.openFile(f.c.id); else AV.open(f.c.id, { play: true }); });
+    chip.addEventListener('click', () => { const f = chip.__f; if (!f) return; if (f.c.atomic) NK.press(); else if (f.c.file) AV.openFile(f.c.id); else AV.open(f.c.id, { play: true }); });
     document.body.append(chip);
 
     // ── scroll → walk ──
@@ -322,6 +365,7 @@
       if (f.top === top) return; f.top = top;
       f.mat.transparent = top; f.mat.depthTest = !top; f.border.material.depthTest = !top; f.halo.material.depthTest = !top;
       f.halo.renderOrder = top ? 9000 : 0; f.plane.renderOrder = top ? 9001 : 0; f.border.renderOrder = top ? 9002 : 0;
+      if (f.crack) { f.crack.material.depthTest = !top; f.crack.renderOrder = top ? 9001.5 : 0; }
     };
     const ray = new T.Raycaster(), ndc = new T.Vector2(); let hoverF = null;
     const pick = (x, y) => { ndc.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1); ray.setFromCamera(ndc, cam); const hit = ray.intersectObjects(frames.map(f => f.plane))[0]; return hit && hit.distance < 22 ? frames.find(f => f.plane === hit.object) : null; };
@@ -331,7 +375,7 @@
     cv.addEventListener('pointerup', e => {
       if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 8) return; downAt = null;
       const f = pick(e.clientX, e.clientY); if (!f) return;
-      if (f.c.file) AV.openFile(f.c.id); else AV.open(f.c.id, { play: true });
+      if (f.c.atomic) NK.press(); else if (f.c.file) AV.openFile(f.c.id); else AV.open(f.c.id, { play: true });
     });
     addEventListener('keydown', e => { if (!$('#ov').hidden || e.target.closest && e.target.closest('input,textarea')) return; if (e.key === 'ArrowDown' || e.key === 'PageDown') { /* native scroll */ } });
 
@@ -339,7 +383,7 @@
     if (VIRTUAL) {
       let ly = 0, lt = 0, vel = 0, sy0 = 0, moved = false;
       const skipT = t => t.closest && t.closest('#ov, #hud, #zoom, .near-open, .rooms, button, a, input, textarea');
-      addEventListener('touchstart', e => { if (!document.body.classList.contains('corridor') || skipT(e.target) || e.touches.length > 1) return; dragging = true; moved = false; ly = sy0 = e.touches[0].clientY; lt = performance.now(); vel = 0; vv = 0; vTarget = null; }, { passive: true });
+      addEventListener('touchstart', e => { if (!document.body.classList.contains('corridor') || NK.busy || skipT(e.target) || e.touches.length > 1) return; dragging = true; moved = false; ly = sy0 = e.touches[0].clientY; lt = performance.now(); vel = 0; vv = 0; vTarget = null; }, { passive: true });
       addEventListener('touchmove', e => {
         if (!dragging) return;
         const y = e.touches[0].clientY, now = performance.now(), dy = ly - y, dtm = Math.max(1, now - lt);
@@ -350,6 +394,204 @@
       const end = () => { if (!dragging) return; dragging = false; if (performance.now() - lt < 140) vv = vel * 16.7; };
       addEventListener('touchend', end, { passive: true }); addEventListener('touchcancel', end, { passive: true });
     }
+
+    // ── the atomic button ──
+    // Press it: a siren and a countdown, a fireball at the far end of the hall, and a shock front that rolls
+    // toward you ripping the frames off the walls. Then dust. When it settles everything is still there, in black
+    // and white: some frames hang crooked, some lean or lie on the floor, some are cracked. Press it again to rebuild.
+    // Everything here is timed from the press in seconds, so it plays the same on any screen.
+    const ash = (() => {   // ash drifting down afterwards (it lives in a window around you as you walk)
+      const N = MOBILE ? 420 : 900, a = new Float32Array(N * 4);
+      for (let i = 0; i < N; i++) { a[i * 4] = (Math.random() - .5) * (W - .4); a[i * 4 + 1] = Math.random() * Hh; a[i * 4 + 2] = Math.random() * 35; a[i * 4 + 3] = Math.random(); }
+      const g = new T.BufferGeometry(); g.setAttribute('position', new T.BufferAttribute(new Float32Array(N * 3), 3)); g.setAttribute('seed', new T.BufferAttribute(a, 4));
+      return g;
+    })();
+    const ashMat = new T.ShaderMaterial({
+      transparent: true, depthWrite: false,
+      uniforms: { uTime: { value: 0 }, uCamZ: { value: 0 }, uH: { value: Hh }, uPx: { value: R.getPixelRatio() }, uA: { value: 0 }, uWin: { value: LOOP / Math.max(1, Math.round(LOOP / 32)) } },   // the window divides the lap, so the loop jump doesn't move the ash
+      vertexShader: `uniform float uTime; uniform float uCamZ; uniform float uH; uniform float uPx; uniform float uWin; attribute vec4 seed; varying float vA;
+        void main(){ vec3 p = seed.xyz; p.y = mod(p.y - uTime * (.22 + seed.w * .25), uH); p.x += sin(uTime * .5 + seed.w * 40.) * .35;
+          p.z = p.z / 35. * uWin; p.z = p.z + uWin * ceil((uCamZ - (uWin - 5.) - p.z) / uWin);
+          vec4 mv = modelViewMatrix * vec4(p, 1.); gl_Position = projectionMatrix * mv;
+          gl_PointSize = uPx * (1.5 + seed.w * 2.5) * clamp(6. / -mv.z, .4, 2.); vA = clamp(1. - (-mv.z) / 28., 0., 1.); }`,
+      fragmentShader: `uniform float uA; varying float vA; void main(){ float r = length(gl_PointCoord - .5); gl_FragColor = vec4(vec3(.8), smoothstep(.5, .15, r) * vA * .75 * uA); }`,
+    });
+    const ashPts = new T.Points(ash, ashMat); ashPts.frustumCulled = false; ashPts.visible = false; scene.add(ashPts);
+    const rainPts = scene.children.find(o => o.isPoints && o.material === rainMat);
+
+    const NK = (() => {
+      const S = { phase: 'idle', t0: 0, busy: false, music: false, zDet: 0, contact: false, settled: false, focus: 0, ft: 0 };
+      const shake = [0, 0, 0, 0];
+      const ov = document.createElement('div'); ov.id = 'nk'; ov.setAttribute('aria-hidden', 'true');
+      ov.innerHTML = '<div class="nk-alarm"></div><div class="nk-heat"></div><div class="nk-count"></div><div class="nk-dust"></div><div class="nk-flash"></div>';
+      document.body.append(ov);
+      const $k = k => ov.querySelector('.nk-' + k), alarm = $k('alarm'), heat = $k('heat'), count = $k('count'), dust = $k('dust'), flash = $k('flash');
+      const op = (el, v) => { v = Math.max(0, Math.min(1, v)); if (RM && (el === flash || el === alarm)) v = Math.min(v, .3); const s = v.toFixed(3); if (el.__o !== s) { el.__o = s; el.style.opacity = s; el.style.visibility = v > 0 ? 'visible' : 'hidden'; } };
+      const fog0 = scene.fog.color.clone(), bg0 = scene.background.clone();
+      const RED = new T.Color(.42, .02, .03), HOT = new T.Color(1, .62, .3), DUST = new T.Color(.36, .33, .3), AFTER = new T.Color(.15, .15, .155), BGA = new T.Color(.05, .05, .055);
+      const ease = x => 1 - Math.pow(1 - Math.max(0, Math.min(1, x)), 3);
+
+      // the fireball, far down the hall, and the shock front rolling toward you
+      const fire = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: 0xfff0d8, transparent: true, blending: T.AdditiveBlending, depthWrite: false, fog: false, opacity: 0 }));
+      fire.visible = false; scene.add(fire);
+      const waveMat = new T.ShaderMaterial({
+        transparent: true, depthWrite: false, side: T.DoubleSide,
+        uniforms: { uTime: { value: 0 }, uA: { value: 0 } },
+        vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+        fragmentShader: `uniform float uTime; uniform float uA; varying vec2 vUv;
+          float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+          float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(h(i), h(i + vec2(1,0)), f.x), mix(h(i + vec2(0,1)), h(i + vec2(1,1)), f.x), f.y); }
+          float fbm(vec2 p){ float v = 0., a = .5; for (int i = 0; i < 4; i++){ v += a * n(p); p *= 2.1; a *= .5; } return v; }
+          void main(){
+            vec2 p = vUv * vec2(3., 2.) + vec2(0., -uTime * .9);
+            float d = fbm(p * 2. + fbm(p * 3. + uTime));
+            float core = smoothstep(.95, .1, length((vUv - vec2(.5, .42)) * vec2(1.2, 1.6)));
+            vec3 c = mix(vec3(.45, .32, .24), vec3(1., .78, .45), core * d * 1.4);
+            c = mix(c, vec3(1., .97, .88), smoothstep(.55, .95, core * d * 1.5));
+            float edge = smoothstep(0., .22, vUv.x) * smoothstep(1., .78, vUv.x) * smoothstep(0., .12, vUv.y) * smoothstep(1., .7, vUv.y);
+            gl_FragColor = vec4(c, uA * clamp(.35 + d * .85, 0., 1.) * mix(.35, 1., edge));
+          }`,
+      });
+      const wave = new T.Group(); wave.visible = false; scene.add(wave);
+      [0, 1.6, 3.4].forEach((dz, k) => { const m = new T.Mesh(new T.PlaneGeometry(W + 1.5, Hh + 1.2), waveMat); m.position.set(0, Hh / 2, -dz); m.scale.x = k % 2 ? -1 : 1; m.renderOrder = 9500 - k; wave.add(m); });
+
+      // cracked glass, drawn once and shared
+      let crackTex = null;
+      const makeCracks = () => {
+        const c = document.createElement('canvas'); c.width = 1024; c.height = 640; const g = c.getContext('2d'); let sd = 7;
+        const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+        const ray = (x, y, a, len, w) => {
+          g.beginPath(); g.moveTo(x, y); let px = x, py = y;
+          for (let l = 0; l < len; l += 14) { a += (r() - .5) * .5; px += Math.cos(a) * 14; py += Math.sin(a) * 14; g.lineTo(px, py);
+            if (r() < .08 && w > .8) { g.stroke(); ray(px, py, a + (r() - .5) * 1.6, len * .35, w * .6); g.beginPath(); g.moveTo(px, py); } }
+          g.lineWidth = w; g.stroke();
+        };
+        [[300, 250], [760, 430]].forEach(([x, y], k) => {
+          g.strokeStyle = 'rgba(0,0,0,.55)'; g.save(); g.translate(2, 2);
+          const save = sd; for (let i = 0; i < 13; i++) ray(x, y, i / 13 * 6.283 + r() * .3, 180 + r() * 360, 2.6); sd = save; g.restore();
+          g.strokeStyle = 'rgba(255,255,255,.85)'; for (let i = 0; i < 13; i++) ray(x, y, i / 13 * 6.283 + r() * .3, 180 + r() * 360, 2.2);
+          g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 1.4;
+          for (let ring = 1; ring <= 3; ring++) for (let i = 0; i < 13; i++) if (r() < .6) { const a = i / 13 * 6.283, rr = ring * (28 + r() * 16); g.beginPath(); g.arc(x, y, rr, a, a + .45); g.stroke(); }
+          g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.arc(x, y, 6, 0, 7); g.fill();
+        });
+        const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t;
+      };
+
+      // where each frame ends up. Same pose for a room and its copy one lap on, so the loop stays seamless.
+      const qa = new T.Quaternion(), qb = new T.Quaternion(), X = new T.Vector3(1, 0, 0), Z = new T.Vector3(0, 0, 1), Y = new T.Vector3(0, 1, 0);
+      const KINDS = ['tilt', 'floor', 'crack', 'lean', 'tiltcrack', 'floorup', 'leancrack'];
+      const broken = f => {
+        const k = KINDS[f.i % KINDS.length], p = f.wallP.clone(), q = f.wallQ.clone();
+        const out = (dx, dy, dz) => p.add(new T.Vector3(dx, dy, dz).applyQuaternion(f.wallQ));   // move in the frame's own axes (x along the wall, z out of it)
+        const turn = (axis, a) => q.multiply(qa.setFromAxisAngle(axis, a));
+        if (k === 'tilt' || k === 'tiltcrack') { const a = k === 'tilt' ? .24 : -.4; turn(Z, a); out(0, -.32, .02); }
+        else if (k === 'crack') { turn(Z, -.05); }
+        else if (k === 'lean' || k === 'leancrack') { const a = .36; turn(X, -a); out(k === 'lean' ? .3 : -.4, (FH / 2 + .07) * Math.cos(a) + .02 - 1.95, (FH / 2 + .07) * Math.sin(a) + .05); }
+        else { const tilt = k === 'floorup' ? .32 : 0; turn(X, -Math.PI / 2 + tilt); turn(Z, k === 'floor' ? .3 : -.22); out(k === 'floor' ? .5 : -.3, .06 + (FH / 2) * Math.sin(tilt) - 1.95, FH / 2 + .45); }
+        return { p, q, crack: /crack/.test(k) || k === 'floor' };
+      };
+      const spinAxis = f => new T.Vector3(Math.sin(f.i * 2.1), Math.cos(f.i * 1.3), Math.sin(f.i * .7 + 1)).normalize();
+
+      const victims = () => frames.filter(f => !f.c.atomic);
+      function press() {
+        if (S.busy) return;
+        if (S.phase === 'idle') { S.phase = 'count'; S.t0 = -1; S.busy = true; S.restored = false; S.music = !!(window.SND && SND.playing); if (window.SND) { SND.ui('blip'); SND.nuke('siren'); } }
+        else if (S.phase === 'after') { S.phase = 'rebuild'; S.t0 = -1; S.busy = true; S.restored = false; if (window.SND) SND.ui('open'); }
+      }
+      // block wheel and arrow-key walking while it happens
+      addEventListener('wheel', e => { if (S.busy) e.preventDefault(); }, { passive: false });
+      addEventListener('keydown', e => { if (S.busy && /Arrow|Page|Space|Home|End/.test(e.code || e.key)) e.preventDefault(); });
+
+      const repaintButton = look => { nukeLook = look; const a = frames.filter(f => f.c.atomic); if (a.length) jobs.unshift(posterJob(a[0].c)); };
+      const setNuked = on => {
+        document.body.classList.toggle('nuked', on);
+        scene.fog.color.copy(on ? AFTER : fog0); scene.background.copy(on ? BGA : bg0);
+        if (rainPts) rainPts.visible = !on; ashPts.visible = on; ashMat.uniforms.uA.value = on ? 1 : 0;
+        if (!on) victims().forEach(f => { f.rp.copy(f.wallP); f.rq.copy(f.wallQ); f.hitAt = null; f.dest = null; if (f.crack) f.crack.visible = false; });
+      };
+
+      function update(t, camZ) {
+        shake[0] = shake[1] = shake[2] = shake[3] = 0;
+        if (RM) { const r = upd(t, camZ); shake[0] = shake[1] = shake[2] = shake[3] = 0; return r; }
+        return upd(t, camZ);
+      }
+      function upd(t, camZ) {
+        // how much to take over the view: 1 from the press until the dust has nearly settled
+        const ft = S.phase === 'count' || S.phase === 'blast' || S.phase === 'rebuild' && !S.restored || S.phase === 'after' && t - S.t0 < 3.2 ? 1 : 0;
+        S.focus += (ft - S.focus) * Math.min(1, (t - (S.lt || t)) * (ft ? 4 : 1.4)); S.lt = t; if (S.focus < .002) S.focus = 0;
+        if (S.phase === 'idle' || S.phase === 'after' && S.settled) return;
+        if (S.t0 < 0) S.t0 = t;
+        const T_ = t - S.t0;
+        if (S.phase === 'count') {
+          // red alarm, the hall pulsing red, a countdown
+          const pulse = .5 + .5 * Math.sin(T_ * Math.PI * 2.5 - Math.PI / 2);
+          op(alarm, .35 + .55 * pulse);
+          scene.fog.color.copy(fog0).lerp(RED, .35 + .55 * pulse);
+          const n = 3 - Math.floor(T_ / .8), fr = (T_ % .8) / .8;
+          if (n >= 1) { count.textContent = String(n); op(count, 1 - Math.max(0, fr - .7) / .3); count.style.transform = `translate(-50%,-50%) scale(${(1.6 - .6 * ease(fr * 2)).toFixed(3)})`; } else op(count, 0);
+          if (T_ >= 2.4) { S.phase = 'blast'; S.t0 = t; S.zDet = camZ - 52; S.contact = false; if (window.SND) { if (SND.playing) SND.stop(); SND.nuke('boom'); }
+            if (!crackTex) crackTex = makeCracks();
+            victims().forEach(f => { const b = broken(f); f.dest = b; f.hitAt = null; f.flown = false;
+              if (b.crack && !f.crack) { f.crack = new T.Mesh(new T.PlaneGeometry(FW, FH), new T.MeshBasicMaterial({ map: crackTex, transparent: true, depthWrite: false, fog: true })); f.crack.position.z = .03; if (f.i % 2) f.crack.rotation.z = Math.PI; f.grp.add(f.crack); }
+              if (f.crack) f.crack.visible = false; }); }
+          return;
+        }
+        if (S.phase === 'blast') {
+          const u = T_;
+          op(alarm, .9 * (1 - u / .3)); op(count, 0);
+          // flash: blinding white, then it opens up onto the shock front
+          op(flash, u < .1 ? u / .1 : u < .45 ? 1 : 1 - ease((u - .45) / .7) * .9 - (u > 1.2 ? (u - 1.2) / .4 * .1 : 0));
+          // fireball
+          fire.visible = u < 1.8; fire.position.set(0, Hh * .45, S.zDet); const fs = 6 + 70 * ease(u / .9); fire.scale.set(fs, fs, 1); fire.material.opacity = u < 1 ? 1 : Math.max(0, 1 - (u - 1) / .8);
+          // the hall glows hot, then goes to dust
+          scene.fog.color.copy(fog0).lerp(HOT, Math.min(1, u / .25)).lerp(DUST, Math.max(0, (u - 1) / .6));
+          // the shock front: from the fireball to you in about 1.3 s
+          const k = Math.max(0, Math.min(1, (u - .3) / 1.3)), zw = S.zDet + 4 + (camZ + .6 - S.zDet - 4) * (k * k * (3 - 2 * k) * .35 + k * .65);
+          wave.visible = u > .3 && u < 1.75; wave.position.z = zw; waveMat.uniforms.uTime.value = t; waveMat.uniforms.uA.value = Math.min(1, (u - .3) / .2);
+          victims().forEach(f => { if (f.hitAt == null && !f.flown && (zw + 12 >= f.z || k >= 1)) { f.hitAt = t; f.flown = true; } });
+          // the hall glows hotter as the front comes on, and the dust rises around you as it arrives
+          op(heat, u < .3 ? u / .3 * .5 : .5 + .4 * k); if (!S.contact) op(dust, Math.max(0, (zw - (camZ - 5)) / 5.4) * .9);
+          const amp = .02 + .2 * k * k; shake[0] = (Math.random() - .5) * amp; shake[1] = (Math.random() - .5) * amp * .8; shake[2] = (Math.random() - .5) * amp * .2; shake[3] = (Math.random() - .5) * amp * .25;
+          if (k >= 1 && !S.contact) { S.contact = true; S.tc = t; if (window.SND) SND.nuke('ring'); }
+          if (S.contact) {
+            // dust swallows everything; under it the world turns black and white
+            const c = t - S.tc; op(dust, .9 + c / .1); op(flash, 0); op(heat, .9 - c * 4); wave.visible = false;
+            if (c > .15 && !document.body.classList.contains('nuked')) { setNuked(true); repaintButton('rebuild'); if (window.SND) SND.nuke('wind'); }
+            if (c > .3) { S.phase = 'after'; S.t0 = t; S.settled = false; }
+          }
+        }
+        if (S.phase === 'after') {
+          // the dust settles over a few seconds
+          const u = T_; op(dust, 1 - ease((u - .3) / 3)); op(heat, 0); fire.visible = false;
+          const amp = .25 * Math.exp(-u * 1.6); shake[0] = (Math.random() - .5) * amp; shake[1] = (Math.random() - .5) * amp * .6; shake[3] = (Math.random() - .5) * amp * .2;
+          if (u > 1.2) S.busy = false;
+          if (u > 4) { S.settled = true; op(dust, 0); }
+        }
+        if (S.phase === 'rebuild') {
+          // a white-out, everything put back, the music comes back
+          const u = T_; op(flash, u < .45 ? ease(u / .45) : 1 - ease((u - .55) / .9));
+          if (u >= .45 && document.body.classList.contains('nuked')) { S.restored = true; setNuked(false); repaintButton('armed'); if (window.SND) { SND.nuke('calm'); if (S.music) SND.start(); } }
+          if (u > 1.5) { op(flash, 0); S.phase = 'idle'; S.busy = false; }
+        }
+        // frames in flight: ripped off the wall when the front reaches them, tumbling to where they end up
+        for (const f of victims()) {
+          if (f.hitAt == null || !f.dest) continue;
+          const v = Math.min(1, (t - f.hitAt) / 1.15), e = ease(v), arc = Math.sin(Math.PI * Math.min(1, v));
+          f.rp.lerpVectors(f.wallP, f.dest.p, e); f.rp.y += arc * .7; f.rp.z += arc * 1.4;
+          f.rq.slerpQuaternions(f.wallQ, f.dest.q, e); f.rq.multiply(qb.setFromAxisAngle(spinAxis(f), arc * 2.2));
+          if (f.crack) f.crack.visible = v > .05;
+          if (v >= 1) f.hitAt = null;
+        }
+      }
+      // dead and flickering neon afterwards
+      const arch = (i, t) => {
+        if (!document.body.classList.contains('nuked')) return 1;
+        const h = Math.sin(i * 91.7) * 43758.5 % 1, hh = h < 0 ? -h : h;
+        if (hh < .35) return Math.sin(t * 23 + i) > .93 ? .7 : .05;   // dead, the odd spark
+        return .45;
+      };
+      return { press, update, arch, shake, get busy() { return S.busy; }, get focus() { return S.focus; } };
+    })();
 
     // ── loop ──
     let camZ = camZFor(), last = performance.now(), on = true, skip = 0;
@@ -406,26 +648,29 @@
       // while a frame is up in front of you, look down the hall rather than at the wall
       let upNow = 0; for (const f of frames) { f.up = RM ? (lift(camZ - f.z) > .5 ? 1 : 0) : lift(camZ - f.z); if (f.up > upNow) upNow = f.up; }
       yaw *= 1 - .9 * upNow;
+      // while the bomb goes off, everything drops back to the wall and you look straight down the hall
+      if (NK.focus > 0) { for (const f of frames) f.up *= 1 - NK.focus; upNow *= 1 - NK.focus; yaw *= 1 - NK.focus; }
       // a button for the frame you are looking at
       const show = near && w > .45 ? near : null;
-      if (chip.__f !== show) { chip.__f = show; chip.hidden = !show; if (show) { chip.style.setProperty('--c', show.c.c); chip.querySelector('b').textContent = show.c.name; chip.querySelector('span').textContent = show.c.file ? 'Open' : 'Play'; } }
-      cam.position.set(Math.sin(t * .4) * .06 + lookX * .25, 1.75 + Math.sin(t * .9) * .02 - lookY * .08, camZ);
-      cam.rotation.set(-lookY * .08, yaw, 0, 'YXZ');
-      // place the lifted frame: centred a little low (clear of the top bar), sized to sit comfortably in the screen
+      if (chip.__f !== show) { chip.__f = show; chip.hidden = !show; if (show) { chip.style.setProperty('--c', show.c.c); chip.querySelector('b').textContent = show.c.name; chip.querySelector('span').textContent = show.c.atomic ? 'Press' : show.c.file ? 'Open' : 'Play'; if (show.c.atomic) chip.querySelector('b').textContent = nukeLook === 'rebuild' ? 'Rebuild' : 'Atomic button'; } }
+      NK.update(t, camZ);
+      cam.position.set(Math.sin(t * .4) * .06 + lookX * .25 + NK.shake[0], 1.75 + Math.sin(t * .9) * .02 - lookY * .08 + NK.shake[1], camZ);
+      cam.rotation.set(-lookY * .08 + NK.shake[2], yaw, NK.shake[3], 'YXZ');
+      // place every frame: from its rest pose (on the wall, or wherever the blast left it), blended toward the
+      // tablet spot when lifted. The tablet spot is centred a little low (clear of the top bar) and sized to the screen.
+      let tabS = 1;
       if (upNow > 0) {
         const vH = 2 * Math.tan(cam.fov * Math.PI / 360) * TAB_D, vW = vH * cam.aspect;
-        const ts = Math.min(.9 * vW / FW, (portrait ? .5 : .64) * vH / FH);
+        tabS = Math.min(.9 * vW / FW, (portrait ? .5 : .64) * vH / FH);
         tabOff.set(0, -vH * (portrait ? .06 : .03) + Math.sin(t * 1.3) * .012, -TAB_D);
         tabP.copy(tabOff).applyQuaternion(cam.quaternion).add(cam.position);
-        for (const f of frames) {
-          const e = f.up; if (e <= 0) continue;
-          f.grp.position.lerpVectors(f.wallP, tabP, e);
-          f.grp.quaternion.slerpQuaternions(f.wallQ, cam.quaternion, e);
-          f.grp.scale.setScalar(1 + (ts - 1) * e);
-          setTop(f, e > .02); f.posed = true;
-        }
       }
-      for (const f of frames) if (f.posed && f.up <= 0) { f.grp.position.copy(f.wallP); f.grp.quaternion.copy(f.wallQ); f.grp.scale.setScalar(1); setTop(f, false); f.posed = false; }
+      for (const f of frames) {
+        const e = f.up;
+        if (e > 0) { f.grp.position.lerpVectors(f.rp, tabP, e); f.grp.quaternion.slerpQuaternions(f.rq, cam.quaternion, e); f.grp.scale.setScalar(1 + (tabS - 1) * e); }
+        else { f.grp.position.copy(f.rp); f.grp.quaternion.copy(f.rq); f.grp.scale.setScalar(1); }
+        setTop(f, e > .02);
+      }
       // frames paint themselves in as you approach; the nearest one glows
       for (const f of frames) {
         const d = camZ - f.z, target = d < 16 ? Math.min(1, Math.max(0, (16 - d) / 9)) : 0;
@@ -435,9 +680,9 @@
         f.mat.uniforms.uReveal.value = f.reveal >= 1 ? 1.05 : f.reveal; f.mat.uniforms.uHover.value = f.hover;
         f.halo.material.opacity = (.18 + f.reveal * .25 + f.hover * .25) * (1 + p * .3);
       }
-      arches.forEach((a, i) => { a.material.opacity = .65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2; });
+      arches.forEach((a, i) => { a.material.opacity = (.65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2) * NK.arch(i, t); });
       floorMat.uniforms.uTime.value = t; floorMat.uniforms.uPulse.value = p;
-      rainMat.uniforms.uTime.value = t; starMat.uniforms.uTime.value = t;
+      rainMat.uniforms.uTime.value = t; starMat.uniforms.uTime.value = t; ashMat.uniforms.uTime.value = t; ashMat.uniforms.uCamZ.value = camZ;
       // film runs at 24 frames a second: the grain and the flicker change on that beat, whatever the screen's rate
       const gf = RM ? 0 : Math.floor(t * 24);
       if (gf !== grainFrame) { grainFrame = gf; grainMat.uniforms.uSeed.value = gf % 997 + .37; grainMat.uniforms.uFlick.value = RM ? 0 : (Math.random() - .5) * .018; }
@@ -448,7 +693,7 @@
       R.render(scene, cam);
     }
     requestAnimationFrame(loop);
-    window.CORRIDOR = { goTo, goZ };
+    window.CORRIDOR = { goTo, goZ, nuke: () => NK.press(), where: () => ({ z: camZ, rooms: ROOMS.map(r => r.id) }) };
   };
   if (window.THREE) start(); else addEventListener('three-ready', start, { once: true });
 })();

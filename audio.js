@@ -228,8 +228,42 @@ window.SND = (() => {
     else if (kind === 'shoot') { env(g, t, .002, .12, .18); noise(t, .2, g); }
   }
 
+  // ── the atomic button: siren, blast, ringing ears, and the wind afterwards ──
+  let wind = null;
+  const loopNoise = (t, dest) => { const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true; s.connect(dest); s.start(t, Math.random() * .9); return s; };
+  const filt = (type, f, q = .7) => { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; };
+  function nuke(kind) {
+    if (!ctx) return; const t = ctx.currentTime;
+    if (kind === 'siren') {            // an air-raid wail, rising and falling three times over the countdown
+      const g = ctx.createGain(), lp = filt('lowpass', 1900); lp.connect(g); g.connect(sfx);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.15, t + .2); g.gain.setValueAtTime(.15, t + 2.2); g.gain.linearRampToValueAtTime(0, t + 2.42);
+      [1, 1.007].forEach(d => { const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(300 * d, t);
+        for (let k = 0; k < 3; k++) { o.frequency.linearRampToValueAtTime(640 * d, t + k * .8 + .45); o.frequency.linearRampToValueAtTime(300 * d, t + k * .8 + .8); }
+        o.connect(lp); o.start(t); o.stop(t + 2.5); });
+    } else if (kind === 'boom') {      // a crack, a deep falling thump, and a long rolling rumble
+      const out = ctx.createGain(); out.gain.value = 1; out.connect(sfx);
+      const cg = ctx.createGain(), hp = filt('highpass', 900); hp.connect(cg); cg.connect(out); cg.gain.setValueAtTime(.9, t); cg.gain.exponentialRampToValueAtTime(.001, t + .35); noise(t, .4, hp);
+      const tg = ctx.createGain(); tg.connect(out); tg.gain.setValueAtTime(0, t); tg.gain.linearRampToValueAtTime(1, t + .02); tg.gain.exponentialRampToValueAtTime(.001, t + 2.8);
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(95, t); o.frequency.exponentialRampToValueAtTime(26, t + 1.4); o.connect(tg); o.start(t); o.stop(t + 3);
+      const rg = ctx.createGain(), lp = filt('lowpass', 420, .9); lp.frequency.setValueAtTime(420, t); lp.frequency.exponentialRampToValueAtTime(70, t + 5.5);
+      lp.connect(rg); rg.connect(out); rg.gain.setValueAtTime(0, t); rg.gain.linearRampToValueAtTime(1.1, t + .12); rg.gain.setValueAtTime(1.1, t + 1.6); rg.gain.exponentialRampToValueAtTime(.001, t + 6.5);
+      const src = loopNoise(t, lp); src.stop(t + 6.6);
+    } else if (kind === 'ring') {      // ears ringing after the blast
+      const g = ctx.createGain(); g.connect(sfx); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.03, t + .25); g.gain.exponentialRampToValueAtTime(.0005, t + 5.5);
+      const o = ctx.createOscillator(); o.frequency.value = 5600; o.connect(g); o.start(t); o.stop(t + 5.6);
+    } else if (kind === 'wind' && !wind) {   // the empty wind of afterwards, loops until rebuilt
+      const g = ctx.createGain(), bp = filt('bandpass', 420, .6), lfo = ctx.createOscillator(), lg = ctx.createGain();
+      lfo.frequency.value = .07; lg.gain.value = 260; lfo.connect(lg); lg.connect(bp.frequency); lfo.start(t);
+      bp.connect(g); g.connect(sfx); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.22, t + 4);
+      wind = { g, src: loopNoise(t, bp), lfo };
+    } else if (kind === 'calm' && wind) {
+      const w = wind; wind = null; w.g.gain.cancelScheduledValues(t); w.g.gain.setValueAtTime(w.g.gain.value, t); w.g.gain.linearRampToValueAtTime(0, t + .8);
+      w.src.stop(t + .9); w.lfo.stop(t + .9);
+    }
+  }
+
   return {
-    TRACKS, parts,
+    TRACKS, parts, nuke,
     start, stop, tick,
     toggle() { playing ? stop() : start(); },
     get playing() { return playing; }, get ready() { return !!ctx; },
