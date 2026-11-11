@@ -11,7 +11,7 @@ window.SND = (() => {
   // quarter-tones written as .5 MIDI steps. Melody arrays are indices into
   // the scale, one per 16th step, -1 = rest. Drones replace Western chords.
   const TRACKS = [
-    { name: 'ZAHHAK', mode: 'Dastgah-e Shur, low', bpm: 76, style: 'dark',
+    { name: 'SHABDAR', mode: 'Dastgah-e Shur, low', bpm: 76, style: 'dark',
       scale: [50, 51.5, 53, 55, 57, 58, 60, 62, 63.5, 65],
       drone: [[38, 45], [38, 45], [34, 41], [36, 43]],
       bass: [38, 38, 34, 36], bassPat: 'x.......x..o....',
