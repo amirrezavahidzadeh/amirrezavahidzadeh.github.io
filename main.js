@@ -18,7 +18,7 @@ window.AV_START = (C) => {
   const KEY = 'av-neon-v1';
   const S = { shards: {}, fails: {}, drums: null, track: null, muted: false };
   try { Object.assign(S, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { }
-  SND.loadDrums(S.drums); SND.setTrack(S.track ?? (+RULES.defaultTrack || 0));
+  SND.loadDrums(S.drums); SND.setTrack(+RULES.defaultTrack || 0);   // every visit starts on the default song (Shur · Night, set in admin), whatever was playing last time
   const persist = () => { try { S.drums = SND.allDrums(); S.track = SND.track; S.muted = SND.muted; localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } };
 
   /* ── the cabinets ── */

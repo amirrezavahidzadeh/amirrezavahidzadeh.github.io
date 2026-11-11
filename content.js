@@ -22,7 +22,7 @@ window.AV_DEFAULT = {
     skipButton: true,
     bypassEnabled: true,
     lossesBeforeBypass: 2,
-    defaultTrack: 0,
+    defaultTrack: 1,
   },
   contact: [],
   cabinets: [
