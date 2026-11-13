@@ -37,16 +37,17 @@
     const zMid = (12 + END) / 2, zLen = 12 - END;
     const glowMat = c => new T.MeshBasicMaterial({ color: c, transparent: true, opacity: .95, blending: T.AdditiveBlending, depthWrite: false, fog: true });
 
-    // floor: neon grid generated in the shader, so it stays crisp at any distance
+    // floor: the neon grid, generated in the shader so it stays crisp at any distance, with a neon Tabriz carpet
+    // laid down for every room (painted by carpet.js, one carpet per stop, so it repeats seamlessly round the loop)
     const floorMat = new T.ShaderMaterial({
       transparent: false, fog: true,
-      uniforms: T.UniformsUtils.merge([T.UniformsLib.fog, { uTime: { value: 0 }, uPulse: { value: 0 } }]),
+      uniforms: T.UniformsUtils.merge([T.UniformsLib.fog, { uTime: { value: 0 }, uPulse: { value: 0 }, uCarpet: { value: null }, uHas: { value: 0 }, uZ0: { value: -1 }, uGap: { value: 10 }, uLen: { value: 9.2 }, uWid: { value: 6 } }]),
       vertexShader: `varying vec3 vW;
 #include <fog_pars_vertex>
         void main(){ vec4 w = modelMatrix * vec4(position,1.); vW = w.xyz; vec4 mvPosition = viewMatrix * w; gl_Position = projectionMatrix * mvPosition;
 #include <fog_vertex>
 }`,
-      fragmentShader: `uniform float uTime; uniform float uPulse; varying vec3 vW;
+      fragmentShader: `uniform float uTime; uniform float uPulse; uniform sampler2D uCarpet; uniform float uHas, uZ0, uGap, uLen, uWid; varying vec3 vW;
 #include <fog_pars_fragment>
         float line(float v, float w){ float d = abs(fract(v) - .5); return smoothstep(.5 - w, .5, d); }
         void main(){
@@ -54,7 +55,12 @@
           float l = max(line(g.x, .035), line(g.y + uTime * .25, .035));
           vec3 base = vec3(.03,.01,.07);
           vec3 neon = mix(vec3(.13,.95,1.), vec3(1.,.17,.84), .5 + .5 * sin(vW.z * .08 + uTime * .3));
-          vec3 col = base + neon * l * (.55 + uPulse * .45);
+          // the carpet under this point, if any: one per room, centred on its frame
+          float lz = fract((uZ0 - vW.z) / uGap) * uGap - (uGap - uLen) * .5, lx = vW.x + uWid * .5;
+          float inC = uHas * step(0., lz) * step(lz, uLen) * step(0., lx) * step(lx, uWid);
+          vec3 cp = texture2D(uCarpet, vec2(lx / uWid, 1. - lz / uLen)).rgb;
+          float run = .82 + .3 * pow(.5 + .5 * sin(vW.z * .9 - uTime * 2.2), 6.);   // light running through the threads
+          vec3 col = base + neon * l * mix(.55 + uPulse * .45, .1, inC) + cp * inC * (.78 + uPulse * .4) * run;
           float centre = 1. - smoothstep(.0, 3.4, abs(vW.x));
           col += vec3(.5,.1,.6) * centre * .06;
           gl_FragColor = vec4(col, 1.);
@@ -250,9 +256,17 @@
       const t = tile.paint(); if (!t) return;
       jobs.unshift(() => { upload(t); const old = tile.mat.map; tile.mat.map = t; if (old && old.isCanvasTexture) old.dispose(); });
     };
+    // the carpet: painted once (it's the same design under every room), first in the queue since it's right under your feet
+    floorMat.uniforms.uZ0.value = -START + GAP / 2; floorMat.uniforms.uGap.value = GAP;
+    const carpetJob = () => {
+      if (!window.TABRIZ) return;
+      const cw = MOBILE ? 768 : 1024, cnv = TABRIZ.paint(cw, Math.round(cw * floorMat.uniforms.uLen.value / floorMat.uniforms.uWid.value)); if (!cnv) return;
+      const t = new T.CanvasTexture(cnv); t.anisotropy = R.capabilities.getMaxAnisotropy();
+      jobs.unshift(() => { upload(t); const old = floorMat.uniforms.uCarpet.value; floorMat.uniforms.uCarpet.value = t; floorMat.uniforms.uHas.value = 1; if (old) old.dispose(); });
+    };
     const queueAll = () => {
       jobs.length = 0;
-      const list = [...ROOMS.map((c, i) => [START + 8 + i * GAP, posterJob(c)]), ...wallTiles.map(tl => [tl.k * (LOOP / (wallTiles.length / 2)), tileJob(tl)])];
+      const list = [[-1, carpetJob], ...ROOMS.map((c, i) => [START + 8 + i * GAP, posterJob(c)]), ...wallTiles.map(tl => [tl.k * (LOOP / (wallTiles.length / 2)), tileJob(tl)])];
       list.sort((a, b) => a[0] - b[0]).forEach(x => jobs.push(x[1]));
     };
     const runJobs = () => { const t0 = performance.now(); do { jobs.shift()(); } while (jobs.length && performance.now() - t0 < 4); };
