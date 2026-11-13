@@ -98,14 +98,74 @@
     }
     const archShape = archPts(W - .5, Hh - .5, Hh * .45);
     const archColors = [0x22f3ff, 0xff2bd6, 0xffc94d, 0x7dff6a, 0xb06bff];
+    // Each arch is an illuminated margin (tazhib), like the border of a Persian manuscript page, in neon: a flat
+    // band following the arch, edged by two neon tubes in the arch's colour, carrying a running pattern of gold
+    // eslimi vines curling into spirals, leaves and rosettes. The pattern is one small tile repeated along the band.
+    const BW = .3, TILE = BW * 4;                                // band width; one 4:1 tile of pattern per 1.2 m
+    const marginTex = (() => {
+      // channels are masks: red = gold, green = the arch's own colour, blue = white-hot highlights (see the shader)
+      const cw = 512, ch = 128, c = document.createElement('canvas'); c.width = cw; c.height = ch; const g = c.getContext('2d');
+      g.fillStyle = '#000'; g.fillRect(0, 0, cw, ch); g.globalCompositeOperation = 'lighter'; g.lineCap = g.lineJoin = 'round';
+      const CH = { gold: [255, 0, 0], col: [0, 255, 0], hot: [0, 0, 255] };
+      const glow = (path, chn, lw) => { const [r, gg, b] = CH[chn];
+        [[4.5, .18], [2.2, .38], [1, 1]].forEach(([m, a]) => { g.strokeStyle = `rgba(${r},${gg},${b},${a})`; g.lineWidth = lw * m; path(); g.stroke(); }); };
+      const dot = (x, y, r, chn) => { const [rr, gg, b] = CH[chn]; g.fillStyle = `rgb(${rr},${gg},${b})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); };
+      // guard lines with a bead row, just inside the neon edges
+      [20, ch - 20].forEach(y => { glow(() => { g.beginPath(); g.moveTo(-4, y); g.lineTo(cw + 4, y); }, 'gold', 2.4); });
+      for (let x = 8; x < cw; x += 16) { dot(x, 10, 2.2, 'hot'); dot(x, ch - 10, 2.2, 'hot'); }
+      // the running vine: one full wave per tile, so it joins its neighbour seamlessly
+      const vy = x => ch / 2 + Math.sin(x / cw * Math.PI * 2) * 22;
+      glow(() => { g.beginPath(); for (let x = -8; x <= cw + 8; x += 4) x < -4 ? g.moveTo(x, vy(x)) : g.lineTo(x, vy(x)); }, 'gold', 3);
+      // a spiral curling off each crest (eslimi), with leaves along it
+      const spiral = (x0, y0, dir, up) => {
+        const pts = []; for (let i = 0; i <= 60; i++) { const t = i / 60, a = (up ? -Math.PI / 2 : Math.PI / 2) + dir * t * Math.PI * 2.4, r = 30 * (1 - t * .78); pts.push([x0 + Math.cos(a) * r, y0 + (up ? 26 : -26) + Math.sin(a) * r]); }
+        glow(() => { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); }, 'gold', 2.4);
+        dot(pts[60][0], pts[60][1], 3.4, 'hot');
+        [12, 30].forEach(i => { const [x, y] = pts[i], [x2, y2] = pts[i + 2], a = Math.atan2(y2 - y, x2 - x);
+          glow(() => { g.beginPath(); g.ellipse(x + Math.cos(a + Math.PI / 2) * 8, y + Math.sin(a + Math.PI / 2) * 8, 10, 4, a + .5, 0, 7); }, 'col', 1.8); });
+      };
+      spiral(cw * .25, vy(cw * .25), 1, true); spiral(cw * .75, vy(cw * .75), -1, false);
+      // rosettes where the vine crosses the middle, khatai buds between
+      const rosette = (x, y, r) => { glow(() => { g.beginPath(); for (let i = 0; i <= 64; i++) { const a = i / 64 * Math.PI * 2, rr = r * (.6 + .4 * Math.abs(Math.cos(a * 4))); i ? g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr) : g.moveTo(x + rr, y); } g.closePath(); }, 'col', 2.4);
+        dot(x, y, r * .3, 'hot'); };
+      rosette(0, ch / 2, 20); rosette(cw, ch / 2, 20); rosette(cw / 2, ch / 2, 20);
+      [[cw * .25, ch / 2 + 34], [cw * .75, ch / 2 - 34]].forEach(([x, y]) => glow(() => { g.beginPath(); g.moveTo(x, y - 9); g.quadraticCurveTo(x + 8, y, x, y + 9); g.quadraticCurveTo(x - 8, y, x, y - 9); }, 'col', 1.8));
+      const t = new T.CanvasTexture(c); t.wrapS = 1000;   /* RepeatWrapping (not in the slim three.js build) */ t.anisotropy = Math.min(8, R.capabilities.getMaxAnisotropy()); return t;
+    })();
+    const marginMat = col => new T.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: T.AdditiveBlending, side: 2 /* DoubleSide */,
+      uniforms: { uMap: { value: marginTex }, uCol: { value: new T.Color(col) }, uO: { value: 1 }, uFog: { value: .045 } },
+      vertexShader: `varying vec2 vUv; varying float vD; void main(){ vUv = uv; vec4 mv = modelViewMatrix * vec4(position, 1.); vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
+      fragmentShader: `uniform sampler2D uMap; uniform vec3 uCol; uniform float uO; uniform float uFog; varying vec2 vUv; varying float vD;
+        void main(){ vec3 m = texture2D(uMap, vUv).rgb;
+          vec3 c = vec3(1., .74, .3) * m.r * 1.15 + uCol * m.g * 1.25 + vec3(1., .96, .9) * m.b;
+          gl_FragColor = vec4(c * uO * exp(-pow(uFog * vD, 2.)), 1.); }`,     // fades into the fog like everything else
+    });
+    // the band: a ribbon along the arch, evenly spaced so the pattern isn't stretched, mirrored at the tip
+    const archCurve = new T.CatmullRomCurve3(archShape);
+    const archBand = (() => {
+      const N = 260, pts = archCurve.getSpacedPoints(N), len = archCurve.getLength(), reps = Math.max(2, Math.round(len / TILE / 2) * 2);
+      const pos = [], uv = [], idx = [], edges = [[], []];
+      pts.forEach((p, i) => {
+        const a = pts[Math.max(0, i - 1)], b = pts[Math.min(N, i + 1)], tx = b.x - a.x, ty = b.y - a.y, tl = Math.hypot(tx, ty) || 1, nx = -ty / tl, ny = tx / tl;
+        const u = i / N * reps;
+        [-1, 1].forEach((sd, k) => { const x = p.x + nx * sd * BW / 2, y = p.y + ny * sd * BW / 2; pos.push(x, y, 0); uv.push(u, k); edges[k].push(new T.Vector3(x, y, 0)); });
+        if (i < N) { const o = i * 2; idx.push(o, o + 1, o + 2, o + 1, o + 3, o + 2); }
+      });
+      const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(new Float32Array(pos), 3)); geo.setAttribute('uv', new T.BufferAttribute(new Float32Array(uv), 2)); geo.setIndex(idx);
+      const edgeGeo = edges.map(e => new T.TubeGeometry(new T.CatmullRomCurve3(e.filter((_, i) => i % 2 === 0)), 160, .016, 5, false));
+      return { geo, edgeGeo };
+    })();
     const arches = [];
     // every 5 m from z = 2: with frames every 10 m from z = -6, each frame sits between two arches
     // (one 3 m before it, one 2 m past it), so no arch ever crosses a frame, on any screen
     const AS = LOOP / Math.round(LOOP / 5);
     const nArch = Math.ceil((2 - END) / AS);
     for (let i = 0; i < nArch; i++) {
-      const m = tube(archShape, .035, archColors[i % archColors.length]);
-      m.position.z = 2 - i * AS; scene.add(m); arches.push(m);
+      const col = archColors[i % archColors.length], grp = new T.Group(), band = new T.Mesh(archBand.geo, marginMat(col)), em = glowMat(col);
+      grp.add(band); archBand.edgeGeo.forEach(eg => grp.add(new T.Mesh(eg, em)));
+      grp.position.z = 2 - i * AS; scene.add(grp);
+      arches.push({ set(o) { em.opacity = Math.min(1, o); band.material.uniforms.uO.value = o; } });
     }
 
     // a soft glow texture shared by sprites
@@ -449,7 +509,7 @@
         f.mat.uniforms.uReveal.value = f.reveal >= 1 ? 1.05 : f.reveal; f.mat.uniforms.uHover.value = f.hover;
         f.halo.material.opacity = (.18 + f.reveal * .25 + f.hover * .25) * (1 + p * .3);
       }
-      arches.forEach((a, i) => { a.material.opacity = .65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2; });
+      arches.forEach((a, i) => a.set(.65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2));
       floorMat.uniforms.uTime.value = t; floorMat.uniforms.uPulse.value = p;
       rainMat.uniforms.uTime.value = t; starMat.uniforms.uTime.value = t;
       // film runs at 24 frames a second: the grain and the flicker change on that beat, whatever the screen's rate
