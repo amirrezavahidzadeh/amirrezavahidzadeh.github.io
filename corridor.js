@@ -191,7 +191,7 @@
         const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t;
       })());
     })();
-    const LANTERN_H = 1.26, LANTERN_W = LANTERN_H / 3, apexY = Hh - .5;
+    const LANTERN_H = 1.04, LANTERN_W = LANTERN_H / 3, apexY = Hh - .5;
     const arches = [];
     // every 5 m from z = 2: with frames every 10 m from z = -6, each frame sits between two arches
     // (one 3 m before it, one 2 m past it), so no arch ever crosses a frame, on any screen
@@ -203,7 +203,7 @@
       const lan = new T.Sprite(new T.SpriteMaterial({ map: lanternTex(col), transparent: true, depthWrite: false, fog: true }));
       lan.center.set(.5, 1); lan.scale.set(LANTERN_W, LANTERN_H, 1); lan.position.set(0, apexY - BW * .35, 0); grp.add(lan);
       const lglow = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: 0xffb04a, transparent: true, opacity: .5, blending: T.AdditiveBlending, depthWrite: false, fog: true }));
-      lglow.scale.set(1.3, 1.3, 1); grp.add(lglow);
+      lglow.scale.set(1.08, 1.08, 1); grp.add(lglow);
       const ly = lan.position.y, hang = LANTERN_H * .62;   // the glass sits about here below the hook
       grp.position.z = 2 - i * AS; scene.add(grp);
       arches.push({ set(o, t) {
