@@ -92,7 +92,6 @@
       for (let i = 0; i <= 6; i++) pts.push(new T.Vector3(-hw, spring * i / 6, 0));
       const th0 = Math.PI, th1 = Math.acos(-e / r);
       for (let i = 1; i <= 22; i++) { const th = th0 + (th1 - th0) * i / 22; pts.push(new T.Vector3(e + r * Math.cos(th), spring + r * Math.sin(th) * ((h - spring) / (r * Math.sin(th1))), 0)); }
-      pts.push(new T.Vector3(0, h + .22, 0));
       const right = pts.slice(0, -1).reverse().map(p => new T.Vector3(-p.x, p.y, 0));
       return [...pts, ...right];
     }
@@ -156,6 +155,43 @@
       const edgeGeo = edges.map(e => new T.TubeGeometry(new T.CatmullRomCurve3(e.filter((_, i) => i % 2 === 0)), 160, .016, 5, false));
       return { geo, edgeGeo };
     })();
+    // a soft glow texture shared by sprites
+    const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); const r = g.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.25, 'rgba(255,255,255,.35)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t; })();
+    // hanging lanterns (fanous): one under the point of every arch, on a chain, glowing warm and swaying a little.
+    // Drawn as a picture that always faces you, hung from its top so a tilt swings it like a pendulum.
+    const lanternTex = (() => {
+      const cache = {};
+      return col => cache[col] || (cache[col] = (() => {
+        const cw = 160, ch = 480, c = document.createElement('canvas'); c.width = cw; c.height = ch; const g = c.getContext('2d');
+        const hex = '#' + new T.Color(col).getHexString(), gold = '#ffc94a', cx = cw / 2;
+        g.lineCap = g.lineJoin = 'round';
+        const neon = (path, colr, lw) => { [[4, .2], [2, .45], [1, 1]].forEach(([m, a]) => { g.globalAlpha = a; g.strokeStyle = colr; g.lineWidth = lw * m; path(); g.stroke(); }); g.globalAlpha = 1; };
+        // chain
+        for (let y = 4, k = 0; y < 132; y += 13, k++) neon(() => { g.beginPath(); k % 2 ? g.ellipse(cx, y + 6, 2.2, 6.5, 0, 0, 7) : g.ellipse(cx, y + 6, 5, 6.5, 0, 0, 7); }, gold, 1.6);
+        // finial ring and onion dome
+        neon(() => { g.beginPath(); g.arc(cx, 140, 7, 0, 7); }, gold, 2);
+        neon(() => { g.beginPath(); g.moveTo(cx, 148); g.bezierCurveTo(cx + 10, 160, cx + 50, 182, cx + 46, 214); g.lineTo(cx - 46, 214); g.bezierCurveTo(cx - 50, 182, cx - 10, 160, cx, 148); }, gold, 2.6);
+        neon(() => { g.beginPath(); g.moveTo(cx - 52, 220); g.lineTo(cx + 52, 220); }, hex, 2.4);
+        // the body: six-sided glass, widest at the waist, lit from inside
+        const body = () => { g.beginPath(); g.moveTo(cx - 40, 226); g.lineTo(cx + 40, 226); g.lineTo(cx + 54, 300); g.lineTo(cx + 40, 380); g.lineTo(cx - 40, 380); g.lineTo(cx - 54, 300); g.closePath(); };
+        const lit = g.createRadialGradient(cx, 300, 4, cx, 300, 70); lit.addColorStop(0, 'rgba(255,240,200,.95)'); lit.addColorStop(.35, 'rgba(255,170,60,.7)'); lit.addColorStop(1, hex + '55');
+        g.fillStyle = lit; body(); g.fill();
+        neon(body, gold, 2.6);
+        [-1, 0, 1].forEach(k => neon(() => { g.beginPath(); g.moveTo(cx + k * 22, 226); g.lineTo(cx + k * 30, 300); g.lineTo(cx + k * 22, 380); }, gold, 1.4));
+        // pierced stars in the glass
+        g.fillStyle = '#fff';
+        [[cx - 26, 262], [cx + 26, 262], [cx, 300], [cx - 30, 336], [cx + 30, 336], [cx, 252], [cx, 350]].forEach(([x, y], i) => {
+          g.globalAlpha = .85; g.beginPath(); for (let j = 0; j <= 16; j++) { const a = j / 16 * Math.PI * 2, r = j % 2 ? 2.2 : 5.5; j ? g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r) : g.moveTo(x + r, y); } g.fill(); });
+        g.globalAlpha = 1;
+        // base, drop finial and tassel in the arch colour
+        neon(() => { g.beginPath(); g.moveTo(cx - 46, 386); g.lineTo(cx + 46, 386); }, hex, 2.4);
+        neon(() => { g.beginPath(); g.moveTo(cx - 40, 390); g.bezierCurveTo(cx - 34, 412, cx - 8, 420, cx, 432); g.bezierCurveTo(cx + 8, 420, cx + 34, 412, cx + 40, 390); }, gold, 2.4);
+        neon(() => { g.beginPath(); g.ellipse(cx, 440, 6, 9, 0, 0, 7); }, hex, 2);
+        for (let k = -2; k <= 2; k++) neon(() => { g.beginPath(); g.moveTo(cx, 450); g.lineTo(cx + k * 4, 474); }, hex, 1.4);
+        const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t;
+      })());
+    })();
+    const LANTERN_H = 1.26, LANTERN_W = LANTERN_H / 3, apexY = Hh - .5;
     const arches = [];
     // every 5 m from z = 2: with frames every 10 m from z = -6, each frame sits between two arches
     // (one 3 m before it, one 2 m past it), so no arch ever crosses a frame, on any screen
@@ -164,12 +200,20 @@
     for (let i = 0; i < nArch; i++) {
       const col = archColors[i % archColors.length], grp = new T.Group(), band = new T.Mesh(archBand.geo, marginMat(col)), em = glowMat(col);
       grp.add(band); archBand.edgeGeo.forEach(eg => grp.add(new T.Mesh(eg, em)));
+      const lan = new T.Sprite(new T.SpriteMaterial({ map: lanternTex(col), transparent: true, depthWrite: false, fog: true }));
+      lan.center.set(.5, 1); lan.scale.set(LANTERN_W, LANTERN_H, 1); lan.position.set(0, apexY - BW * .35, 0); grp.add(lan);
+      const lglow = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: 0xffb04a, transparent: true, opacity: .5, blending: T.AdditiveBlending, depthWrite: false, fog: true }));
+      lglow.scale.set(1.3, 1.3, 1); grp.add(lglow);
+      const ly = lan.position.y, hang = LANTERN_H * .62;   // the glass sits about here below the hook
       grp.position.z = 2 - i * AS; scene.add(grp);
-      arches.push({ set(o) { em.opacity = Math.min(1, o); band.material.uniforms.uO.value = o; } });
+      arches.push({ set(o, t) {
+        em.opacity = Math.min(1, o); band.material.uniforms.uO.value = o;
+        const sw = RM ? 0 : Math.sin(t * 1.15 + i * .9) * .07 + Math.sin(t * 2.3 + i * 2.1) * .015;   // a gentle sway
+        lan.material.rotation = sw; lglow.position.set(Math.sin(sw) * hang, ly - Math.cos(sw) * hang, .02);
+        lglow.material.opacity = .42 + .08 * Math.sin(t * 7 + i * 3) * Math.sin(t * 3.1 + i);   // and a candle's flicker
+      } });
     }
 
-    // a soft glow texture shared by sprites
-    const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); const r = g.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.25, 'rgba(255,255,255,.35)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t; })();
 
     // ── rain inside the hall ──
     const NR = MOBILE ? 500 : 1200, rp = new Float32Array(NR * 3);
@@ -509,7 +553,7 @@
         f.mat.uniforms.uReveal.value = f.reveal >= 1 ? 1.05 : f.reveal; f.mat.uniforms.uHover.value = f.hover;
         f.halo.material.opacity = (.18 + f.reveal * .25 + f.hover * .25) * (1 + p * .3);
       }
-      arches.forEach((a, i) => a.set(.65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2));
+      arches.forEach((a, i) => a.set(.65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2, t));
       floorMat.uniforms.uTime.value = t; floorMat.uniforms.uPulse.value = p;
       rainMat.uniforms.uTime.value = t; starMat.uniforms.uTime.value = t;
       // film runs at 24 frames a second: the grain and the flicker change on that beat, whatever the screen's rate
