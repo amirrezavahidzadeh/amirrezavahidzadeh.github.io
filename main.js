@@ -139,7 +139,7 @@ window.AV_START = (C) => {
     SND.ui(ok ? 'good' : 'blip');
   };
   const contactHTML = (h = 'h2') => `<p class="ct-k">Contact <span lang="fa" dir="rtl">· تماس با من</span></p>
-      <${h} class="ct-h">Let's make something.</${h}>
+      <${h} class="ct-h">Let’s make magic!</${h}>
       <p class="ct-sub">Film, series, games, AI video: write to me.</p>
       <a class="ct-mail" href="mailto:${E(MAIL)}">${MAILW}</a>
       <div class="ct-btns"><a class="ct-btn" href="mailto:${E(MAIL)}">✉ Write to me</a><button type="button" class="ct-btn ct-copy">⧉ Copy address</button></div>`;
