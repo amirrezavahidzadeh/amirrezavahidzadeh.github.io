@@ -23,7 +23,8 @@ window.AV_START = (C) => {
 
   /* ── the cabinets ── */
   const LOCKED = ['about', 'bazar', 'siavash', 'edu', 'writer', 'crew', 'chess'];
-  const CABS = C.cabinets.filter(c => !c.hidden && (LOCKED.includes(c.id) || c.id === 'maker' || c.id === 'beat' || c.id === 'sifted'))
+  const PROJ = ['sifted', 'temple']; // free-play cabinets that open a project page instead of a game
+  const CABS = C.cabinets.filter(c => !c.hidden && (LOCKED.includes(c.id) || c.id === 'maker' || c.id === 'beat' || PROJ.includes(c.id)))
     .map((c, i) => ({ ...c, n: String(i + 1).padStart(2, '0'), c: c.color, file: LOCKED.includes(c.id) }));
   const FILES = CABS.filter(c => c.file), NF = FILES.length;
   const cab = id => CABS.find(c => c.id === id);
@@ -102,7 +103,7 @@ window.AV_START = (C) => {
   }
   function ticker() {
     const T = SND.TRACKS[SND.track], n = FILES.filter(f => done(f.id)).length;
-    const bits = [`♪ Now playing: ${T.name} · ${T.mode} · ${T.bpm} BPM`, 'Original melodies in the Persian modes, played on synth santur', `${n}/${NF} games won`, 'Tap anywhere to play a note', 'Press A to L to jam', 'Build a level and send it as a link', 'Rewrite the drums in the Beat Lab', 'Find your powder shade in Sifted', 'Night city, Tehran, 2099'];
+    const bits = [`♪ Now playing: ${T.name} · ${T.mode} · ${T.bpm} BPM`, 'Original melodies in the Persian modes, played on synth santur', `${n}/${NF} games won`, 'Tap anywhere to play a note', 'Press A to L to jam', 'Build a level and send it as a link', 'Rewrite the drums in the Beat Lab', 'Find your powder shade in Sifted', 'Light a candle in the Temple of the Ten', 'Night city, Tehran, 2099'];
     const s = bits.map(b => `<span>${b}</span><i>✦</i>`).join('');
     $('#tkIn').innerHTML = s + s;
   }
@@ -190,7 +191,7 @@ window.AV_START = (C) => {
   const FREE = CABS.filter(c => !c.file);
   $('#arcade').innerHTML = FREE.map(c => `<button type="button" class="cab free" data-id="${c.id}" style="--c:${c.c}">
       <span class="cab-sign"><b>${E(c.name)}</b><i lang="fa" dir="rtl">${E(c.fa)}</i></span>
-      <span class="cab-screen"><canvas width="240" height="140" aria-hidden="true"></canvas><span class="cab-lock">${c.id === 'sifted' ? 'Open' : 'Free play'}</span></span>
+      <span class="cab-screen"><canvas width="240" height="140" aria-hidden="true"></canvas><span class="cab-lock">${PROJ.includes(c.id) ? 'Open' : 'Free play'}</span></span>
       <span class="cab-foot"><span class="cab-game">▶ ${E(c.game)}</span><span class="cab-how">${E(c.how)}</span></span>
     </button>`).join('');
   if (!FREE.length) { $('#arcade').remove(); $('.arc-h') && $('.arc-h').remove(); }
@@ -226,6 +227,15 @@ window.AV_START = (C) => {
       const gr = g.createLinearGradient(20, 0, bx, 0); gr.addColorStop(0, 'rgba(255,180,138,0)'); gr.addColorStop(1, 'rgba(255,180,138,.55)');
       g.fillStyle = gr; g.beginPath(); g.ellipse((20 + bx) / 2, 108, Math.max(1, (bx - 20) / 2), 9, 0, 0, 7); g.fill();
       g.save(); g.translate(bx, by); g.rotate(-.5); g.fillStyle = c; g.fillRect(-5, -26, 10, 16); g.fillStyle = '#d9d9de'; g.fillRect(-4, -10, 8, 6); g.fillStyle = '#16121e'; g.fillRect(-3, -4, 6, 30); g.restore();
+    },
+    temple(g, w, h, t, c) {
+      // a halo of eight golden balls slowly turning above a row of flickering candles
+      const cx = w / 2, cy = 58, R = 34;
+      const glow = g.createRadialGradient(cx, cy, 2, cx, cy, 60); glow.addColorStop(0, 'rgba(255,214,120,.55)'); glow.addColorStop(1, 'rgba(255,170,60,0)'); g.fillStyle = glow; g.fillRect(cx - 60, cy - 60, 120, 120);
+      g.strokeStyle = c; g.lineWidth = 1.5; g.beginPath(); g.arc(cx, cy, R, 0, 7); g.stroke();
+      for (let i = 0; i < 8; i++) { const a = t * .3 + i * Math.PI / 4; g.fillStyle = '#ffe3a0'; g.beginPath(); g.arc(cx + Math.cos(a) * R, cy + Math.sin(a) * R, 4.5, 0, 7); g.fill(); }
+      g.fillStyle = '#fff2c8'; g.beginPath(); g.arc(cx, cy, 11, 0, 7); g.fill();
+      for (let i = 0; i < 11; i++) { const x = 18 + i * 20.5, hh = 10 + (i * 7) % 13, f = 1 + .25 * Math.sin(t * 9 + i * 2.1); g.fillStyle = 'rgba(240,226,196,.85)'; g.fillRect(x - 2.5, 132 - hh, 5, hh); g.fillStyle = 'rgba(255,190,80,.9)'; g.beginPath(); g.ellipse(x, 128 - hh, 2.4 * f, 5 * f, 0, 0, 7); g.fill(); }
     },
     beat(g, w, h, t, c) { const D = SND.drums(), rows = ['t', 'k', 's', 'h']; rows.forEach((r, j) => { for (let i = 0; i < 16; i++) { g.fillStyle = D[r][i] ? (i === lastStep && SND.playing ? '#fff' : c) : 'rgba(255,255,255,.08)'; g.fillRect(8 + i * 14, 20 + j * 26, 11, 18); } }); },
   };
@@ -277,11 +287,11 @@ window.AV_START = (C) => {
       win: msg => { if (my !== token) return; teardown(); S.shards[id] = 1; persist(); hud(); SND.ui('win'); CITY.ripple(innerWidth / 2, innerHeight / 2, c.c, 400, true); result(id, true, msg); },
       lose: msg => { if (my !== token) return; teardown(); S.fails[id] = (S.fails[id] || 0) + 1; persist(); SND.ui('glitch'); result(id, false, msg); },
     };
-    cleanup = id === 'maker' ? MAKER.mount(host, api, opts.level) : id === 'sifted' ? project(host) : GAMES[id](host, api);
+    cleanup = id === 'maker' ? MAKER.mount(host, api, opts.level) : PROJ.includes(id) ? project(host, id) : GAMES[id](host, api);
   }
-  // Sifted is a project, not a game: its cabinet opens a page about it with a button to launch it
-  function project(host) {
-    const d = F.sifted || {};
+  // Sifted and the Temple are projects, not games: their cabinets open a page about them with a button to launch them
+  function project(host, id) {
+    const d = F[id] || {};
     host.className = 'g-host proj';
     host.innerHTML = `<div class="file f-pb f-proj">
       ${d.hero ? `<a class="f-cover" href="${E(link(d.link))}" target="_blank" rel="noopener" aria-label="Open ${E(d.title)}"><img src="${E(d.hero)}" alt="${E(d.heroAlt)}" decoding="async"></a>` : ''}
