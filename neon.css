@@ -727,6 +727,7 @@ body.ct-open{overflow:hidden}
 .g-host.proj{display:block;padding:0;overflow:visible}
 .f-proj{display:grid;gap:18px}
 .f-proj .f-cover{text-decoration:none}
+.f-proj .f-cover img{max-height:44vh;object-position:center 30%}
 .proj-credit{font:500 1rem var(--ui);color:#fff;letter-spacing:.02em}
 .proj-go{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .proj-go .btn-ghost{text-decoration:none}

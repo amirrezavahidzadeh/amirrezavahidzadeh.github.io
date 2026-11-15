@@ -190,7 +190,7 @@ window.AV_START = (C) => {
   const FREE = CABS.filter(c => !c.file);
   $('#arcade').innerHTML = FREE.map(c => `<button type="button" class="cab free" data-id="${c.id}" style="--c:${c.c}">
       <span class="cab-sign"><b>${E(c.name)}</b><i lang="fa" dir="rtl">${E(c.fa)}</i></span>
-      <span class="cab-screen"><canvas width="240" height="140" aria-hidden="true"></canvas><span class="cab-lock">Free play</span></span>
+      <span class="cab-screen"><canvas width="240" height="140" aria-hidden="true"></canvas><span class="cab-lock">${c.id === 'sifted' ? 'Open' : 'Free play'}</span></span>
       <span class="cab-foot"><span class="cab-game">▶ ${E(c.game)}</span><span class="cab-how">${E(c.how)}</span></span>
     </button>`).join('');
   if (!FREE.length) { $('#arcade').remove(); $('.arc-h') && $('.arc-h').remove(); }

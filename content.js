@@ -63,7 +63,7 @@ window.AV_DEFAULT = {
         { image: 'img/sifted-3d.webp', caption: 'The 3D studio, with camera angles and lighting' },
       ],
       footnote: 'Desktop and phone · English and فارسی · The 3D studio is best on a computer · Head scan: 3D Scan Store free female head, non-commercial use',
-      link: 'sifted/',
+      link: '/sifted/',
       source: 'https://github.com/amirrezavahidzadeh/amirrezavahidzadeh.github.io/tree/main/sifted',
     },
     about: {
