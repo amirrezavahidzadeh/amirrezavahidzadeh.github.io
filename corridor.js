@@ -295,7 +295,7 @@
       g.fillStyle = '#07030f'; g.fillRect(0, 0, cw, ch);
       const bg = g.createRadialGradient(cw * .78, ch * .3, 10, cw * .78, ch * .3, cw * .8); bg.addColorStop(0, col + '38'); bg.addColorStop(1, 'transparent'); g.fillStyle = bg; g.fillRect(0, 0, cw, ch);
       g.fillStyle = col; g.font = '400 26px "Share Tech Mono", monospace'; g.fillText('CONTACT // WRITE TO ME', 56, 78);
-      g.shadowColor = col; g.shadowBlur = 24; g.fillStyle = '#fff'; g.font = '900 108px "Big Shoulders Display", Impact, sans-serif'; g.fillText("LET'S MAKE", 52, 196); g.fillText('SOMETHING', 52, 300); g.shadowBlur = 0;
+      g.shadowColor = col; g.shadowBlur = 24; g.fillStyle = '#fff'; g.font = '900 108px "Big Shoulders Display", Impact, sans-serif'; g.fillText('LET’S MAKE', 52, 196); g.fillText('MAGIC!', 52, 300); g.shadowBlur = 0;
       g.fillStyle = col; g.font = '60px Sahand, Vazirmatn, sans-serif'; g.fillText('تماس با من', 56, 380);
       // the envelope
       const ex = 760, ey = 150, ew = 200, eh = 136;
