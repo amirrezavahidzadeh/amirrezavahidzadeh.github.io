@@ -128,7 +128,38 @@ window.AV_START = (C) => {
   $('#roles').innerHTML = C.hero.roles.map(r => `<li><button type="button" data-c="${E(r.color)}" style="--c:${E(r.color)}">${E(r.label)}</button></li>`).join('');
   $('.hero-play').textContent = C.hero.hint;
   { const hs = $('.hero-story'); if (hs) { if (ST.prologue) hs.textContent = ST.prologue; else hs.remove(); } }
-  $('#arcade').insertAdjacentHTML('afterend', `<section class="contact" aria-label="About me"><h2>Transmit</h2><ul><li><a href="about/">About me · Contact</a></li></ul></section>`);
+  // ── contact: the email address, front and centre (taken from the admin's contact list, first email wins) ──
+  const MAIL = ((C.contact || []).map(c => String(c.url || '')).find(u => /@/.test(u)) || 'mailto:vahidstudioaccdontuse@gmail.com').replace(/^mailto:/i, '').trim();
+  const MAILW = E(MAIL).replace('@', '@<wbr>');   // if it must wrap, wrap after the @
+  const copyMail = async btn => {
+    let ok = false; try { await navigator.clipboard.writeText(MAIL); ok = true; } catch (e) {
+      const ta = document.createElement('textarea'); ta.value = MAIL; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0'; document.body.append(ta); ta.select();
+      try { ok = document.execCommand('copy'); } catch (e2) { } ta.remove(); }
+    if (btn) { const t = btn.dataset.t || (btn.dataset.t = btn.textContent); btn.textContent = ok ? 'Copied ✓' : 'Select & copy'; setTimeout(() => btn.textContent = t, 1800); }
+    SND.ui(ok ? 'good' : 'blip');
+  };
+  const contactHTML = (h = 'h2') => `<p class="ct-k">Contact <span lang="fa" dir="rtl">· تماس با من</span></p>
+      <${h} class="ct-h">Let's make something.</${h}>
+      <p class="ct-sub">Film, series, games, AI video: write to me.</p>
+      <a class="ct-mail" href="mailto:${E(MAIL)}">${MAILW}</a>
+      <div class="ct-btns"><a class="ct-btn" href="mailto:${E(MAIL)}">✉ Write to me</a><button type="button" class="ct-btn ct-copy">⧉ Copy address</button></div>`;
+  // the classic page: a contact card right after the first section, and the address again at the very end
+  const firstSec = () => $('#resume .rsec');
+  const placeCard = () => { const f = firstSec(); if (f && !$('#contact')) f.insertAdjacentHTML('afterend', `<section class="ct-card" id="contact" aria-label="Contact">${contactHTML()}</section>`); };
+  $('#arcade').insertAdjacentHTML('afterend', `<section class="contact" aria-label="Contact"><h2>Transmit</h2><a class="ct-mail" href="mailto:${E(MAIL)}">${MAILW}</a><ul><li><a href="mailto:${E(MAIL)}">Write to me</a></li><li><a href="about/">About me</a></li></ul></section>`);
+  document.addEventListener('click', e => { const b = e.target.closest('.ct-copy'); if (b) copyMail(b); });
+  // the same card as a pop-up, for the corridor's Contact stop
+  function contact() {
+    let ct = $('#ct');
+    if (!ct) {
+      document.body.insertAdjacentHTML('beforeend', `<div id="ct" role="dialog" aria-modal="true" aria-label="Contact" hidden><div class="ct-card ct-pop">${contactHTML('h2')}<button type="button" class="ct-x" aria-label="Close">✕</button></div></div>`);
+      ct = $('#ct');
+      ct.addEventListener('click', e => { if (e.target === ct || e.target.closest('.ct-x')) closeContact(); });
+      addEventListener('keydown', e => { if (e.key === 'Escape' && !ct.hidden) closeContact(); });
+    }
+    ct.hidden = false; document.body.classList.add('ct-open'); SND.ui('open'); setTimeout(() => $('.ct-mail', ct).focus(), 30);
+  }
+  function closeContact() { const ct = $('#ct'); if (!ct) return; ct.hidden = true; document.body.classList.remove('ct-open'); SND.ui('close'); }
   const letters = $$('.hn-l');
   function hitLetter(i, sound = true) {
     const l = letters[i]; if (!l) return; l.classList.remove('hit'); void l.offsetWidth; l.classList.add('hit');
@@ -155,6 +186,7 @@ window.AV_START = (C) => {
       <footer class="rsec-foot"><span class="rsec-or">Optional</span>${playBtn(c)}</footer></div>
     </article>`).join('');
   hydrate($('#resume'));
+  placeCard();
   const FREE = CABS.filter(c => !c.file);
   $('#arcade').innerHTML = FREE.map(c => `<button type="button" class="cab free" data-id="${c.id}" style="--c:${c.c}">
       <span class="cab-sign"><b>${E(c.name)}</b><i lang="fa" dir="rtl">${E(c.fa)}</i></span>
@@ -352,7 +384,7 @@ window.AV_START = (C) => {
     teardown(); cur = id; if (ov.hidden) { lastFocus = document.activeElement; ov.hidden = false; document.body.classList.add('ov-open'); SND.ui('open'); }
     showFile(id, false); requestAnimationFrame(() => $('#ovPanel').focus());
   }
-  window.AV = { open, close, openFile, state: S, content: C, files: FILES, cabs: CABS };
+  window.AV = { open, close, openFile, contact, mail: MAIL, state: S, content: C, files: FILES, cabs: CABS };
 };
 
 /* load content.json (written by the admin), fall back to the defaults */
