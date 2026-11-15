@@ -23,7 +23,7 @@ window.AV_START = (C) => {
 
   /* ── the cabinets ── */
   const LOCKED = ['about', 'bazar', 'siavash', 'edu', 'writer', 'crew', 'chess'];
-  const PROJ = ['sifted', 'temple']; // free-play cabinets that open a project page instead of a game
+  const PROJ = ['sifted', 'temple', 'friendfit']; // free-play cabinets that open a project page instead of a game
   const CABS = C.cabinets.filter(c => !c.hidden && (LOCKED.includes(c.id) || c.id === 'maker' || c.id === 'beat' || PROJ.includes(c.id)))
     .map((c, i) => ({ ...c, n: String(i + 1).padStart(2, '0'), c: c.color, file: LOCKED.includes(c.id) }));
   const FILES = CABS.filter(c => c.file), NF = FILES.length;
@@ -237,6 +237,21 @@ window.AV_START = (C) => {
       g.fillStyle = '#fff2c8'; g.beginPath(); g.arc(cx, cy, 11, 0, 7); g.fill();
       for (let i = 0; i < 11; i++) { const x = 18 + i * 20.5, hh = 10 + (i * 7) % 13, f = 1 + .25 * Math.sin(t * 9 + i * 2.1); g.fillStyle = 'rgba(240,226,196,.85)'; g.fillRect(x - 2.5, 132 - hh, 5, hh); g.fillStyle = 'rgba(255,190,80,.9)'; g.beginPath(); g.ellipse(x, 128 - hh, 2.4 * f, 5 * f, 0, 0, 7); g.fill(); }
     },
+    friendfit(g, w, h, t, c) {
+      // two blob buddies jog in step along a GPS route that draws itself; the streak flame grows behind them
+      const k = (t * .25) % 1;
+      g.strokeStyle = 'rgba(255,255,255,.12)'; g.lineWidth = 1; for (let x = 0; x < w; x += 20) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = 0; y < h; y += 20) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+      const P = u => [20 + u * 200, 112 - Math.sin(u * Math.PI * 2) * 14 - u * 18];
+      g.strokeStyle = c; g.lineWidth = 3; g.lineCap = 'round'; g.beginPath(); for (let i = 0; i <= 40; i++) { const [x, y] = P(i / 40 * k); i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
+      const f = 1 + .12 * Math.sin(t * 8); g.fillStyle = '#ffb938'; g.beginPath(); g.ellipse(200, 40, 9 * f, 14 * f, 0, 0, 7); g.fill(); g.fillStyle = '#fff1c2'; g.beginPath(); g.ellipse(200, 44, 4 * f, 7 * f, 0, 0, 7); g.fill();
+      const [bx, by] = P(k);
+      [[bx - 12, '#ff6b4a', 0], [bx + 6, '#22c99a', 1.6]].forEach(([x, col, ph]) => {
+        const y = by - 16 - Math.abs(Math.sin(t * 9 + ph)) * 5;
+        g.fillStyle = col; g.beginPath(); g.ellipse(x, y, 10, 11, 0, 0, 7); g.fill();
+        g.fillStyle = '#fff'; g.beginPath(); g.arc(x - 3, y - 2, 2.6, 0, 7); g.arc(x + 3, y - 2, 2.6, 0, 7); g.fill();
+        g.fillStyle = '#22192f'; g.beginPath(); g.arc(x - 2.4, y - 1.6, 1.2, 0, 7); g.arc(x + 3.6, y - 1.6, 1.2, 0, 7); g.fill();
+      });
+    },
     beat(g, w, h, t, c) { const D = SND.drums(), rows = ['t', 'k', 's', 'h']; rows.forEach((r, j) => { for (let i = 0; i < 16; i++) { g.fillStyle = D[r][i] ? (i === lastStep && SND.playing ? '#fff' : c) : 'rgba(255,255,255,.08)'; g.fillRect(8 + i * 14, 20 + j * 26, 11, 18); } }); },
   };
   const cabCv = $$('.cab canvas').map(cv => ({ cv, g: cv.getContext('2d'), c: cab(cv.closest('.cab').dataset.id) }));
@@ -289,14 +304,14 @@ window.AV_START = (C) => {
     };
     cleanup = id === 'maker' ? MAKER.mount(host, api, opts.level) : PROJ.includes(id) ? project(host, id) : GAMES[id](host, api);
   }
-  // Sifted and the Temple are projects, not games: their cabinets open a page about them with a button to launch them
+  // Sifted, the Temple and FriendFit are projects, not games: their cabinets open a page about them with a button to launch (or download) them
   function project(host, id) {
     const d = F[id] || {};
     host.className = 'g-host proj';
     host.innerHTML = `<div class="file f-pb f-proj">
-      ${d.hero ? `<a class="f-cover" href="${E(link(d.link))}" target="_blank" rel="noopener" aria-label="Open ${E(d.title)}"><img src="${E(d.hero)}" alt="${E(d.heroAlt)}" decoding="async"></a>` : ''}
+      ${d.hero ? `<a class="f-cover" href="${E(link(d.more || d.link))}" target="_blank" rel="noopener" aria-label="Open ${E(d.title)}"><img src="${E(d.hero)}" alt="${E(d.heroAlt)}" decoding="async"></a>` : ''}
       <header class="f-head"><p class="f-k">${E(d.kicker)}</p><h3>${E(d.title)} ${fa(d.fa)}</h3>${d.tagline ? `<p class="f-role">${E(d.tagline)}</p>` : ''}${d.credit ? `<p class="proj-credit">${E(d.credit)}</p>` : ''}</header>
-      <div class="proj-go"><a class="btn-neon big" href="${E(link(d.link))}" target="_blank" rel="noopener">Open ${E(d.title)} ↗</a>${d.source ? `<a class="btn-ghost" href="${E(link(d.source))}" target="_blank" rel="noopener">Source code</a>` : ''}</div>
+      <div class="proj-go"><a class="btn-neon big" href="${E(link(d.link))}" ${d.download ? `download="${E(d.download)}"` : 'target="_blank" rel="noopener"'}>${E(d.cta || `Open ${d.title} ↗`)}</a>${d.more ? `<a class="btn-ghost" href="${E(link(d.more))}" target="_blank" rel="noopener">${E(d.moreLabel || 'More')} ↗</a>` : ''}${d.source ? `<a class="btn-ghost" href="${E(link(d.source))}" target="_blank" rel="noopener">Source code</a>` : ''}</div>
       <p class="f-lede">${E(d.lede)}</p>
       ${(d.steps || []).length ? `<h4 class="proj-h">How to use it</h4><ol class="proj-steps">${d.steps.map((x, i) => `<li><span>${String(i + 1).padStart(2, '0')}</span><div><b>${E(x.title)}</b><p>${E(x.text)}</p></div></li>`).join('')}</ol>` : ''}
       ${(d.features || []).length ? `<h4 class="proj-h">What’s inside</h4><ul class="f-feats">${d.features.map(x => `<li><b>${E(x.title)}</b><span>${E(x.text)}</span></li>`).join('')}</ul>` : ''}

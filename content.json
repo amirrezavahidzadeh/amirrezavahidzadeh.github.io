@@ -136,6 +136,15 @@
       "color": "#e2bd62"
     },
     {
+      "id": "friendfit",
+      "hidden": false,
+      "name": "FriendFit",
+      "fa": "فرندفیت",
+      "game": "Mobile app",
+      "how": "Keep a workout streak with your people.",
+      "color": "#ff6b4a"
+    },
+    {
       "id": "beat",
       "hidden": false,
       "name": "Beat lab",

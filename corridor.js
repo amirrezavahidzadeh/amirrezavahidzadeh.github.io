@@ -290,7 +290,7 @@
       const small = src.replace(/(\.\w+)$/, '-p$1'); tryLoad(small, small !== src ? src : null);
     }));
     const F = C.files;
-    const posterPic = c => ({ bazar: F.bazar && F.bazar.hero, siavash: F.siavash && F.siavash.hero, sifted: F.sifted && F.sifted.hero, temple: F.temple && F.temple.hero }[c.id]);
+    const posterPic = c => ({ bazar: F.bazar && F.bazar.hero, siavash: F.siavash && F.siavash.hero, sifted: F.sifted && F.sifted.hero, temple: F.temple && F.temple.hero, friendfit: F.friendfit && F.friendfit.hero }[c.id]);
     ROOMS.forEach(c => { const p = posterPic(c); if (p) loadImg(p).then(i => { img[p].el = i; img[p].done = true; }); });
     // the Contact frame: the address itself, big, with an envelope in neon
     const contactPoster = c => {
@@ -325,17 +325,17 @@
       const bg = g.createRadialGradient(cw * .8, ch * .2, 10, cw * .8, ch * .2, cw * .9); bg.addColorStop(0, col + '40'); bg.addColorStop(1, 'transparent'); g.fillStyle = bg; g.fillRect(0, 0, cw, ch);
       if (im) { const s = Math.max(cw * .55 / im.width, ch / im.height); const w = im.width * s, h = im.height * s; g.save(); g.beginPath(); g.rect(cw * .45, 0, cw * .55, ch); g.clip(); g.drawImage(im, cw * .45 + (cw * .55 - w) / 2, (ch - h) / 2, w, h); const fade = g.createLinearGradient(cw * .45, 0, cw * .62, 0); fade.addColorStop(0, '#07030f'); fade.addColorStop(1, 'rgba(7,3,15,0)'); g.fillStyle = fade; g.fillRect(cw * .45, 0, cw * .2, ch); g.restore(); }
       const idx = FILES.indexOf(c);
-      g.fillStyle = col; g.font = '400 26px "Share Tech Mono", monospace'; g.fillText(c.file ? `${String(idx + 1).padStart(2, '0')} / ${String(FILES.length).padStart(2, '0')}` : c.id === 'sifted' ? 'WEB APP' : c.id === 'temple' ? '3D WORLD' : 'FREE PLAY', 56, 78);
+      g.fillStyle = col; g.font = '400 26px "Share Tech Mono", monospace'; g.fillText(c.file ? `${String(idx + 1).padStart(2, '0')} / ${String(FILES.length).padStart(2, '0')}` : c.id === 'sifted' ? 'WEB APP' : c.id === 'temple' ? '3D WORLD' : c.id === 'friendfit' ? 'MOBILE APP' : 'FREE PLAY', 56, 78);
       g.shadowColor = col; g.shadowBlur = 24; g.fillStyle = '#fff'; g.font = '900 104px "Big Shoulders Display", Impact, sans-serif';
       const words = String(c.name).toUpperCase().split(' '); let line = '', y = 196; const maxW = im ? cw * .5 : cw - 110;
       for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (g.measureText(t).width > maxW && line) { g.fillText(line, 56, y); y += 96; line = wd; } else line = t; } g.fillText(line, 56, y);
       g.shadowBlur = 0;
       if (c.fa) { g.fillStyle = col; g.font = '64px Sahand, Vazirmatn, sans-serif'; g.textAlign = 'left'; g.fillText(c.fa, 56, y + 84); }
-      const sub = { about: (F.about && F.about.stats || []).map(x => x.value).slice(0, 2).join(' · '), writer: F.writer && F.writer.lede, bazar: F.bazar && F.bazar.role, siavash: F.siavash && F.siavash.tagline, edu: 'B.A. Cinema · Art University of Tehran', crew: (F.crew && F.crew.roles || []).map(r => r.where).join(' · '), chess: F.chess && `${F.chess.format} ${F.chess.rating} · @${F.chess.handle}`, sifted: F.sifted && F.sifted.credit, temple: F.temple && F.temple.tagline }[c.id] || c.how;
+      const sub = { about: (F.about && F.about.stats || []).map(x => x.value).slice(0, 2).join(' · '), writer: F.writer && F.writer.lede, bazar: F.bazar && F.bazar.role, siavash: F.siavash && F.siavash.tagline, edu: 'B.A. Cinema · Art University of Tehran', crew: (F.crew && F.crew.roles || []).map(r => r.where).join(' · '), chess: F.chess && `${F.chess.format} ${F.chess.rating} · @${F.chess.handle}`, sifted: F.sifted && F.sifted.credit, temple: F.temple && F.temple.tagline, friendfit: F.friendfit && F.friendfit.tagline }[c.id] || c.how;
       g.fillStyle = '#d9d4f5'; g.font = '500 30px "Chakra Petch", sans-serif';
       const sw = String(sub || '').split(' '); let sl = '', sy2 = Math.min(ch - 110, y + (c.fa ? 150 : 70));
       for (const wd of sw) { const t = sl ? sl + ' ' + wd : wd; if (g.measureText(t).width > maxW && sl) { g.fillText(sl, 56, sy2); sy2 += 40; sl = wd; } else sl = t; } if (sl) g.fillText(sl, 56, sy2);
-      g.fillStyle = col; g.font = '700 26px "Chakra Petch", sans-serif'; g.fillText(c.file ? 'CLICK TO OPEN  ·  ▶ ' + String(c.game).toUpperCase() + ' (OPTIONAL)' : (c.id === 'sifted' || c.id === 'temple') ? 'CLICK TO OPEN' : '▶ PLAY', 56, ch - 44);
+      g.fillStyle = col; g.font = '700 26px "Chakra Petch", sans-serif'; g.fillText(c.file ? 'CLICK TO OPEN  ·  ▶ ' + String(c.game).toUpperCase() + ' (OPTIONAL)' : (c.id === 'sifted' || c.id === 'temple' || c.id === 'friendfit') ? 'CLICK TO OPEN' : '▶ PLAY', 56, ch - 44);
       const t = new T.CanvasTexture(cnv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = Math.min(8, R.capabilities.getMaxAnisotropy()); return t;
     };
     // paint-in reveal: a scanline wipes the frame from ink to full colour as you approach
@@ -558,7 +558,7 @@
       yaw *= 1 - .9 * upNow;
       // a button for the frame you are looking at
       const show = near && w > .45 ? near : null;
-      if (chip.__f !== show) { chip.__f = show; chip.hidden = !show; if (show) { chip.style.setProperty('--c', show.c.c); chip.querySelector('b').textContent = show.c.name; chip.querySelector('span').textContent = show.c.contact ? 'Write' : (show.c.file || show.c.id === 'sifted' || show.c.id === 'temple') ? 'Open' : 'Play'; } }
+      if (chip.__f !== show) { chip.__f = show; chip.hidden = !show; if (show) { chip.style.setProperty('--c', show.c.c); chip.querySelector('b').textContent = show.c.name; chip.querySelector('span').textContent = show.c.contact ? 'Write' : (show.c.file || show.c.id === 'sifted' || show.c.id === 'temple' || show.c.id === 'friendfit') ? 'Open' : 'Play'; } }
       cam.position.set(Math.sin(t * .4) * .06 + lookX * .25, 1.75 + Math.sin(t * .9) * .02 - lookY * .08, camZ);
       cam.rotation.set(-lookY * .08, yaw, 0, 'YXZ');
       // place the lifted frame: centred a little low (clear of the top bar), sized to sit comfortably in the screen
