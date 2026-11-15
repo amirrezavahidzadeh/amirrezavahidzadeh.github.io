@@ -23,7 +23,7 @@ window.AV_START = (C) => {
 
   /* ── the cabinets ── */
   const LOCKED = ['about', 'bazar', 'siavash', 'edu', 'writer', 'crew', 'chess'];
-  const CABS = C.cabinets.filter(c => !c.hidden && (LOCKED.includes(c.id) || c.id === 'maker' || c.id === 'beat'))
+  const CABS = C.cabinets.filter(c => !c.hidden && (LOCKED.includes(c.id) || c.id === 'maker' || c.id === 'beat' || c.id === 'sifted'))
     .map((c, i) => ({ ...c, n: String(i + 1).padStart(2, '0'), c: c.color, file: LOCKED.includes(c.id) }));
   const FILES = CABS.filter(c => c.file), NF = FILES.length;
   const cab = id => CABS.find(c => c.id === id);
@@ -102,7 +102,7 @@ window.AV_START = (C) => {
   }
   function ticker() {
     const T = SND.TRACKS[SND.track], n = FILES.filter(f => done(f.id)).length;
-    const bits = [`♪ Now playing: ${T.name} · ${T.mode} · ${T.bpm} BPM`, 'Original melodies in the Persian modes, played on synth santur', `${n}/${NF} games won`, 'Tap anywhere to play a note', 'Press A to L to jam', 'Build a level and send it as a link', 'Rewrite the drums in the Beat Lab', 'Night city, Tehran, 2099'];
+    const bits = [`♪ Now playing: ${T.name} · ${T.mode} · ${T.bpm} BPM`, 'Original melodies in the Persian modes, played on synth santur', `${n}/${NF} games won`, 'Tap anywhere to play a note', 'Press A to L to jam', 'Build a level and send it as a link', 'Rewrite the drums in the Beat Lab', 'Find your powder shade in Sifted', 'Night city, Tehran, 2099'];
     const s = bits.map(b => `<span>${b}</span><i>✦</i>`).join('');
     $('#tkIn').innerHTML = s + s;
   }
@@ -218,6 +218,15 @@ window.AV_START = (C) => {
     writer(g, w, h, t, c) { g.font = '13px "Share Tech Mono"'; const lines = ['INT. TAXI - NIGHT', 'He checks the mirror.', 'PASSENGER (O.S.)', 'Keep driving.', 'The tape clicks.', 'FADE OUT.']; const k = (t * 9) % 140; lines.forEach((l, i) => { const n = Math.max(0, Math.min(l.length, Math.floor(k - i * 22))); g.fillStyle = i % 2 ? 'rgba(200,210,255,.75)' : c; g.fillText(l.slice(0, n), 18, 24 + i * 19); }); if (Math.floor(t * 2) % 2) { g.fillStyle = c; g.fillRect(18, 128, 8, 3); } },
     chess(g, w, h, t) { for (let i = 0; i < 6; i++) { const x = 120 + Math.sin(t * .5 + i * 1.7) * 90, y = 70 + Math.cos(t * .4 + i * 2.3) * 40, r = 40 + 14 * Math.sin(t + i); const gr = g.createRadialGradient(x, y, 2, x, y, r); gr.addColorStop(0, 'rgba(255,190,60,.9)'); gr.addColorStop(.5, 'rgba(255,70,20,.55)'); gr.addColorStop(1, 'rgba(120,10,0,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); } for (let r = 0; r < 4; r++) for (let q = 0; q < 8; q++) { if ((r + q) % 2) continue; g.fillStyle = 'rgba(10,6,6,.82)'; g.fillRect(24 + q * 24, 22 + r * 24, 24, 24); } g.font = '20px serif'; g.fillStyle = '#fff1d6'; g.fillText('\u265A\uFE0E', 30 + (Math.floor(t) % 8) * 24, 40 + (Math.floor(t / 8) % 4) * 24); },
     maker(g, w, h, t, c) { g.strokeStyle = '#22f3ff'; g.lineWidth = 2; [[10, 120, 80], [110, 95, 50], [175, 70, 55]].forEach(([x, y, l]) => g.strokeRect(x, y, l, 10)); const k = (t * .5) % 1, x = 20 + k * 200, y = 108 - Math.abs(Math.sin(k * Math.PI * 3)) * 50 - k * 30; g.fillStyle = c; g.fillRect(x, y, 12, 12); g.fillStyle = '#ffe14d'; g.beginPath(); g.arc(200, 50, 5, 0, 7); g.fill(); },
+    sifted(g, w, h, t, c) {
+      // powder pans in skin tones; a brush sweeps across and leaves a soft wash of colour
+      const tones = ['#f3d6be', '#e2b896', '#c99572', '#a87452', '#7d5236', '#4f3222'];
+      tones.forEach((col, i) => { const x = 26 + i * 38, y = 46; g.fillStyle = 'rgba(255,255,255,.06)'; g.beginPath(); g.arc(x, y, 16, 0, 7); g.fill(); g.fillStyle = col; g.beginPath(); g.arc(x, y, 13, 0, 7); g.fill(); });
+      const k = (t * .35) % 1, bx = 20 + k * 200, by = 106 + Math.sin(k * Math.PI * 2) * 8;
+      const gr = g.createLinearGradient(20, 0, bx, 0); gr.addColorStop(0, 'rgba(255,180,138,0)'); gr.addColorStop(1, 'rgba(255,180,138,.55)');
+      g.fillStyle = gr; g.beginPath(); g.ellipse((20 + bx) / 2, 108, Math.max(1, (bx - 20) / 2), 9, 0, 0, 7); g.fill();
+      g.save(); g.translate(bx, by); g.rotate(-.5); g.fillStyle = c; g.fillRect(-5, -26, 10, 16); g.fillStyle = '#d9d9de'; g.fillRect(-4, -10, 8, 6); g.fillStyle = '#16121e'; g.fillRect(-3, -4, 6, 30); g.restore();
+    },
     beat(g, w, h, t, c) { const D = SND.drums(), rows = ['t', 'k', 's', 'h']; rows.forEach((r, j) => { for (let i = 0; i < 16; i++) { g.fillStyle = D[r][i] ? (i === lastStep && SND.playing ? '#fff' : c) : 'rgba(255,255,255,.08)'; g.fillRect(8 + i * 14, 20 + j * 26, 11, 18); } }); },
   };
   const cabCv = $$('.cab canvas').map(cv => ({ cv, g: cv.getContext('2d'), c: cab(cv.closest('.cab').dataset.id) }));
@@ -268,7 +277,22 @@ window.AV_START = (C) => {
       win: msg => { if (my !== token) return; teardown(); S.shards[id] = 1; persist(); hud(); SND.ui('win'); CITY.ripple(innerWidth / 2, innerHeight / 2, c.c, 400, true); result(id, true, msg); },
       lose: msg => { if (my !== token) return; teardown(); S.fails[id] = (S.fails[id] || 0) + 1; persist(); SND.ui('glitch'); result(id, false, msg); },
     };
-    cleanup = id === 'maker' ? MAKER.mount(host, api, opts.level) : GAMES[id](host, api);
+    cleanup = id === 'maker' ? MAKER.mount(host, api, opts.level) : id === 'sifted' ? project(host) : GAMES[id](host, api);
+  }
+  // Sifted is a project, not a game: its cabinet opens a page about it with a button to launch it
+  function project(host) {
+    const d = F.sifted || {};
+    host.className = 'g-host proj';
+    host.innerHTML = `<div class="file f-pb f-proj">
+      ${d.hero ? `<a class="f-cover" href="${E(link(d.link))}" target="_blank" rel="noopener" aria-label="Open ${E(d.title)}"><img src="${E(d.hero)}" alt="${E(d.heroAlt)}" decoding="async"></a>` : ''}
+      <header class="f-head"><p class="f-k">${E(d.kicker)}</p><h3>${E(d.title)} ${fa(d.fa)}</h3>${d.tagline ? `<p class="f-role">${E(d.tagline)}</p>` : ''}${d.credit ? `<p class="proj-credit">${E(d.credit)}</p>` : ''}</header>
+      <div class="proj-go"><a class="btn-neon big" href="${E(link(d.link))}" target="_blank" rel="noopener">Open ${E(d.title)} ↗</a>${d.source ? `<a class="btn-ghost" href="${E(link(d.source))}" target="_blank" rel="noopener">Source code</a>` : ''}</div>
+      <p class="f-lede">${E(d.lede)}</p>
+      ${(d.steps || []).length ? `<h4 class="proj-h">How to use it</h4><ol class="proj-steps">${d.steps.map((x, i) => `<li><span>${String(i + 1).padStart(2, '0')}</span><div><b>${E(x.title)}</b><p>${E(x.text)}</p></div></li>`).join('')}</ol>` : ''}
+      ${(d.features || []).length ? `<h4 class="proj-h">What’s inside</h4><ul class="f-feats">${d.features.map(x => `<li><b>${E(x.title)}</b><span>${E(x.text)}</span></li>`).join('')}</ul>` : ''}
+      ${(d.shots || []).length ? `<div class="f-pair">${d.shots.map(x => `<figure><button type="button" data-zoom="${E(x.image)}" aria-label="Enlarge: ${E(x.caption)}"><img src="${E(x.image)}" alt="${E(x.caption)}" loading="lazy"></button><figcaption>${E(x.caption)}</figcaption></figure>`).join('')}</div>` : ''}
+      ${d.footnote ? `<p class="f-tech">${E(d.footnote)}</p>` : ''}</div>`;
+    return null;
   }
   function result(id, won, msg) {
     const c = cab(id), f = S.fails[id] || 0, BY = !!RULES.bypassEnabled, BN = Math.max(1, +RULES.lossesBeforeBypass || 2);

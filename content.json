@@ -118,6 +118,15 @@
       "color": "#ff2bd6"
     },
     {
+      "id": "sifted",
+      "hidden": false,
+      "name": "Sifted",
+      "fa": "سیفتد",
+      "game": "Web app",
+      "how": "Find your powder shade and brush it on.",
+      "color": "#ffb48a"
+    },
+    {
       "id": "beat",
       "hidden": false,
       "name": "Beat lab",

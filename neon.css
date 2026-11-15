@@ -722,3 +722,17 @@ body.corridor .ct-card:not(.ct-pop){display:none}
 @media (prefers-reduced-motion:reduce){#ct .ct-pop{animation:none}}
 html.vscroll #ct,html.vscroll #ct *{touch-action:auto}
 body.ct-open{overflow:hidden}
+
+/* Sifted project page (free-play cabinet that opens a project instead of a game) */
+.g-host.proj{display:block;padding:0;overflow:visible}
+.f-proj{display:grid;gap:18px}
+.f-proj .f-cover{text-decoration:none}
+.proj-credit{font:500 1rem var(--ui);color:#fff;letter-spacing:.02em}
+.proj-go{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.proj-go .btn-ghost{text-decoration:none}
+.proj-h{font:700 .9rem var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--c);margin-top:6px}
+.proj-steps{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.proj-steps li{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:14px 16px;border:1px solid color-mix(in srgb,var(--c) 40%,transparent);border-radius:4px;background:color-mix(in srgb,var(--c) 6%,transparent)}
+.proj-steps li>span{font:400 1.6rem/1 var(--mono);color:var(--c);text-shadow:0 0 .3em var(--c)}
+.proj-steps b{display:block;font:900 1.25rem/1.05 var(--disp);color:#fff;letter-spacing:.03em;margin-bottom:4px}
+.proj-steps p{color:#cfc9ee;font-size:.95rem;margin:0}

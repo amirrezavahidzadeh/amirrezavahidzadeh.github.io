@@ -1,0 +1,2360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Sifted · The powder shade studio</title>
+<meta name="description" content="Find your face powder shade and brush it onto a photoreal face in 2D or 3D, or onto your own selfie. English and Persian. Created by Fateme Mohsenzadeh and Amirreza Vahidzadeh.">
+<meta name="author" content="Fateme Mohsenzadeh, Amirreza Vahidzadeh">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Sifted · The powder shade studio">
+<meta property="og:description" content="Find your face powder shade and brush it on, in 2D or 3D. By Fateme Mohsenzadeh and Amirreza Vahidzadeh.">
+<meta property="og:image" content="https://amirrezavahidzadeh.github.io/sifted/og.jpg">
+<meta property="og:url" content="https://amirrezavahidzadeh.github.io/sifted/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://amirrezavahidzadeh.github.io/sifted/">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%22%230b0b0b%22/%3E%3Ctext x=%2232%22 y=%2246%22 font-family=%22Didot,Bodoni 72,Times New Roman,serif%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23fff%22%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Jost:wght@300;400;500&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a fashion house's studio. The face fills a quiet grey stage; a white editorial column of three steps sits beside it.
+   Black and white only: the one colour on the page is skin and powder (--shade, set by script). Square, hairline controls. */
+:root {
+  --bg: #ffffff;
+  --stage: #ececea;
+  --stage-glow: #f7f7f6;
+  --surface: #ffffff;
+  --fg: #0b0b0b;
+  --muted: #767676;
+  --line: #e3e3e1;
+  --chip: #ffffff;
+  --glass: rgb(255 255 255 / .82);
+  --shade: #c89a78;
+  --good: #2d6b4f;
+  --warn: #8f5a24;
+  --bad: #9b2f2f;
+  --f-display: "Bodoni Moda", "Didot", "Bodoni 72", "Times New Roman", serif;
+  --f-body: "Jost", "Futura", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "Jost", "Futura", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  --track: .16em;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0a0a; --stage: #131313; --stage-glow: #1d1d1d; --surface: #0a0a0a;
+    --fg: #f2f2f0; --muted: #8d8d8b; --line: #262626; --chip: #111111; --glass: rgb(16 16 16 / .78);
+    --good: #7cc6a2; --warn: #e2a866; --bad: #ef8b8b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a0a0a; --stage: #131313; --stage-glow: #1d1d1d; --surface: #0a0a0a;
+  --fg: #f2f2f0; --muted: #8d8d8b; --line: #262626; --chip: #111111; --glass: rgb(16 16 16 / .78);
+  --good: #7cc6a2; --warn: #e2a866; --bad: #ef8b8b; color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 14px; line-height: 1.5; font-weight: 400;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+* { box-sizing: border-box; }
+button, input { font: inherit; color: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 1px solid var(--fg); outline-offset: 3px; }
+.caps { text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500; }
+
+.app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 420px; }
+
+/* ---------- stage ---------- */
+.stage {
+  position: relative; min-height: 0; overflow: hidden; touch-action: none;
+  background: radial-gradient(58% 54% at 50% 44%, var(--stage-glow), var(--stage) 78%);
+}
+.stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.stage canvas[hidden] { display: none; }
+.stage:not(.placing) canvas { cursor: none; }
+.stage.placing canvas { cursor: crosshair; }
+.stage.orbiting canvas { cursor: grab; }
+body.simple [data-studio] { display: none !important; }
+body:not(.simple) [data-simple] { display: none !important; }
+
+.brand {
+  position: absolute; z-index: 4; top: 18px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border: 0; background: none; padding: 4px 8px; cursor: pointer; color: var(--fg); text-align: center;
+}
+.brand b {
+  font-family: "Bodoni Moda", "Didot", "Bodoni 72", serif; font-weight: 500; font-size: 26px; line-height: 1;
+  letter-spacing: .34em; margin-inline-start: .34em; text-transform: uppercase;
+}
+.brand span { color: var(--muted); font-size: 10px; letter-spacing: var(--track); text-transform: uppercase; font-weight: 500; }
+
+.modes, .lang {
+  position: absolute; z-index: 4; top: 20px; display: flex; gap: 0;
+  border: 1px solid var(--line); background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.modes { inset-inline-start: 20px; }
+.lang { inset-inline-end: 20px; }
+.modes button, .lang button {
+  border: 0; background: none; padding: 9px 14px; cursor: pointer; color: var(--muted); white-space: nowrap;
+  text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500;
+}
+.modes button[aria-pressed="true"], .lang button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.lang button[lang="fa"] { font-family: "Nazanin Local", "Noto Naskh Arabic", Tahoma, serif; font-size: 14px; letter-spacing: 0; text-transform: none; padding-block: 5px; }
+
+.stage-hint {
+  position: absolute; z-index: 3; top: 92px; left: 50%; transform: translateX(-50%); margin: 0;
+  max-width: calc(100% - 32px); padding: 10px 18px; font-size: 12.5px; text-align: center;
+  background: var(--fg); color: var(--bg); letter-spacing: .02em;
+}
+
+/* glass bars on the stage */
+.brushbar, .lights, .angles, .flash-note, .zoom button, .stick {
+  background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--line);
+}
+.brushbar {
+  position: absolute; z-index: 3; left: 50%; transform: translateX(-50%);
+  bottom: calc(max(20px, env(safe-area-inset-bottom, 0px)) + 52px);
+  display: flex; align-items: center; gap: 0; padding: 0 0 0 16px;
+  max-width: calc(100% - 32px); overflow-x: auto; scrollbar-width: none;
+}
+.brushbar::-webkit-scrollbar { display: none; }
+body.simple .brushbar { bottom: max(20px, env(safe-area-inset-bottom, 0px)); }
+.brushbar label { color: var(--muted); margin-inline-end: 10px; text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500; }
+.brushbar input[type="range"] { width: 92px; margin-inline-end: 8px; }
+.brushbar button {
+  border: 0; border-inline-start: 1px solid var(--line); background: none; padding: 13px 16px; cursor: pointer; white-space: nowrap;
+  color: var(--fg); user-select: none; -webkit-user-select: none; touch-action: none;
+  text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500;
+}
+.brushbar button:hover { background: var(--bg); }
+.brushbar button[data-active] { background: var(--fg); color: var(--bg); }
+
+.lights {
+  position: absolute; z-index: 3; left: 50%; transform: translateX(-50%); bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  display: flex; max-width: calc(100% - 32px); overflow-x: auto; scrollbar-width: none;
+}
+.lights::-webkit-scrollbar { display: none; }
+.lights button {
+  border: 0; background: none; padding: 9px 14px; cursor: pointer; white-space: nowrap; color: var(--muted);
+  text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500;
+}
+.lights button small { margin-inline-start: 6px; opacity: .6; letter-spacing: .04em; font-size: 9.5px; font-variant-numeric: tabular-nums; }
+.lights button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.flash-note {
+  position: absolute; z-index: 3; left: 50%; transform: translateX(-50%); bottom: calc(max(20px, env(safe-area-inset-bottom, 0px)) + 106px);
+  width: min(440px, calc(100% - 32px)); padding: 10px 14px; text-align: center; font-size: 12.5px; color: var(--fg);
+}
+.loading {
+  position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted);
+  text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500;
+}
+
+.brush-cursor {
+  position: absolute; left: 0; top: 0; width: 44px; height: 190px; z-index: 5; pointer-events: none;
+  transform-origin: 0 0; will-change: transform; filter: drop-shadow(0 8px 12px rgb(0 0 0 / .28));
+}
+.brush-cursor .bristles { transform-box: fill-box; transform-origin: 50% 100%; transition: transform .12s; }
+.brush-cursor.pressing .bristles { transform: scale(1.06, 0.9); }
+
+/* camera controls (3D) */
+.camdock {
+  position: absolute; z-index: 3; inset-inline-start: 20px; bottom: calc(max(20px, env(safe-area-inset-bottom, 0px)) + 112px);
+  display: flex; align-items: flex-end; gap: 8px;
+}
+.stick { position: relative; width: 84px; height: 84px; border-radius: 50%; cursor: grab; touch-action: none; }
+.stick::before {
+  content: ""; position: absolute; inset: 9px; border-radius: 50%; opacity: .5;
+  background: conic-gradient(from -6deg, var(--fg) 0 12deg, transparent 12deg 90deg, var(--fg) 90deg 102deg, transparent 102deg 180deg, var(--fg) 180deg 192deg, transparent 192deg 270deg, var(--fg) 270deg 282deg, transparent 282deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 80%, #000 82% 88%, transparent 90%);
+          mask: radial-gradient(circle, transparent 0 80%, #000 82% 88%, transparent 90%);
+}
+.stick i {
+  position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%;
+  background: var(--fg); box-shadow: 0 4px 12px rgb(0 0 0 / .22); transition: transform .18s ease-out;
+}
+.stick.active { cursor: grabbing; }
+.stick.active i { transition: none; }
+.zoom { display: flex; flex-direction: column; gap: 6px; }
+.zoom button { width: 36px; height: 36px; cursor: pointer; font-size: 17px; line-height: 1; color: var(--fg); font-weight: 300; }
+.angles {
+  position: absolute; z-index: 3; inset-inline-end: 20px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column;
+}
+.angles button {
+  border: 0; background: none; padding: 10px 14px; cursor: pointer; white-space: nowrap; color: var(--muted);
+  text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500; text-align: start;
+}
+.angles button + button { border-top: 1px solid var(--line); }
+.angles button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+
+/* ---------- panel ---------- */
+.panel {
+  min-height: 0; overflow-y: auto; background: var(--surface); border-inline-start: 1px solid var(--line);
+  padding-block: 28px 32px; padding-left: 32px; padding-right: max(32px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 0;
+}
+.step { display: flex; flex-direction: column; gap: 16px; padding-block: 26px; border-bottom: 1px solid var(--line); }
+.step:first-child { padding-top: 4px; }
+.step-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.step-head h2 { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.num { color: var(--muted); text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.step-head h2 > span:last-child { font-family: var(--f-display); font-weight: 400; font-size: 28px; line-height: 1.05; letter-spacing: -0.005em; color: var(--fg); }
+.more {
+  display: inline-flex; align-items: center; gap: 8px; padding: 0 0 4px; border: 0; border-bottom: 1px solid var(--fg);
+  background: none; cursor: pointer; color: var(--fg); white-space: nowrap;
+  text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500;
+}
+.more::after { content: "+"; font-size: 14px; line-height: 1; font-weight: 300; letter-spacing: 0; }
+.step.open .more::after { content: "\2212"; }
+.more-body {
+  display: flex; flex-direction: column; gap: 22px; padding: 20px 0 2px; border-top: 1px solid var(--line);
+  animation: rise .35s ease-out;
+}
+.field { display: flex; flex-direction: column; gap: 10px; }
+.field-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.label, .match-label { color: var(--muted); text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500; }
+.match-label { display: block; margin-bottom: 4px; }
+.hint { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+.hint b { color: var(--fg); font-weight: 500; }
+.mono { font-family: var(--f-mono); font-size: 11.5px; font-variant-numeric: tabular-nums; letter-spacing: .04em; color: var(--muted); }
+section { display: flex; flex-direction: column; }
+
+.depth { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
+.depth button {
+  aspect-ratio: 1; border-radius: 50%; border: 0; cursor: pointer; padding: 0;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .06); transition: transform .2s ease;
+}
+.depth button:hover { transform: scale(1.06); }
+.depth button[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--fg); }
+
+input[type="range"] { width: 100%; height: 24px; background: none; -webkit-appearance: none; appearance: none; cursor: pointer; }
+input[type="range"]::-webkit-slider-runnable-track { height: 1px; background: var(--track-bg, var(--fg)); }
+input[type="range"]::-moz-range-track { height: 1px; background: var(--track-bg, var(--fg)); }
+#depthFine::-webkit-slider-runnable-track { height: 6px; }
+#depthFine::-moz-range-track { height: 6px; }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px; margin-top: -6.5px; border-radius: 50%; background: var(--surface); border: 1px solid var(--fg);
+}
+#depthFine::-webkit-slider-thumb { margin-top: -4px; }
+input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 1px solid var(--fg); }
+
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line); }
+.seg button {
+  position: relative; border: 0; background: none; padding: 11px 4px; cursor: pointer; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .12em; font-size: 10.5px; font-weight: 500; transition: color .2s, background .2s;
+}
+.seg button + button { border-inline-start: 1px solid var(--line); }
+.seg button:hover { color: var(--fg); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg button.suggest::after { content: ""; position: absolute; top: 6px; inset-inline-end: 7px; width: 4px; height: 4px; border-radius: 50%; background: var(--good); }
+
+/* best match: presented like a compact */
+.match { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 22px; align-items: center; padding: 6px 0 4px; }
+.pan {
+  width: 96px; height: 96px; border-radius: 50%; background: var(--shade); position: relative;
+  box-shadow: inset 0 0 0 7px rgb(255 255 255 / .16), inset 0 -12px 22px rgb(0 0 0 / .16), inset 0 10px 16px rgb(255 255 255 / .22),
+              0 0 0 6px var(--surface), 0 0 0 7px var(--fg);
+}
+.match h3 { margin: 0 0 6px; font-family: var(--f-display); font-weight: 400; font-size: 30px; line-height: 1.05; letter-spacing: -0.005em; text-wrap: balance; }
+.match p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.55; }
+.verdict { display: inline-flex; gap: 8px; align-items: center; margin-top: 10px; color: var(--fg); text-transform: uppercase; letter-spacing: .12em; font-size: 10.5px; font-weight: 500; }
+.verdict::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--v, var(--good)); }
+
+.shades { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px 8px; }
+.shade { display: flex; flex-direction: column; align-items: center; gap: 6px; border: 0; background: none; padding: 0; cursor: pointer; color: var(--fg); }
+.shade span {
+  width: 100%; max-width: 44px; aspect-ratio: 1; border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .06), inset 0 -6px 10px rgb(0 0 0 / .1), inset 0 5px 8px rgb(255 255 255 / .18); transition: transform .2s ease;
+}
+.shade:hover span { transform: scale(1.06); }
+.shade[data-kind="loose"] span { background-image: radial-gradient(circle at 35% 30%, rgb(255 255 255 / .55), transparent 55%) !important; }
+.shade[aria-pressed="true"] span { box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--fg); }
+.shade em { font-style: normal; text-transform: uppercase; letter-spacing: .1em; font-size: 10.5px; font-weight: 500; }
+.shade small { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.shade.top small { color: var(--good); }
+.step:not(.open) .shades .shade:nth-child(n+7) { display: none; }
+
+/* photo reader */
+.drop { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 20px; cursor: pointer; border: 1px dashed var(--muted); transition: border-color .2s; }
+.drop:hover, .drop.over, .drop:focus-within { border-color: var(--fg); border-style: solid; }
+.drop input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.drop b { text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500; }
+.drop span { font-size: 13px; color: var(--muted); }
+.photo { display: flex; flex-direction: column; gap: 12px; }
+.pic-wrap { display: flex; justify-content: center; background: var(--stage); padding: 8px; }
+.pic { position: relative; line-height: 0; cursor: crosshair; }
+.pic img { display: block; max-width: 100%; max-height: 300px; }
+.dot { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1.5px rgb(0 0 0 / .55); pointer-events: none; }
+.dot.white { border-style: dashed; }
+.reading { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; align-items: center; }
+.reading .sw { width: 44px; height: 44px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .1); }
+.reading b { display: block; font-weight: 500; }
+.photo-actions { display: flex; gap: 20px; flex-wrap: wrap; }
+.link {
+  border: 0; border-bottom: 1px solid currentColor; background: none; padding: 0 0 2px; cursor: pointer; color: var(--fg);
+  text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500; text-decoration: none;
+}
+.link:hover { color: var(--muted); }
+.warn { color: var(--warn) !important; }
+.field .link, .photo-actions .link { align-self: flex-start; }
+html.covered, html.covered body { overflow: hidden; }
+
+/* skin details */
+.tools { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-inline-start: 1px solid var(--line); }
+.tool {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 4px 12px; cursor: pointer;
+  border: 0; border-inline-end: 1px solid var(--line); border-bottom: 1px solid var(--line); background: none; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em; font-size: 9.5px; font-weight: 500;
+}
+.tool:hover { color: var(--fg); }
+.tool i { width: 18px; height: 18px; border-radius: 50%; display: block; }
+.tool[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.tool[aria-pressed="true"] i { box-shadow: 0 0 0 2px var(--bg); }
+.tool[data-t="mole"] i { background: radial-gradient(circle, #3b2418 45%, transparent 50%); }
+.tool[data-t="pimple"] i { background: radial-gradient(circle, #f3dccb 0 14%, #c9564d 26%, rgb(201 86 77 / .25) 62%, transparent 70%); }
+.tool[data-t="freckles"] i { background: radial-gradient(circle at 30% 35%, #9a6a4a 0 9%, transparent 11%), radial-gradient(circle at 68% 30%, #9a6a4a 0 8%, transparent 10%), radial-gradient(circle at 50% 70%, #9a6a4a 0 9%, transparent 11%), radial-gradient(circle at 22% 72%, #9a6a4a 0 7%, transparent 9%), radial-gradient(circle at 78% 66%, #9a6a4a 0 7%, transparent 9%); }
+.tool[data-t="redness"] i { background: radial-gradient(circle, rgb(205 80 80 / .65), transparent 70%); }
+.tool[data-t="circles"] i { background: radial-gradient(ellipse 50% 30% at 50% 50%, rgb(110 70 100 / .7), transparent 100%); }
+.tool[data-t="mark"] i { background: radial-gradient(circle, #8a5a48 40%, transparent 52%); }
+.tool[data-t="erase"] i { border: 1px dashed currentColor; }
+.tool[data-t="brush"] i { background: radial-gradient(circle, var(--shade) 34%, transparent 72%); }
+.tool[data-t="none"] i { border: 1px solid currentColor; }
+
+/* footer with the credit */
+.foot { margin: 0; padding-top: 26px; display: flex; flex-direction: column; gap: 14px; }
+.foot .credit { font-family: var(--f-display); font-size: 17px; line-height: 1.45; color: var(--fg); margin: 0; }
+.foot .fine { font-size: 12px; color: var(--muted); line-height: 1.6; margin: 0; }
+.foot .fine a { color: inherit; }
+.foot .links { display: flex; gap: 20px; flex-wrap: wrap; }
+.foot .links a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--fg); padding-bottom: 2px; text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500; }
+.foot .links button { color: var(--fg); }
+
+/* full-screen views: intro and about */
+.cover {
+  position: fixed; inset: 0; z-index: 30; overflow-y: auto; display: grid; place-items: center;
+  background: var(--bg); color: var(--fg);
+  padding-block: 64px 48px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.cover .lang { position: absolute; top: 20px; }
+.cover-inner { width: 100%; max-width: 760px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 26px; }
+.cover .wordmark {
+  font-family: "Bodoni Moda", "Didot", "Bodoni 72", serif; font-weight: 500; line-height: 1; text-transform: uppercase;
+  font-size: clamp(54px, 13vw, 128px); letter-spacing: .26em; margin-inline-start: .26em;
+}
+.cover .tagline { margin: 0; color: var(--muted); text-transform: uppercase; letter-spacing: .22em; font-size: 11px; font-weight: 500; }
+.cover .rule { width: 48px; height: 1px; background: var(--fg); }
+.cover .credit-line { margin: 0; font-family: var(--f-display); font-size: clamp(19px, 2.6vw, 25px); line-height: 1.45; font-weight: 400; text-wrap: balance; }
+.intro-steps { list-style: none; margin: 8px 0 0; padding: 0; width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.intro-steps li { padding: 22px 18px; display: flex; flex-direction: column; gap: 8px; text-align: start; }
+.intro-steps li + li { border-inline-start: 1px solid var(--line); }
+.intro-steps .n { color: var(--muted); text-transform: uppercase; letter-spacing: var(--track); font-size: 10.5px; font-weight: 500; }
+.intro-steps b { font-family: var(--f-display); font-weight: 400; font-size: 22px; line-height: 1.1; }
+.intro-steps span:last-child { color: var(--muted); font-size: 13px; line-height: 1.55; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-width: 220px; padding: 17px 34px;
+  border: 1px solid var(--fg); background: var(--fg); color: var(--bg); cursor: pointer; text-decoration: none;
+  text-transform: uppercase; letter-spacing: .22em; font-size: 11px; font-weight: 500; transition: background .25s, color .25s;
+}
+.btn:hover { background: var(--bg); color: var(--fg); }
+.btn.ghost { background: none; color: var(--fg); }
+.btn.ghost:hover { background: var(--fg); color: var(--bg); }
+.cover .reveal { animation: rise .8s cubic-bezier(.2, .7, .2, 1) both; }
+.cover .reveal:nth-child(2) { animation-delay: .08s; }
+.cover .reveal:nth-child(3) { animation-delay: .16s; }
+.cover .reveal:nth-child(4) { animation-delay: .24s; }
+.cover .reveal:nth-child(5) { animation-delay: .32s; }
+.cover .reveal:nth-child(6) { animation-delay: .4s; }
+.cover .wordmark.small { font-size: 20px; letter-spacing: .34em; margin-inline-start: .34em; color: var(--muted); }
+.cover-title { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: clamp(44px, 8vw, 84px); line-height: 1.02; letter-spacing: -0.01em; }
+html:lang(fa) .cover-title { font-size: clamp(46px, 8vw, 84px); line-height: 1.3; font-weight: 600; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Persian ---------- */
+@font-face { font-family: "Nazanin Local"; src: local("B Nazanin"), local("BNazanin"), local("B Nazanin Regular"), local("BNazanin-Regular"); font-weight: 100 500; }
+@font-face { font-family: "Nazanin Local"; src: local("B Nazanin Bold"), local("BNazanin Bold"), local("BNazanin-Bold"), local("B Nazanin"), local("BNazanin"); font-weight: 600 900; }
+:root:lang(fa) {
+  --f-body: "Nazanin Local", "Noto Naskh Arabic", Tahoma, serif;
+  --f-display: "Nazanin Local", "Noto Naskh Arabic", Tahoma, serif;
+  --f-mono: "Nazanin Local", "Noto Naskh Arabic", Tahoma, serif;
+}
+html:lang(fa) body { font-size: 15.5px; line-height: 1.8; }
+html:lang(fa) * { letter-spacing: 0 !important; }
+html:lang(fa) .brand b, html:lang(fa) .cover .wordmark { letter-spacing: .3em !important; }
+html:lang(fa) .caps, html:lang(fa) .label, html:lang(fa) .match-label, html:lang(fa) .num, html:lang(fa) .seg button,
+html:lang(fa) .modes button, html:lang(fa) .brushbar button, html:lang(fa) .brushbar label, html:lang(fa) .lights button,
+html:lang(fa) .angles button, html:lang(fa) .more, html:lang(fa) .link, html:lang(fa) .verdict, html:lang(fa) .tool,
+html:lang(fa) .drop b, html:lang(fa) .foot .links a, html:lang(fa) .btn, html:lang(fa) .cover .tagline,
+html:lang(fa) .intro-steps .n, html:lang(fa) .loading, html:lang(fa) .brand span { font-size: 13.5px; font-weight: 600; }
+html:lang(fa) .step-head h2 > span:last-child { font-size: 30px; line-height: 1.35; font-weight: 600; }
+html:lang(fa) .match h3 { font-size: 30px; line-height: 1.35; font-weight: 600; }
+html:lang(fa) .intro-steps b { font-size: 24px; font-weight: 600; }
+html:lang(fa) .cover .credit-line { font-size: clamp(22px, 3vw, 29px); font-weight: 600; }
+html:lang(fa) .foot .credit { font-size: 19px; font-weight: 600; }
+html:lang(fa) .shade em { font-size: 12.5px; }
+html:lang(fa) .mono { font-size: 13px; }
+
+/* ---------- phones ---------- */
+@media (max-width: 860px) {
+  html, body { height: auto; }
+  .app { grid-template-columns: 1fr; height: auto; }
+  .stage { height: 64svh; min-height: 400px; }
+  .panel { border-inline-start: 0; border-top: 1px solid var(--line); overflow: visible; padding-block: 8px 28px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+  .brand { top: 60px; padding: 2px 6px; }
+  .brand b { font-size: 17px; }
+  .brand span { display: none; }
+  .modes { top: 14px; inset-inline-start: max(12px, env(safe-area-inset-left, 0px)); }
+  .lang { top: 14px; inset-inline-end: max(12px, env(safe-area-inset-right, 0px)); }
+  .modes button, .lang button { padding: 8px 9px; font-size: 9.5px; }
+  .stage-hint { top: 92px; }
+  .brushbar { padding-inline-start: 12px; }
+  .brushbar label { display: none; }
+  .brushbar input[type="range"] { width: 44px; margin-inline-end: 4px; }
+  .brushbar button { padding: 12px 8px; font-size: 9.5px; letter-spacing: .06em; }
+  .lights button small { display: none; }
+  .lights button { padding: 9px 10px; font-size: 9.5px; }
+  .camdock { inset-inline-start: 12px; bottom: calc(max(20px, env(safe-area-inset-bottom, 0px)) + 104px); }
+  .stick { width: 70px; height: 70px; }
+  .stick i { width: 28px; height: 28px; margin: -14px 0 0 -14px; }
+  .zoom button { width: 32px; height: 32px; }
+  .angles { inset-inline-end: 10px; }
+  .angles button { padding: 9px 9px; font-size: 9.5px; }
+  .step-head h2 > span:last-child { font-size: 25px; }
+  .match { grid-template-columns: 80px minmax(0, 1fr); gap: 18px; }
+  .pan { width: 80px; height: 80px; }
+  .match h3 { font-size: 26px; }
+  .intro-steps { grid-template-columns: 1fr; }
+  .intro-steps li + li { border-inline-start: 0; border-top: 1px solid var(--line); }
+  .intro-steps li { padding: 16px 4px; }
+  .cover { padding-block: 72px 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <div class="stage" id="stage">
+    <button class="brand" id="brandBtn" type="button" aria-label="Sifted: show the introduction" data-i18n-aria="brandAria"><b>Sifted</b><span data-i18n="tagline">The powder shade studio</span></button>
+    <div class="modes" id="modes" role="group" aria-label="View" data-i18n-aria="view">
+      <button data-v="simple" data-i18n="modeSimple">Simple</button><button data-v="studio" data-i18n="modeStudio">3D studio</button>
+    </div>
+    <div class="lang" id="lang" role="group" aria-label="Language" data-i18n-aria="language">
+      <button data-v="en" lang="en">EN</button><button data-v="fa" lang="fa">فا</button>
+    </div>
+    <p class="stage-hint" id="stageHint" hidden></p>
+    <div class="brush-cursor" id="brushCur" hidden aria-hidden="true">
+      <svg viewBox="0 0 44 190" width="44" height="190">
+        <defs>
+          <linearGradient id="gBristle" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color: var(--shade)"/><stop offset=".38" stop-color="#efe7dc"/><stop offset="1" stop-color="#ddd0bf"/></linearGradient>
+          <linearGradient id="gFerrule" x1="0" x2="1"><stop offset="0" stop-color="#8f969c"/><stop offset=".45" stop-color="#eceef0"/><stop offset="1" stop-color="#767c82"/></linearGradient>
+          <linearGradient id="gHandle" x1="0" x2="1"><stop offset="0" stop-color="#1b1c1f"/><stop offset=".4" stop-color="#3b3d42"/><stop offset="1" stop-color="#131416"/></linearGradient>
+        </defs>
+        <g class="bristles">
+          <path d="M5 26 C5 8 12 2 22 2 C32 2 39 8 39 26 L36 60 L8 60 Z" fill="url(#gBristle)"/>
+          <path d="M12 9 L13 58 M18 4 L18 58 M24 4 L24 58 M30 8 L30 58" stroke="#000" stroke-opacity=".07" stroke-width="1"/>
+        </g>
+        <rect x="7" y="58" width="30" height="30" rx="3" fill="url(#gFerrule)"/>
+        <path d="M9 88 H35 L29 186 Q22 190 15 186 Z" fill="url(#gHandle)"/>
+      </svg>
+    </div>
+    <div class="brushbar" id="brushbar">
+      <label for="brushSize" data-i18n="brush">Brush</label><input type="range" id="brushSize" min="50" max="200" value="100" aria-label="Brush size" data-i18n-aria="brushSize">
+      <button id="holdCompare" type="button" data-i18n="hold">Hold to compare</button>
+      <button id="applyAll" type="button" data-i18n="applyAll">Apply all over</button>
+      <button id="wipe" type="button" data-i18n="wipe">Wipe off</button>
+    </div>
+    <div class="camdock" data-studio>
+      <div class="stick" id="stick" tabindex="0" role="application" aria-label="Turn the head" data-i18n-aria="turnHead"><i id="stickKnob"></i></div>
+      <div class="zoom">
+        <button type="button" id="zoomIn" aria-label="Zoom in" data-i18n-aria="zoomIn">+</button>
+        <button type="button" id="zoomOut" aria-label="Zoom out" data-i18n-aria="zoomOut">&minus;</button>
+      </div>
+    </div>
+    <div class="angles" id="angles" data-studio role="group" aria-label="Camera angle" data-i18n-aria="camAngle">
+      <button type="button" data-az="-1.15" data-i18n="angSideL">◂ Side</button>
+      <button type="button" data-az="-0.6" data-i18n="angQL">◂ ¾</button>
+      <button type="button" data-az="0" data-i18n="angFront">Front</button>
+      <button type="button" data-az="0.6" data-i18n="angQR">¾ ▸</button>
+      <button type="button" data-az="1.15" data-i18n="angSideR">Side ▸</button>
+    </div>
+    <div class="flash-note" id="flashNote" data-studio hidden></div>
+    <div class="lights" id="lights" data-studio role="group" aria-label="Lighting" data-i18n-aria="lighting">
+      <button data-light="day" aria-pressed="true"><span data-i18n="day">Daylight</span><small>5600K</small></button>
+      <button data-light="office" aria-pressed="false"><span data-i18n="office">Office</span><small>4000K</small></button>
+      <button data-light="golden" aria-pressed="false"><span data-i18n="golden">Evening</span><small>2700K</small></button>
+      <button data-light="flash" aria-pressed="false"><span data-i18n="flash">Camera flash</span></button>
+    </div>
+    <div class="loading" id="loading" hidden data-i18n="loading">Loading the 3D head</div>
+  </div>
+
+  <aside class="panel">
+    <section class="step" id="stepSkin" aria-labelledby="h-skin">
+      <div class="step-head">
+        <h2 id="h-skin"><span class="num">1</span><span data-i18n="stepSkin">Your skin</span></h2>
+        <button class="more" type="button" aria-expanded="false" aria-controls="moreSkin" data-i18n="more">More</button>
+      </div>
+      <div class="depth" id="depth"></div>
+      <div class="seg" id="under">
+        <button data-v="cool" data-i18n="cool">Cool</button><button data-v="neutral" data-i18n="neutral">Neutral</button><button data-v="warm" data-i18n="warm">Warm</button><button data-v="olive" data-i18n="olive">Olive</button>
+      </div>
+      <p class="hint" id="underHint"></p>
+      <div class="more-body" id="moreSkin" hidden>
+        <div class="field">
+          <div class="field-head"><label class="label" for="depthFine" data-i18n="fineDepth">Fine-tune depth</label><output id="labOut" class="mono"></output></div>
+          <input type="range" id="depthFine" min="0" max="100" value="45">
+        </div>
+        <div class="field">
+          <span class="label" data-i18n="skinType">Skin type</span>
+          <div class="seg" id="stype">
+            <button data-v="dry" data-i18n="dry">Dry</button><button data-v="normal" data-i18n="normal">Normal</button><button data-v="combo" data-i18n="combo">Combination</button><button data-v="oily" data-i18n="oily">Oily</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label" data-i18n="readPhoto">Read my skin from a photo</span>
+          <label class="drop" id="drop" for="photoIn">
+            <input type="file" id="photoIn" accept="image/*">
+            <b data-i18n="uploadSelfie">Upload a selfie</b>
+            <span data-i18n="uploadNote">Window daylight, no filter, bare skin. The photo stays on your device.</span>
+          </label>
+          <div class="photo" id="photoBox" hidden>
+            <div class="seg" id="tapMode">
+              <button data-v="skin" aria-pressed="true" data-i18n="tapSkin">Tap skin</button><button data-v="white" aria-pressed="false" data-i18n="tapWhite">Tap something white</button>
+            </div>
+            <div class="pic-wrap"><div class="pic" id="pic"><img id="photoImg" data-i18n-alt="photoAlt" alt="Your uploaded photo. Tap it to sample colour."></div></div>
+            <p class="hint" id="photoHint" data-i18n="photoHintStart">Tap your cheek, jaw and forehead, away from shine and shadow. Up to 3 spots are averaged.</p>
+            <div class="reading" id="reading" hidden>
+              <span class="sw" id="readSw"></span>
+              <div style="min-width:0"><b id="readTitle"></b><span class="mono" id="readLab"></span></div>
+            </div>
+            <div class="photo-actions"><button class="link" id="clearTaps" data-i18n="clearSpots">Clear spots</button><button class="link" id="removePhoto" data-i18n="removePhoto">Remove photo</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="stepShade" aria-labelledby="h-shade">
+      <div class="step-head">
+        <h2 id="h-shade"><span class="num">2</span><span data-i18n="stepShade">Your shade</span></h2>
+        <button class="more" type="button" aria-expanded="false" aria-controls="moreShade" data-i18n="more">More</button>
+      </div>
+      <div class="match">
+        <div class="pan" aria-hidden="true"></div>
+        <div style="min-width:0">
+          <span class="match-label" id="h-match"></span>
+          <h3 id="mName"></h3>
+          <p id="mDesc"></p>
+          <div class="verdict" id="mVerdict"></div>
+        </div>
+      </div>
+      <div class="shades" id="shades"></div>
+      <div class="more-body" id="moreShade" hidden>
+        <p class="hint" data-i18n="sortedBy">Shades are sorted by colour difference from your skin (ΔE). Under 3 is hard to see; over 10 is an obvious mismatch.</p>
+        <div class="field">
+          <span class="label" data-i18n="finish">Finish</span>
+          <div class="seg" id="finish">
+            <button data-v="matte" data-i18n="matte">Matte</button><button data-v="satin" data-i18n="satin">Satin</button><button data-v="radiant" data-i18n="radiant">Radiant</button>
+          </div>
+          <p class="hint" id="finishHint"></p>
+        </div>
+        <div class="field">
+          <div class="field-head"><label class="label" for="cov" data-i18n="coverage">Coverage</label><output id="covOut" class="mono"></output></div>
+          <input type="range" id="cov" min="10" max="90" value="45">
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="stepTry" aria-labelledby="h-try">
+      <div class="step-head">
+        <h2 id="h-try"><span class="num">3</span><span data-i18n="stepTry">Try it on</span></h2>
+        <button class="more" type="button" aria-expanded="false" aria-controls="moreTry" data-i18n="more">More</button>
+      </div>
+      <div class="seg" id="subject">
+        <button data-v="model" aria-pressed="true" data-i18n="subjModel">Model</button><button data-v="me" aria-pressed="false" data-i18n="subjMe">My photo</button>
+      </div>
+      <input type="file" id="selfieIn" accept="image/*" hidden>
+      <p class="hint" data-i18n="tryHint">Pick a shade, then brush it onto the face. Nothing changes until you brush. You can also brush onto your own selfie; it stays on your device.</p>
+      <div class="more-body" id="moreTry" hidden>
+        <div class="field" data-simple>
+          <p class="hint" data-i18n="studioNote">Skin details, lighting and display options are in the 3D view.</p>
+          <button class="link" type="button" id="open3d" data-i18n="open3d">Open the 3D view</button>
+        </div>
+        <div class="field" data-studio>
+          <div class="field-head"><span class="label" data-i18n="details">Skin details</span><output id="markCount" class="mono"></output></div>
+          <div class="tools" id="tools" style="grid-template-columns: repeat(3, 1fr)">
+            <button class="tool" data-t="brush" aria-pressed="true"><i></i><span data-i18n="tool_brush">Brush</span></button>
+            <button class="tool" data-t="mole" aria-pressed="false"><i></i><span data-i18n="tool_mole">Mole</span></button>
+            <button class="tool" data-t="pimple" aria-pressed="false"><i></i><span data-i18n="tool_pimple">Pimple</span></button>
+            <button class="tool" data-t="freckles" aria-pressed="false"><i></i><span data-i18n="tool_freckles">Freckles</span></button>
+            <button class="tool" data-t="redness" aria-pressed="false"><i></i><span data-i18n="tool_redness">Redness</span></button>
+            <button class="tool" data-t="circles" aria-pressed="false"><i></i><span data-i18n="tool_circles">Dark circles</span></button>
+            <button class="tool" data-t="mark" aria-pressed="false"><i></i><span data-i18n="tool_mark">Acne mark</span></button>
+            <button class="tool" data-t="erase" aria-pressed="false"><i></i><span data-i18n="tool_erase">Erase</span></button>
+            <button class="tool" data-t="none" aria-pressed="false"><i style="border:1.5px solid var(--muted)"></i><span data-i18n="tool_none">Rotate</span></button>
+          </div>
+          <label class="label" for="markSize" data-i18n="size">Size</label>
+          <input type="range" id="markSize" min="40" max="200" value="100">
+          <p class="hint" id="detailHint"></p>
+          <div class="photo-actions"><button class="link" id="undoMark" data-i18n="undo">Undo</button><button class="link" id="clearMarks" data-i18n="clearDetails">Clear all details</button></div>
+        </div>
+        <div class="field" data-studio>
+          <span class="label" data-i18n="display">Display</span>
+          <div class="seg" id="quality">
+            <button data-v="full" data-i18n="full">Full detail</button><button data-v="light" data-i18n="light">Light</button>
+          </div>
+          <p class="hint" data-i18n="displayHint">Light mode grows fewer hair strands and renders at lower resolution. Use it if rotating feels slow.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p class="credit" data-i18n="creditFull">Created by Fateme Mohsenzadeh and Amirreza Vahidzadeh</p>
+      <div class="links"><a href="#about" data-i18n="aboutTitle">About us</a><a href="#" id="showIntro" data-i18n="howItWorks">How it works</a><a href="../" data-i18n="homeLink">Amirreza’s site</a></div>
+      <p class="fine"><span data-i18n="foot">Screen colours are approximate and vary by display. Use the match to narrow it down, then swatch along your jaw in daylight before you buy.</span> <span data-i18n="credit">Head scan:</span> <a href="https://www.3dscanstore.com/blog/Free-3D-Head-Model" target="_blank" rel="noopener" data-i18n="creditLink">3D Scan Store free female head</a><span data-i18n="creditTail">, for personal use.</span></p>
+    </footer>
+  </aside>
+</div>
+
+<section class="cover about" id="about" hidden aria-labelledby="aboutH">
+  <div class="cover-inner">
+    <span class="wordmark small reveal" aria-hidden="true">Sifted</span>
+    <h1 class="cover-title reveal" id="aboutH" data-i18n="aboutTitle">About us</h1>
+    <div class="rule reveal"></div>
+    <p class="credit-line reveal" data-i18n="creditFull">Created by Fateme Mohsenzadeh and Amirreza Vahidzadeh</p>
+    <a class="btn ghost reveal" href="#" id="aboutBack" data-i18n="aboutBack">Back to the studio</a>
+  </div>
+</section>
+
+<section class="cover intro" id="intro" hidden aria-labelledby="introH">
+  <div class="lang" id="langIntro" role="group" aria-label="Language" data-i18n-aria="language">
+    <button data-v="en" lang="en">EN</button><button data-v="fa" lang="fa">فا</button>
+  </div>
+  <div class="cover-inner">
+    <h1 class="wordmark reveal" id="introH">Sifted</h1>
+    <p class="tagline reveal" data-i18n="tagline">The powder shade studio</p>
+    <div class="rule reveal"></div>
+    <p class="credit-line reveal" data-i18n="creditFull">Created by Fateme Mohsenzadeh and Amirreza Vahidzadeh</p>
+    <ol class="intro-steps reveal">
+      <li><span class="n">1</span><b data-i18n="stepSkin">Your skin</b><span data-i18n="introD1">Choose your skin tone and undertone, or read them from a selfie.</span></li>
+      <li><span class="n">2</span><b data-i18n="stepShade">Your shade</b><span data-i18n="introD2">We compare it with every shade and show you the closest.</span></li>
+      <li><span class="n">3</span><b data-i18n="stepTry">Try it on</b><span data-i18n="introD3">Brush the powder onto the face in 2D or 3D, or onto your own photo.</span></li>
+    </ol>
+    <button class="btn reveal" id="beginBtn" type="button" data-i18n="begin">Begin</button>
+  </div>
+</section>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+/* ---------------- language: English and Persian ---------------- */
+const I18N = {
+  en: {
+    tagline: 'The powder shade studio', view: 'View', brandAria: 'Sifted: show the introduction',
+    creditFull: 'Created by Fateme Mohsenzadeh and Amirreza Vahidzadeh', howItWorks: 'How it works', begin: 'Begin', homeLink: 'Amirreza’s site',
+    introD1: 'Choose your skin tone and undertone, or read them from a selfie.', introD2: 'We compare it with every shade and show you the closest.', introD3: 'Brush the powder onto the face in 2D or 3D, or onto your own photo.', language: 'Language', lighting: 'Lighting',
+    modeSimple: 'Simple', modeStudio: '3D studio',
+    brush: 'Brush', brushSize: 'Brush size', hold: 'Hold to compare', applyAll: 'Apply all over', wipe: 'Wipe off',
+    day: 'Daylight', office: 'Office', golden: 'Evening', flash: 'Camera flash',
+    loading: 'Loading the 3D head', loadFail: 'The 3D head could not load. Reload the page to try again.',
+    more: 'More', less: 'Less',
+    stepSkin: 'Your skin', stepShade: 'Your shade', stepTry: 'Try it on',
+    cool: 'Cool', neutral: 'Neutral', warm: 'Warm', olive: 'Olive',
+    under_cool: 'Pink or rosy cast. Silver jewellery tends to suit you; you burn before you tan.',
+    under_neutral: 'A balance of pink and gold. Both silver and gold work.',
+    under_warm: 'Golden, peachy or yellow cast. Gold jewellery tends to suit you.',
+    under_olive: 'Greenish-grey cast. Pink shades look chalky on you; reach for neutral or yellow-leaning ones.',
+    depthAria: n => `Skin depth ${n} of 10`,
+    fineDepth: 'Fine-tune depth', skinType: 'Skin type', dry: 'Dry', normal: 'Normal', combo: 'Combination', oily: 'Oily',
+    readPhoto: 'Read my skin from a photo', uploadSelfie: 'Upload a selfie',
+    uploadNote: 'Window daylight, no filter, bare skin. The photo stays on your device.',
+    tapSkin: 'Tap skin', tapWhite: 'Tap something white', photoAlt: 'Your uploaded photo. Tap it to sample colour.',
+    photoHintStart: 'Tap your cheek, jaw and forehead, away from shine and shadow. Up to 3 spots are averaged.',
+    clearSpots: 'Clear spots', removePhoto: 'Remove photo',
+    readTitle: (step, under) => `Depth ${step} of 10 · ${under} undertone`,
+    spots: n => n === 1 ? '1 spot' : `${n} spots`, whiteBalanced: 'white-balanced',
+    hintSpread: 'Your spots differ a lot in brightness, so one is probably in shadow or shine. Clear and tap again in evenly lit areas.',
+    hintCast: 'This colour sits outside the usual skin range, which usually means a colour cast from the lighting. Tap something white to correct it.',
+    hintWhite: 'For a truer reading, switch to "Tap something white" and tap a white wall, shirt or paper in the photo.',
+    hintApplied: 'Reading applied to the face and shade ranking. Fine-tune the depth if it looks off.',
+    hintBlown: 'That spot is blown out or too dark to read. Try an evenly lit area.',
+    bestMatch: 'Your best match', tryingOn: 'Trying on',
+    sortedBy: 'Shades are sorted by colour difference from your skin (ΔE). Under 3 is hard to see; over 10 is an obvious mismatch.',
+    finish: 'Finish', matte: 'Matte', satin: 'Satin', radiant: 'Radiant',
+    finish_matte: 'Soaks up shine and blurs texture. Can look flat on dry skin.',
+    finish_satin: 'Soft-focus with a little life. The safe middle for most skin.',
+    finish_radiant: 'Light-reflecting. Glows on dry skin, can read as shine on oily.',
+    suggested: (type, fin) => `Suggested for ${type.toLowerCase()} skin: ${fin.toLowerCase()}.`,
+    coverage: 'Coverage', sheer: 'Sheer', medium: 'Medium', full: 'Full detail', covFull: 'Full',
+    subjModel: 'Model', subjMe: 'My photo',
+    tryHint: 'Pick a shade, then brush it onto the face. Nothing changes until you brush. You can also brush onto your own selfie; it stays on your device.',
+    studioNote: 'Skin details, lighting and display options are in the 3D view.', open3d: 'Open the 3D view',
+    details: 'Skin details', placed: n => `${n} placed`,
+    tool_brush: 'Brush', tool_mole: 'Mole', tool_pimple: 'Pimple', tool_freckles: 'Freckles', tool_redness: 'Redness',
+    tool_circles: 'Dark circles', tool_mark: 'Acne mark', tool_erase: 'Erase', tool_none: 'Rotate',
+    size: 'Size', undo: 'Undo', clearDetails: 'Clear all details',
+    dh_none: 'Drag to turn the head.',
+    dh_brush: 'Brush powder onto the face. To turn the head, use the stick or the angle buttons, right-drag, or hold Space and drag. Arrow keys work too.',
+    turnHead: 'Turn the head. Push and hold to keep turning.', camAngle: 'Camera angle', zoomIn: 'Zoom in', zoomOut: 'Zoom out',
+    angSideL: '◂ Side', angQL: '◂ ¾', angFront: 'Front', angQR: '¾ ▸', angSideR: 'Side ▸',
+    dh_mole: 'Moles stay visible under powder. Concealer and a tiny brush cover them; powder just sets it.',
+    dh_pimple: 'Powder takes the edge off the redness but the bump still shows. Matte finishes hide texture better than radiant.',
+    dh_freckles: 'Sheer powder lets freckles show through. Raise coverage to see how much they fade.',
+    dh_redness: 'Click a cheek or around the nose. Green-leaning or yellow powders cancel red best.',
+    dh_circles: 'Click just under an eye. Yellow or peach-toned powder (Banana) brightens this area.',
+    dh_mark: 'Flat marks left after a breakout. They fade under powder more than raised spots do.',
+    dh_erase: 'Click a detail on the face to remove it.',
+    display: 'Display', light: 'Light',
+    displayHint: 'Light mode grows fewer hair strands and renders at lower resolution. Use it if rotating feels slow.',
+    foot: 'Screen colours are approximate and vary by display. Use the match to narrow it down, then swatch along your jaw in daylight before you buy.',
+    credit: 'Head scan:', creditLink: '3D Scan Store free female head', creditTail: ', for personal use.',
+    v_seamless: 'Seamless', v_close: 'Close', v_noticeable: 'Noticeable', v_mismatch: 'Mismatch',
+    why_jaw: 'Blends without a visible line at the jaw.',
+    why_lighter: 'A little lighter than you. Fine for brightening under the eyes; too light all over looks ashy.',
+    why_deeper: 'Deeper than you. Can look muddy or orange all over; better as a bronzer.',
+    why_yellower: 'More yellow than you. Can cancel redness, otherwise reads golden.',
+    why_pinker: 'Pinker than you. Can look rosy or chalky against your undertone.',
+    why_banana: 'Yellow brightening powder. Best under the eyes on light to medium skin.',
+    t0_risk: 'Risk of white cast in photos', t0_riskWhy: 'Translucent powders stay sheer, but silica-heavy ones bounce camera flash. Try the camera flash light in the 3D view.',
+    t0_ok: 'Invisible on your depth', t0_okWhy: 'Sets makeup without adding colour.',
+    flashT0: 'Flash test: silica-based translucent powder can bounce camera light and show up as a white cast in photos.',
+    flashOther: 'Flash test: brightening powders reflect more light than skin, so they can look pale in flash photos.',
+    tapCheek: 'Tap your cheek once so we can read your skin tone',
+    tapCheekBad: 'That spot is too shiny or too dark. Tap an evenly lit part of your cheek.',
+    depthNames: ['Porcelain', 'Ivory', 'Sand', 'Beige', 'Honey', 'Caramel', 'Chestnut', 'Espresso'],
+    loose_T0: 'Translucent setting powder', loose_B1: 'Banana setting powder', short_T0: 'Transl', short_B1: 'Banana',
+    shadeAria: (label, d) => `${label}, colour difference ${d}`,
+    aboutTitle: 'About us', aboutBy: 'Created by', and: 'and', name1: 'Fateme Mohsenzadeh', name2: 'Amirreza Vahidzadeh', aboutBack: 'Back to the studio',
+  },
+  fa: {
+    tagline: 'استودیوی رنگ پودر', view: 'نما', brandAria: 'سیفتد: نمایش معرفی',
+    creditFull: 'ساخته‌شده توسط فاطمه محسن‌زاده و امیررضا وحیدزاده', howItWorks: 'راهنما', begin: 'شروع', homeLink: 'سایت امیررضا',
+    introD1: 'رنگ پوست و زیرپوست خود را انتخاب کنید یا از روی یک سلفی بخوانید.', introD2: 'آن را با همه رنگ‌ها مقایسه می‌کنیم و نزدیک‌ترین را نشان می‌دهیم.', introD3: 'پودر را با براش روی صورت بزنید؛ در نمای دوبعدی یا سه‌بعدی، یا روی عکس خودتان.', language: 'زبان', lighting: 'نورپردازی',
+    modeSimple: 'ساده', modeStudio: 'سه‌بعدی',
+    brush: 'براش', brushSize: 'اندازه براش', hold: 'نگه دارید: مقایسه', applyAll: 'کل صورت', wipe: 'پاک کردن',
+    day: 'نور روز', office: 'نور اداره', golden: 'نور عصر', flash: 'فلاش دوربین',
+    loading: 'در حال بارگذاری سر سه‌بعدی', loadFail: 'سر سه‌بعدی بارگذاری نشد. صفحه را دوباره باز کنید.',
+    more: 'بیشتر', less: 'کمتر',
+    stepSkin: 'پوست شما', stepShade: 'رنگ پودر شما', stepTry: 'امتحانش کنید',
+    cool: 'سرد', neutral: 'خنثی', warm: 'گرم', olive: 'زیتونی',
+    under_cool: 'ته‌رنگ صورتی یا گلگون. معمولاً جواهر نقره‌ای به شما می‌آید و پوستتان زودتر می‌سوزد تا برنزه شود.',
+    under_neutral: 'تعادلی از صورتی و طلایی. هم نقره‌ای و هم طلایی به شما می‌آید.',
+    under_warm: 'ته‌رنگ طلایی، هلویی یا زرد. معمولاً جواهر طلایی به شما می‌آید.',
+    under_olive: 'ته‌رنگ مایل به سبز و خاکستری. رنگ‌های صورتی روی پوست شما گچی به نظر می‌رسند؛ سراغ رنگ‌های خنثی یا مایل به زرد بروید.',
+    depthAria: n => `تیرگی پوست ${n} از ۱۰`,
+    fineDepth: 'تنظیم دقیق تیرگی', skinType: 'نوع پوست', dry: 'خشک', normal: 'معمولی', combo: 'مختلط', oily: 'چرب',
+    readPhoto: 'خواندن رنگ پوست از روی عکس', uploadSelfie: 'بارگذاری سلفی',
+    uploadNote: 'نور روز کنار پنجره، بدون فیلتر و بدون آرایش. عکس از دستگاه شما خارج نمی‌شود.',
+    tapSkin: 'لمس پوست', tapWhite: 'لمس یک چیز سفید', photoAlt: 'عکس شما. برای نمونه‌برداری رنگ رویش بزنید.',
+    photoHintStart: 'گونه، فک و پیشانی را لمس کنید، جایی که براق یا در سایه نباشد. از حداکثر ۳ نقطه میانگین گرفته می‌شود.',
+    clearSpots: 'پاک کردن نقطه‌ها', removePhoto: 'حذف عکس',
+    readTitle: (step, under) => `تیرگی ${step} از ۱۰ · زیرپوست ${under}`,
+    spots: n => `${n} نقطه`, whiteBalanced: 'با تراز سفیدی',
+    hintSpread: 'روشنایی نقطه‌هایی که لمس کردید خیلی با هم فرق دارد؛ احتمالاً یکی در سایه یا براق است. پاکشان کنید و دوباره جای یکنواخت را لمس کنید.',
+    hintCast: 'این رنگ بیرون از محدوده معمول پوست است که معمولاً به خاطر رنگ نور است. برای اصلاح، یک چیز سفید را لمس کنید.',
+    hintWhite: 'برای خوانش دقیق‌تر، «لمس یک چیز سفید» را بزنید و یک دیوار، لباس یا کاغذ سفید را در عکس لمس کنید.',
+    hintApplied: 'خوانش روی صورت و رتبه‌بندی رنگ‌ها اعمال شد. اگر درست به نظر نمی‌رسد، تیرگی را دستی تنظیم کنید.',
+    hintBlown: 'این نقطه خیلی روشن یا خیلی تاریک است. جای یکنواخت‌تری را امتحان کنید.',
+    bestMatch: 'بهترین تطابق شما', tryingOn: 'در حال امتحان',
+    sortedBy: 'رنگ‌ها بر اساس اختلاف با رنگ پوست شما (ΔE) مرتب شده‌اند. زیر ۳ به سختی دیده می‌شود؛ بالای ۱۰ کاملاً ناهماهنگ است.',
+    finish: 'فینیش', matte: 'مات', satin: 'ساتن', radiant: 'درخشان',
+    finish_matte: 'براقی را می‌گیرد و بافت پوست را محو می‌کند. روی پوست خشک ممکن است بی‌روح به نظر برسد.',
+    finish_satin: 'نرم و محو، با کمی طراوت. انتخاب مطمئن برای بیشتر پوست‌ها.',
+    finish_radiant: 'نور را بازتاب می‌دهد. روی پوست خشک درخشان است و روی پوست چرب ممکن است براق به نظر برسد.',
+    suggested: (type, fin) => `پیشنهاد برای پوست ${type}: ${fin}.`,
+    coverage: 'پوشانندگی', sheer: 'سبک', medium: 'متوسط', full: 'جزئیات کامل', covFull: 'کامل',
+    subjModel: 'مدل', subjMe: 'عکس من',
+    tryHint: 'یک رنگ انتخاب کنید و با براش روی صورت بزنید. تا براش نزنید چیزی تغییر نمی‌کند. می‌توانید روی سلفی خودتان هم امتحان کنید؛ عکس از دستگاه شما خارج نمی‌شود.',
+    studioNote: 'جزئیات پوست، نورپردازی و تنظیمات نمایش در نمای سه‌بعدی هستند.', open3d: 'باز کردن نمای سه‌بعدی',
+    details: 'جزئیات پوست', placed: n => `${n} مورد`,
+    tool_brush: 'براش', tool_mole: 'خال', tool_pimple: 'جوش', tool_freckles: 'کک‌ومک', tool_redness: 'قرمزی',
+    tool_circles: 'سیاهی زیر چشم', tool_mark: 'جای جوش', tool_erase: 'پاک‌کن', tool_none: 'چرخاندن',
+    size: 'اندازه', undo: 'برگرداندن', clearDetails: 'پاک کردن همه جزئیات',
+    dh_none: 'برای چرخاندن سر، بکشید.',
+    dh_brush: 'پودر را با براش روی صورت بزنید. برای چرخاندن سر از دسته یا دکمه‌های زاویه استفاده کنید، با کلیک راست بکشید یا Space را نگه دارید و بکشید. کلیدهای جهت‌نما هم کار می‌کنند.',
+    turnHead: 'چرخاندن سر. فشار دهید و نگه دارید تا بچرخد.', camAngle: 'زاویه دوربین', zoomIn: 'بزرگ‌نمایی', zoomOut: 'کوچک‌نمایی',
+    angSideL: '◂ نیم‌رخ', angQL: '◂ سه‌رخ', angFront: 'روبه‌رو', angQR: 'سه‌رخ ▸', angSideR: 'نیم‌رخ ▸',
+    dh_mole: 'خال زیر پودر دیده می‌شود. کانسیلر و یک براش ریز آن را می‌پوشاند؛ پودر فقط آرایش را فیکس می‌کند.',
+    dh_pimple: 'پودر از قرمزی جوش کم می‌کند ولی برجستگی‌اش دیده می‌شود. فینیش مات بافت را بهتر از درخشان می‌پوشاند.',
+    dh_freckles: 'پودر سبک کک‌ومک را نشان می‌دهد. پوشانندگی را بالا ببرید تا ببینید چقدر محو می‌شود.',
+    dh_redness: 'روی گونه یا اطراف بینی کلیک کنید. پودرهای مایل به سبز یا زرد قرمزی را بهتر خنثی می‌کنند.',
+    dh_circles: 'درست زیر چشم کلیک کنید. پودر زرد یا هلویی (موزی) این ناحیه را روشن می‌کند.',
+    dh_mark: 'لکه‌های صافی که بعد از جوش می‌مانند. زیر پودر بیشتر از برجستگی‌ها محو می‌شوند.',
+    dh_erase: 'روی یکی از جزئیات صورت کلیک کنید تا حذف شود.',
+    display: 'نمایش', light: 'سبک',
+    displayHint: 'در حالت سبک تارهای موی کمتری ساخته می‌شود و تصویر با وضوح کمتری نمایش داده می‌شود. اگر چرخاندن کند است از آن استفاده کنید.',
+    foot: 'رنگ‌ها روی صفحه تقریبی‌اند و در هر نمایشگر فرق می‌کنند. از این تطابق برای محدود کردن انتخاب استفاده کنید و پیش از خرید، رنگ را در نور روز روی خط فک امتحان کنید.',
+    credit: 'اسکن سر:', creditLink: 'سر رایگان زن از 3D Scan Store', creditTail: '، برای استفاده شخصی.',
+    v_seamless: 'یکدست', v_close: 'نزدیک', v_noticeable: 'قابل‌توجه', v_mismatch: 'ناهماهنگ',
+    why_jaw: 'بدون خط مشخص روی فک، با پوست یکی می‌شود.',
+    why_lighter: 'کمی روشن‌تر از پوست شما. برای روشن کردن زیر چشم خوب است؛ روی کل صورت خاکستری و بی‌روح دیده می‌شود.',
+    why_deeper: 'تیره‌تر از پوست شما. روی کل صورت ممکن است کدر یا نارنجی شود؛ بهتر است به عنوان برنزر استفاده شود.',
+    why_yellower: 'زردتر از پوست شما. قرمزی را خنثی می‌کند، وگرنه طلایی به نظر می‌رسد.',
+    why_pinker: 'صورتی‌تر از پوست شما. کنار زیرپوست شما ممکن است گلگون یا گچی به نظر برسد.',
+    why_banana: 'پودر روشن‌کننده زرد. برای زیر چشم روی پوست روشن تا متوسط بهترین است.',
+    t0_risk: 'خطر سفید افتادن در عکس', t0_riskWhy: 'پودرهای شفاف سبک‌اند، ولی انواع پرسیلیکا نور فلاش را برمی‌گردانند. نور فلاش را در نمای سه‌بعدی امتحان کنید.',
+    t0_ok: 'روی تیرگی پوست شما نامرئی است', t0_okWhy: 'آرایش را فیکس می‌کند بی‌آنکه رنگی اضافه کند.',
+    flashT0: 'تست فلاش: پودرهای شفاف سیلیکایی ممکن است نور دوربین را برگردانند و در عکس سفید دیده شوند.',
+    flashOther: 'تست فلاش: پودرهای روشن‌کننده بیشتر از پوست نور را بازتاب می‌دهند و ممکن است در عکس با فلاش رنگ‌پریده دیده شوند.',
+    tapCheek: 'یک بار روی گونه‌تان بزنید تا رنگ پوستتان را بخوانیم',
+    tapCheekBad: 'این نقطه خیلی براق یا خیلی تاریک است. جای یکنواخت‌تری از گونه را لمس کنید.',
+    depthNames: ['پرسلانی', 'عاجی', 'شنی', 'بژ', 'عسلی', 'کاراملی', 'شاه‌بلوطی', 'اسپرسو'],
+    loose_T0: 'پودر فیکس شفاف', loose_B1: 'پودر فیکس موزی', short_T0: 'شفاف', short_B1: 'موزی',
+    shadeAria: (label, d) => `${label}، اختلاف رنگ ${d}`,
+    aboutTitle: 'درباره ما', aboutBy: 'ساخته‌شده توسط', and: 'و', name1: 'فاطمه محسن‌زاده', name2: 'امیررضا وحیدزاده', aboutBack: 'بازگشت به استودیو',
+  },
+};
+let LANG = 'en';
+function t(key, ...args) {
+  const v = I18N[LANG][key] ?? I18N.en[key];
+  return typeof v === 'function' ? v(...args) : v;
+}
+// Persian digits and decimal separator when the page is in Persian
+function num(x) {
+  const s = String(x);
+  return LANG === 'fa' ? s.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]).replace(/(\d|[۰-۹])\.(?=[۰-۹])/g, '$1٫') : s;
+}
+function applyLang(lang) {
+  LANG = lang === 'fa' ? 'fa' : 'en';
+  const root = document.documentElement;
+  root.lang = LANG; root.dir = LANG === 'fa' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-alt]').forEach(el => { el.alt = t(el.dataset.i18nAlt); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+  document.querySelectorAll('.step .num, .intro-steps .n').forEach(el => { el.textContent = num(String(el.dataset.n || (el.dataset.n = el.textContent.trim())).padStart(2, '0')); });
+  document.querySelectorAll('.step').forEach(st => { st.querySelector('.more').textContent = t(st.classList.contains('open') ? 'less' : 'more'); });
+  pressGroup($('lang'), LANG); pressGroup($('langIntro'), LANG);
+  try { localStorage.setItem('sifted-lang', LANG); } catch (e) {}
+}
+
+/* ---------------- colour science ---------------- */
+function labToSrgb(L, a, b) {
+  let y = (L + 16) / 116, x = a / 500 + y, z = y - b / 200;
+  const f = t => t ** 3 > 0.008856 ? t ** 3 : (t - 16 / 116) / 7.787;
+  x = 0.95047 * f(x); y = 1.0 * f(y); z = 1.08883 * f(z);
+  let r = x * 3.2406 + y * -1.5372 + z * -0.4986;
+  let g = x * -0.9689 + y * 1.8758 + z * 0.0415;
+  let bl = x * 0.0557 + y * -0.2040 + z * 1.0570;
+  const gam = c => c > 0.0031308 ? 1.055 * Math.pow(c, 1 / 2.4) - 0.055 : 12.92 * c;
+  return [r, g, bl].map(c => Math.min(1, Math.max(0, gam(c))));
+}
+const hex = rgb => '#' + rgb.map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('');
+const fmtD = d => d < 0.5 ? '< 0.5' : d.toFixed(1);
+const dE = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);   // CIE76
+
+const UNDER = {
+  cool:    { a: 11, b: 11, hint: 'Pink or rosy cast. Silver jewellery tends to suit you; you burn before you tan.' },
+  neutral: { a: 9,  b: 16, hint: 'A balance of pink and gold. Both silver and gold work.' },
+  warm:    { a: 8,  b: 22, hint: 'Golden, peachy or yellow cast. Gold jewellery tends to suit you.' },
+  olive:   { a: 4,  b: 19, hint: 'Greenish-grey cast. Pink shades look chalky on you; reach for neutral or yellow-leaning ones.' },
+};
+// Skin and powder share one model: lightness from depth, chroma peaking at medium depths.
+function skinLab(depth, under) {
+  const u = UNDER[under], m = 0.8 + 0.5 * Math.sin(Math.PI * depth);
+  return [88 - 62 * depth, u.a * m, u.b * m];
+}
+const DEPTH_NAMES = ['Porcelain', 'Ivory', 'Sand', 'Beige', 'Honey', 'Caramel', 'Chestnut', 'Espresso'];
+const TONE_KEY = { C: 'cool', N: 'neutral', W: 'warm' };
+const SHADES = [];
+DEPTH_NAMES.forEach((name, i) => {
+  for (const t of ['C', 'N', 'W']) {
+    const d = i / 7 * 0.92 + 0.02;
+    const lab = skinLab(d, TONE_KEY[t]);
+    SHADES.push({ id: `${i + 1}${t}`, name, di: i, kind: 'pressed', lab, flash: 0.12 });
+  }
+});
+SHADES.push({ id: 'T0', name: 'Translucent', kind: 'loose', lab: null, flash: 1.0 });
+SHADES.push({ id: 'B1', name: 'Banana', kind: 'loose', lab: [82, 1, 34], flash: 0.45 });
+
+const FINISH = {
+  matte:   { rough: 0.92, lift: 0.0,  text: 'Soaks up shine and blurs texture. Can look flat on dry skin.' },
+  satin:   { rough: 0.68, lift: 0.03, text: 'Soft-focus with a little life. The safe middle for most skin.' },
+  radiant: { rough: 0.42, lift: 0.07, text: 'Light-reflecting. Glows on dry skin, can read as shine on oily.' },
+};
+const TYPE_FINISH = { dry: 'radiant', normal: 'satin', combo: 'matte', oily: 'matte' };
+const TYPE_ROUGH  = { dry: 1.08, normal: 0.95, combo: 0.84, oily: 0.7 };   // multiplies the scan's own roughness
+
+/* ---------------- state ---------------- */
+const S = { mode: 'simple', light_mode: false, depth: 0.45, under: 'warm', stype: 'combo', finish: 'matte', cov: 0.45, shade: null, split: 0.5, light: 'day', userPicked: false };
+const $ = id => document.getElementById(id);
+
+function powderLab(sh) {
+  const skin = skinLab(S.depth, S.under);
+  if (sh.id === 'T0') return [Math.min(96, skin[0] + 5), skin[1] * 0.85, skin[2] * 0.85];
+  return sh.lab;
+}
+function scoreShade(sh) {
+  const skin = skinLab(S.depth, S.under);
+  if (sh.id === 'T0') return 2.5 + Math.max(0, 72 - skin[0]) * 0.22;   // fine when fair, risky deeper
+  let d = dE(sh.lab, skin);
+  if (S.under === 'olive' && sh.id.endsWith('C')) d += 3;            // pink reads chalky on olive
+  return d;
+}
+function ranked() { return SHADES.map(s => ({ s, d: scoreShade(s) })).sort((x, y) => x.d - y.d); }
+
+const shadeLabel = sh => sh.kind === 'loose' ? t('loose_' + sh.id) : `${sh.id} · ${t('depthNames')[sh.di]}`;
+function verdict(sh, d) {
+  const skin = skinLab(S.depth, S.under);
+  if (sh.id === 'T0') {
+    return skin[0] < 60
+      ? { t: t('t0_risk'), c: 'var(--warn)', why: t('t0_riskWhy') }
+      : { t: t('t0_ok'), c: 'var(--good)', why: t('t0_okWhy') };
+  }
+  const p = sh.lab, dl = p[0] - skin[0], db = p[2] - skin[2], da = p[1] - skin[1];
+  let why = t('why_jaw');
+  if (dl > 4) why = t('why_lighter');
+  else if (dl < -4) why = t('why_deeper');
+  else if (db > 5) why = t('why_yellower');
+  else if (db < -5 || da > 4) why = t('why_pinker');
+  if (sh.id === 'B1') why = t('why_banana');
+  if (d < 3) return { t: `ΔE ${num(fmtD(d))} · ${t('v_seamless')}`, c: 'var(--good)', why };
+  if (d < 6) return { t: `ΔE ${num(fmtD(d))} · ${t('v_close')}`, c: 'var(--good)', why };
+  if (d < 10) return { t: `ΔE ${num(fmtD(d))} · ${t('v_noticeable')}`, c: 'var(--warn)', why };
+  return { t: `ΔE ${num(fmtD(d))} · ${t('v_mismatch')}`, c: 'var(--bad)', why };
+}
+
+/* ---------------- UI ---------------- */
+const depthEl = $('depth');
+for (let i = 0; i < 10; i++) {
+  const b = document.createElement('button');
+  b.dataset.d = (i / 9).toFixed(3);
+  b.dataset.n = i + 1;
+  depthEl.append(b);
+}
+function pressGroup(el, v) { el.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v))); }
+
+function renderUI() {
+  const skin = skinLab(S.depth, S.under);
+  depthEl.querySelectorAll('button').forEach(b => {
+    const d = +b.dataset.d;
+    b.style.background = hex(labToSrgb(...skinLab(d, S.under)));
+    b.setAttribute('aria-label', t('depthAria', num(b.dataset.n)));
+    b.setAttribute('aria-pressed', String(Math.abs(d - S.depth) < 0.056));
+  });
+  const grad = Array.from({ length: 8 }, (_, i) => hex(labToSrgb(...skinLab(i / 7, S.under)))).join(',');
+  $('depthFine').style.setProperty('--track-bg', `linear-gradient(90deg,${grad})`);
+  $('depthFine').value = Math.round(S.depth * 100);
+  $('labOut').textContent = `L* ${num(skin[0].toFixed(0))}  a* ${num(skin[1].toFixed(0))}  b* ${num(skin[2].toFixed(0))}`;
+  pressGroup($('under'), S.under);
+  $('underHint').textContent = t('under_' + S.under);
+  pressGroup($('stype'), S.stype);
+  pressGroup($('finish'), S.finish);
+  const sug = TYPE_FINISH[S.stype];
+  $('finish').querySelectorAll('button').forEach(b => b.classList.toggle('suggest', b.dataset.v === sug));
+  $('finishHint').textContent = t('finish_' + S.finish) + ' ';
+  const sb = document.createElement('b'); sb.textContent = t('suggested', t(S.stype), t(sug)); $('finishHint').append(sb);
+  $('covOut').textContent = S.cov < 0.3 ? t('sheer') : S.cov < 0.6 ? t('medium') : t('covFull');
+
+  const list = ranked();
+  if (!S.userPicked) S.shade = list[0].s;
+  const sh = S.shade, pl = powderLab(sh), col = hex(labToSrgb(...pl));
+  document.documentElement.style.setProperty('--shade', col);
+  const d = scoreShade(sh), v = verdict(sh, d);
+  $('h-match').textContent = S.userPicked && sh !== list[0].s ? t('tryingOn') : t('bestMatch');
+  $('mName').textContent = shadeLabel(sh);
+  $('mDesc').textContent = v.why;
+  $('mVerdict').textContent = v.t;
+  $('mVerdict').style.setProperty('--v', v.c);
+
+  const grid = $('shades');
+  grid.replaceChildren(...list.map(({ s, d }, i) => {
+    const b = document.createElement('button');
+    b.className = 'shade' + (i < 3 ? ' top' : '');
+    b.dataset.kind = s.kind;
+    b.setAttribute('aria-pressed', String(s === sh));
+    b.setAttribute('aria-label', t('shadeAria', shadeLabel(s), num(fmtD(d))));
+    const sw = document.createElement('span');
+    sw.style.background = hex(labToSrgb(...powderLab(s)));
+    const em = document.createElement('em'); em.textContent = s.kind === 'loose' ? t('short_' + s.id) : s.id;
+    const sm = document.createElement('small'); sm.textContent = num(fmtD(d));
+    b.append(sw, em, sm);
+    b.onclick = () => { S.shade = s; S.userPicked = s !== ranked()[0].s; update(); };
+    return b;
+  }));
+
+  const flashOn = S.light === 'flash';
+  $('flashNote').hidden = !(flashOn && sh.flash > 0.4);
+  $('flashNote').textContent = sh.id === 'T0' ? t('flashT0') : t('flashOther');
+  pressGroup($('lights'), null);
+  $('lights').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.light === S.light)));
+  return { skin, pl };
+}
+
+depthEl.addEventListener('click', e => { const b = e.target.closest('button'); if (b) { S.depth = +b.dataset.d; S.userPicked = false; update(); } });
+$('depthFine').addEventListener('input', e => { S.depth = e.target.value / 100; S.userPicked = false; update(); });
+$('under').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { S.under = b.dataset.v; S.userPicked = false; update(); } });
+$('stype').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { S.stype = b.dataset.v; S.finish = TYPE_FINISH[S.stype]; update(); } });
+$('finish').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { S.finish = b.dataset.v; update(); } });
+$('cov').addEventListener('input', e => { S.cov = e.target.value / 100; update(); });
+$('lights').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { S.light = b.dataset.light; update(); } });
+
+/* ---------------- photo reader ---------------- */
+const toLinC = c => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+function linToLab([r, g, b]) {
+  let x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047;
+  let y = (r * 0.2126 + g * 0.7152 + b * 0.0722);
+  let z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
+  const f = t => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+  x = f(x); y = f(y); z = f(z);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+}
+// Closest point on our skin model: depth from lightness, undertone from nearest a*/b*.
+function fitSkin(lab) {
+  const depth = Math.min(1, Math.max(0, (88 - lab[0]) / 62));
+  let best = 'neutral', bd = Infinity;
+  for (const u of Object.keys(UNDER)) {
+    const m = skinLab(depth, u), d = Math.hypot(m[1] - lab[1], m[2] - lab[2]);
+    if (d < bd) { bd = d; best = u; }
+  }
+  return { depth, under: best, off: bd };
+}
+
+const P = { canvas: document.createElement('canvas'), skin: [], white: null, mode: 'skin', url: null };
+const pctx = P.canvas.getContext('2d', { willReadFrequently: true });
+
+function samplePatch(cx, cy) {
+  const r = Math.max(4, Math.round(P.canvas.width * 0.014));
+  const x0 = Math.max(0, cx - r), y0 = Math.max(0, cy - r);
+  const w = Math.min(P.canvas.width - x0, r * 2), h = Math.min(P.canvas.height - y0, r * 2);
+  const d = pctx.getImageData(x0, y0, w, h).data;
+  const px = []; let clipped = 0, total = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    total++;
+    if (Math.max(d[i], d[i + 1], d[i + 2]) > 248 || Math.max(d[i], d[i + 1], d[i + 2]) < 8) { clipped++; continue; }
+    const lin = [toLinC(d[i] / 255), toLinC(d[i + 1] / 255), toLinC(d[i + 2] / 255)];
+    px.push({ lin, y: lin[0] * 0.2126 + lin[1] * 0.7152 + lin[2] * 0.0722 });
+  }
+  if (px.length < 8) return { lin: null, clipped: 1 };
+  // drop the brightest and darkest quarter: shine, pores, stray hairs
+  px.sort((a, b) => a.y - b.y);
+  const keep = px.slice(Math.floor(px.length * 0.25), Math.ceil(px.length * 0.75));
+  const lin = [0, 1, 2].map(k => keep.reduce((s, p) => s + p.lin[k], 0) / keep.length);
+  return { lin, clipped: clipped / total };
+}
+
+function drawDots() {
+  const pic = $('pic');
+  pic.querySelectorAll('.dot').forEach(d => d.remove());
+  const add = (s, cls) => {
+    const d = document.createElement('span');
+    d.className = 'dot' + (cls ? ' ' + cls : '');
+    d.style.left = (s.fx * 100) + '%'; d.style.top = (s.fy * 100) + '%';
+    if (s.lin) d.style.background = hex(labToSrgb(...linToLab(s.lin)));
+    pic.append(d);
+  };
+  P.skin.forEach(s => add(s));
+  if (P.white) add(P.white, 'white');
+}
+
+function readSkin() {
+  const valid = P.skin.filter(s => s.lin);
+  const rd = $('reading');
+  if (!valid.length) { rd.hidden = true; return; }
+  let lin = [0, 1, 2].map(k => valid.reduce((s, p) => s + p.lin[k], 0) / valid.length);
+  if (P.white?.lin) {
+    // von Kries: scale each channel so the white reference comes out neutral, keeping exposure
+    const w = P.white.lin, m = (w[0] + w[1] + w[2]) / 3;
+    lin = lin.map((c, k) => Math.min(1, c * m / Math.max(w[k], 1e-4)));
+  }
+  const lab = linToLab(lin), fit = fitSkin(lab);
+  S.depth = fit.depth; S.under = fit.under; S.userPicked = false;
+  update();
+  rd.hidden = false;
+  $('readSw').style.background = hex(labToSrgb(...lab));
+  const step = Math.round(fit.depth * 9) + 1;
+  $('readTitle').textContent = t('readTitle', num(step), t(fit.under));
+  $('readLab').textContent = `L* ${num(lab[0].toFixed(0))}  a* ${num(lab[1].toFixed(0))}  b* ${num(lab[2].toFixed(0))}  ·  ${t('spots', valid.length)}${P.white ? ' · ' + t('whiteBalanced') : ''}`;
+  const spread = valid.length > 1 ? Math.max(...valid.map(s => linToLab(s.lin)[0])) - Math.min(...valid.map(s => linToLab(s.lin)[0])) : 0;
+  const hint = $('photoHint');
+  hint.classList.remove('warn');
+  if (spread > 14) { hint.textContent = t('hintSpread'); hint.classList.add('warn'); }
+  else if (fit.off > 9) { hint.textContent = t('hintCast'); hint.classList.add('warn'); }
+  else if (!P.white) hint.textContent = t('hintWhite');
+  else hint.textContent = t('hintApplied');
+}
+
+function loadPhoto(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  if (P.url) URL.revokeObjectURL(P.url);
+  P.url = URL.createObjectURL(file);
+  const img = $('photoImg');
+  img.onload = () => {
+    const sc = Math.min(1, 1400 / Math.max(img.naturalWidth, img.naturalHeight));
+    P.canvas.width = Math.round(img.naturalWidth * sc); P.canvas.height = Math.round(img.naturalHeight * sc);
+    pctx.drawImage(img, 0, 0, P.canvas.width, P.canvas.height);
+    P.skin = []; P.white = null; drawDots(); setMode('skin');
+    $('reading').hidden = true;
+    $('photoHint').classList.remove('warn');
+    $('photoHint').textContent = t('photoHintStart');
+  };
+  img.src = P.url;
+  $('drop').hidden = true; $('photoBox').hidden = false;
+}
+function setMode(m) { P.mode = m; pressGroup($('tapMode'), m); }
+
+$('photoIn').addEventListener('change', e => { loadPhoto(e.target.files[0]); e.target.value = ''; });
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => loadPhoto(e.dataTransfer.files[0]));
+document.addEventListener('paste', e => { const f = [...(e.clipboardData?.files || [])].find(f => f.type.startsWith('image/')); if (f) loadPhoto(f); });
+$('tapMode').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.v); });
+$('photoImg').addEventListener('click', e => {
+  const r = e.currentTarget.getBoundingClientRect();
+  const fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
+  const s = samplePatch(Math.round(fx * P.canvas.width), Math.round(fy * P.canvas.height));
+  const spot = { fx, fy, lin: s.lin };
+  if (!s.lin || s.clipped > 0.35) {
+    $('photoHint').textContent = t('hintBlown');
+    $('photoHint').classList.add('warn');
+    return;
+  }
+  if (P.mode === 'white') { P.white = spot; setMode('skin'); }
+  else { P.skin.push(spot); if (P.skin.length > 3) P.skin.shift(); }
+  drawDots(); readSkin();
+});
+$('clearTaps').addEventListener('click', () => { P.skin = []; P.white = null; drawDots(); $('reading').hidden = true; });
+$('removePhoto').addEventListener('click', () => {
+  if (P.url) URL.revokeObjectURL(P.url);
+  P.url = null; P.skin = []; P.white = null; $('photoImg').removeAttribute('src');
+  $('photoBox').hidden = true; $('drop').hidden = false;
+});
+
+/* ---------------- 3D ---------------- */
+const stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+function applyQuality() {
+  renderer.setPixelRatio(S.light_mode ? 1 : Math.min(devicePixelRatio, 2));
+  if (typeof resize === 'function') resize();
+  pressGroup($('quality'), S.light_mode ? 'light' : 'full');
+}
+renderer.toneMapping = THREE.NeutralToneMapping;
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(26, 1, 0.01, 100);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.35;
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+const fill = new THREE.DirectionalLight(0xffffff, 0.6);
+const flash = new THREE.PointLight(0xffffff, 0, 0, 0);
+scene.add(hemi, key, fill, camera); camera.add(flash);
+
+const LIGHTS = {
+  day:    { key: [0xfff3e6, 2.3], fill: [0xdfe9ff, 0.7], hemi: [0xf2f6ff, 0x5a5048, 0.7], env: 0.35, flash: 0, sss: 1 },
+  office: { key: [0xf4f6ff, 1.8], fill: [0xf0f2ff, 0.9], hemi: [0xe8eeff, 0x4a4e55, 0.9], env: 0.30, flash: 0, sss: 0.9 },
+  golden: { key: [0xffb36b, 2.6], fill: [0x8fa4d8, 0.35], hemi: [0xffd2a1, 0x3a2a20, 0.5], env: 0.2, flash: 0, sss: 1.1 },
+  flash:  { key: [0xffffff, 0.35], fill: [0xffffff, 0.1], hemi: [0xffffff, 0x222222, 0.25], env: 0.1, flash: 4.2, sss: 0.6 },
+};
+
+const U = {
+  uSkin: { value: new THREE.Color() }, uPowder: { value: new THREE.Color() },
+  uAlbMean: { value: new THREE.Vector3(0.4643, 0.1861, 0.1136) },   // average linear albedo of the scan's cheeks and forehead
+  uAmt: { value: 0.45 }, uSplit: { value: 0.5 }, uResX: { value: 1 },
+  uFlash: { value: 0 }, uFlashback: { value: 0.1 }, uLift: { value: 0 },
+  uRoughScale: { value: 0.9 }, uPowRough: { value: 0.9 },
+  uMarks: { value: null }, uInfo: { value: null }, uMasks: { value: null }, uMicro: { value: null },
+  uMicroTile: { value: 38 }, uMicroStr: { value: 0.35 }, uBump: { value: 9 },
+  uHair: { value: new THREE.Color(0x24170f) }, uSSS: { value: 1 },
+};
+
+function headMaterial(maps) {
+  const m = new THREE.MeshStandardMaterial({
+    map: maps.albedo, normalMap: maps.normal, roughnessMap: maps.rough, roughness: 1, metalness: 0,
+  });
+  m.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, U);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>
+        uniform vec3 uSkin, uPowder, uAlbMean, uHair;
+        uniform float uSSS, uAmt, uSplit, uResX, uFlash, uFlashback, uLift, uRoughScale, uPowRough, uMicroTile, uMicroStr, uBump;
+        uniform sampler2D uMarks, uInfo, uMasks, uMicro, uPMask, uFresh; uniform float uShow, uFreshAmt;
+        vec3 s2l( vec3 c ) { return mix( c / 12.92, pow( ( c + 0.055 ) / 1.055, vec3( 2.4 ) ), step( 0.04045, c ) ); }`)
+      .replace('#include <map_fragment>', `
+        vec4 tx = texture2D( map, vMapUv );
+        vec3 msk = texture2D( uMasks, vMapUv ).rgb;
+        float lip = msk.r, strand = msk.b;
+        // break the soft hairline up with the strand pattern so the edge reads as wisps, not paint
+        float hairM = clamp( msk.g * 1.7 - 0.35 + ( strand - 0.6 ) * 0.9 * ( 1.0 - msk.g ), 0.0, 1.0 );
+        // keep the scan's own variation (pores, redness, veins, lip colour) but move its average to the chosen skin tone
+        vec3 detail = clamp( tx.rgb / uAlbMean, 0.0, 2.5 );
+        vec3 bare = uSkin * detail;
+        vec4 mk = texture2D( uMarks, vMapUv );
+        float resist = texture2D( uInfo, vMapUv ).g;
+        bare = mix( bare, mk.rgb, mk.a );
+        vec4 pmk = texture2D( uPMask, vMapUv );
+        float after = pmk.a * uShow;   // where the brush has laid product
+        vec3 pcol = s2l( pmk.rgb / max( pmk.a, 1e-3 ) );   // and in which shade
+        // fresh product: for a moment it looks chalkier and further from the skin, so a new stroke is easy to see
+        float fr = texture2D( uFresh, vMapUv ).r * uFreshAmt;
+        vec3 pfx = clamp( pcol + ( pcol - uSkin ) * 1.6, 0.0, 1.0 );
+        pfx = mix( pfx, vec3( dot( pfx, vec3( 0.2126, 0.7152, 0.0722 ) ) ), 0.3 ) * 1.22 + 0.015;
+        pcol = mix( pcol, pfx, fr );
+        after = mix( after, min( 1.0, after * 1.8 + 0.12 * step( 0.01, after ) ), fr );
+        float pK = after * uAmt * ( 1.0 - lip ) * ( 1.0 - hairM );
+        // powder evens tone but lets some of the skin's variation through; it only partly hides details
+        // powder evens hue (redness, blotches) but lets some light-and-dark texture through
+        float dl = dot( detail, vec3( 0.2126, 0.7152, 0.0722 ) );
+        vec3 powdered = pcol * mix( 1.0, dl, 0.4 );
+        vec3 col = mix( bare, powdered, pK * ( 1.0 - resist * mk.a ) );
+        col = mix( col, vec3( 1.0 ), clamp( pK * uFlash * uFlashback * 0.75, 0.0, 0.6 ) );
+        col *= 1.0 + pK * uLift;
+        vec3 hairCol = uHair * ( 0.45 + 0.75 * strand );
+        diffuseColor.rgb = mix( col, hairCol, hairM );`)
+      .replace('#include <roughnessmap_fragment>', `
+        float texR = texture2D( roughnessMap, vRoughnessMapUv ).g;
+        float roughnessFactor = clamp( texR * uRoughScale, 0.22, 1.0 );
+        roughnessFactor = mix( roughnessFactor, uPowRough, clamp( pK * 1.8, 0.0, 1.0 ) );
+        roughnessFactor = mix( roughnessFactor, 0.34 + 0.3 * ( 1.0 - strand ), hairM );`)
+      .replace('#include <normal_fragment_maps>', `
+        vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;
+        vec3 micro = texture2D( uMicro, vNormalMapUv * uMicroTile ).xyz * 2.0 - 1.0;
+        // powder fills pores a little, so the micro detail softens where it sits
+        mapN.xy = mapN.xy * normalScale + micro.xy * uMicroStr * ( 1.0 - hairM ) * ( 1.0 - 0.45 * pK );
+        // raised details (moles, pimples) as a height field
+        float tx1 = 1.0 / 2048.0;
+        float h0 = texture2D( uInfo, vMapUv ).r;
+        float hu = texture2D( uInfo, vMapUv + vec2( tx1, 0.0 ) ).r;
+        float hv = texture2D( uInfo, vMapUv + vec2( 0.0, tx1 ) ).r;
+        mapN.xy -= vec2( hu - h0, hv - h0 ) * uBump;
+        mapN.xy += vec2( strand - 0.6 ) * 0.25 * hairM;
+        normal = normalize( tbn * mapN );`)
+      .replace('#include <emissivemap_fragment>', `
+        // cheap subsurface scattering: light bleeding back out of skin is warm and red, strongest where the skin is thin
+        totalEmissiveRadiance += diffuseColor.rgb * vec3( 0.20, 0.055, 0.03 ) * uSSS * ( 1.0 - hairM ) * ( 1.0 - 0.6 * pK );`);
+  };
+  return m;
+}
+
+let head = null, blinkIdx = [], headTex = null, studioEnv = false;
+const HAIR_FULL = 12000, HAIR_LIGHT = 4500;
+
+/* skin details: drawn in the face's texture space, so they follow the mesh.
+   The scan's texture is about 0.23 mm per texel at 2048 px on the cheek. */
+const MS = 2048, MARK_SCALE = 0.5;
+const markCv = Object.assign(document.createElement('canvas'), { width: MS, height: MS });
+const infoCv = Object.assign(document.createElement('canvas'), { width: MS, height: MS });   // R = height, G = powder resistance
+const mctx = markCv.getContext('2d'), ictx = infoCv.getContext('2d');
+const markTex = new THREE.CanvasTexture(markCv), infoTex = new THREE.CanvasTexture(infoCv);
+markTex.colorSpace = THREE.SRGBColorSpace;
+U.uMarks.value = markTex; U.uInfo.value = infoTex;
+
+const MARKS = [];
+const RESIST = { mole: 0.9, pimple: 0.55, freckles: 0.35, redness: 0.4, circles: 0.5, mark: 0.45 };
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const labCss = (lab, a = 1) => { const [r, g, b] = labToSrgb(...lab).map(c => Math.round(c * 255)); return `rgba(${r},${g},${b},${a})`; };
+
+function blob(ctx, x, y, r, stops, sx = 1, sy = 1) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(sx, sy);
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+  for (const [o, c] of stops) g.addColorStop(o, c);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+}
+function info(x, y, r, h, res, sx = 1, sy = 1) {
+  // 'lighten' keeps the max per channel, so overlapping details don't erase each other
+  blob(ictx, x, y, r, [[0, `rgb(${h},${res},0)`], [0.75, `rgb(${Math.round(h * 0.45)},${res},0)`], [1, 'rgb(0,0,0)']], sx, sy);
+}
+
+function drawMarks() {
+  const [L, a, b] = skinLab(S.depth, S.under);
+  mctx.clearRect(0, 0, MS, MS);
+  ictx.globalCompositeOperation = 'source-over'; ictx.fillStyle = '#000'; ictx.fillRect(0, 0, MS, MS);
+  ictx.globalCompositeOperation = 'lighten';
+  for (let m of MARKS) {
+    // canvas rows run top-down; the scan's UVs run bottom-up
+    const x = m.u * MS, y = (1 - m.v) * MS, R = rng(m.seed), res = Math.round(RESIST[m.t] * 255);
+    m = { ...m, s: m.s * MARK_SCALE };
+    if (m.t === 'mole') {
+      const r = 14 * m.s, col = [L * 0.4, a * 0.9 + 4, b * 0.85 + 4];
+      for (let i = 0; i < 3; i++) blob(mctx, x + (R() - .5) * r * .5, y + (R() - .5) * r * .5, r * (0.75 + R() * .3), [[0, labCss(col, .95)], [0.7, labCss(col, .85)], [1, labCss(col, 0)]]);
+      info(x, y, r * 1.15, 170, res);
+    } else if (m.t === 'pimple') {
+      const r = 22 * m.s;
+      blob(mctx, x, y, r * 2, [[0, labCss([L * 0.76, a + 34, b * 0.5], .85)], [0.4, labCss([L * 0.82, a + 26, b * 0.6], .55)], [1, labCss([L, a + 10, b], 0)]]);
+      if (R() > 0.35) blob(mctx, x, y, r * 0.36, [[0, labCss([Math.min(92, L + 20), a * 0.4, b + 12], .8)], [1, labCss([L, a, b], 0)]]);
+      info(x, y, r * 0.95, 255, res);
+    } else if (m.t === 'freckles') {
+      const n = Math.round(45 * m.s), spread = 120 * m.s;
+      for (let i = 0; i < n; i++) {
+        const ang = R() * Math.PI * 2, d = Math.sqrt(R()) * spread, rr = (3.5 + R() * 4.5) * Math.max(0.8, m.s * 0.9);
+        blob(mctx, x + Math.cos(ang) * d * 1.3, y + Math.sin(ang) * d, rr, [[0, labCss([L * 0.7, a + 3, b + 12], .5 + R() * .3)], [1, labCss([L * 0.8, a, b], 0)]]);
+      }
+      info(x, y, spread * 1.4, 0, res, 1.3, 1);
+    } else if (m.t === 'redness') {
+      const r = 130 * m.s;
+      for (let i = 0; i < 5; i++) blob(mctx, x + (R() - .5) * r * .7, y + (R() - .5) * r * .5, r * (0.45 + R() * .3), [[0, labCss([L * 0.86, a + 26, b * 0.6], .32)], [1, labCss([L, a + 12, b * 0.8], 0)]]);
+      info(x, y, r, 0, res);
+    } else if (m.t === 'circles') {
+      const r = 95 * m.s;
+      blob(mctx, x, y, r, [[0, labCss([L * 0.66, a + 9, b * 0.45], .62)], [0.55, labCss([L * 0.76, a + 6, b * 0.6], .32)], [1, labCss([L, a, b], 0)]], 1.6, 0.6);
+      info(x, y, r, 0, res, 1.6, 0.6);
+    } else if (m.t === 'mark') {
+      const r = 20 * m.s;
+      blob(mctx, x, y, r, [[0, labCss([L * 0.7, a + 10, b + 4], .7)], [0.7, labCss([L * 0.8, a + 6, b + 4], .4)], [1, labCss([L, a, b], 0)]]);
+      info(x, y, r, 20, res);
+    }
+  }
+  markTex.needsUpdate = infoTex.needsUpdate = true;
+  $('markCount').textContent = MARKS.length ? t('placed', num(MARKS.length)) : '';
+}
+
+let tool = 'brush';
+const DETAIL_HINT = {
+  none: 'Drag to turn the head.',
+  brush: 'Brush powder onto the face. Drag on the background to turn the head.',
+  mole: 'Moles stay visible under powder. Concealer and a tiny brush cover them; powder just sets it.',
+  pimple: 'Powder takes the edge off the redness but the bump still shows. Matte finishes hide texture better than radiant.',
+  freckles: 'Sheer powder lets freckles show through. Raise coverage to see how much they fade.',
+  redness: 'Click a cheek or around the nose. Green-leaning or yellow powders cancel red best.',
+  circles: 'Click just under an eye. Yellow or peach-toned powder (Banana) brightens this area.',
+  mark: 'Flat marks left after a breakout. They fade under powder more than raised spots do.',
+  erase: 'Click a detail on the face to remove it.',
+};
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function faceUV(e) {
+  if (!head || !headTex) return null;
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObject(head, false)[0];
+  if (!hit || !hit.uv) return null;
+  return [hit.uv.x, hit.uv.y];
+}
+function saveMarks() { try { localStorage.setItem('sifted-marks-v2', JSON.stringify(MARKS)); } catch (e) {} }
+
+const group = new THREE.Group(); scene.add(group);
+
+/* ---------------- studio light from the scan's own HDRI ----------------
+   Stored as an 8-bit log2 image (grayscale studio: one curved softbox), decoded to half floats here. */
+function loadEnv() {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const w = img.width, h = img.height, c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+      const d = cx.getImageData(0, 0, w, h).data;
+      const lo = -5.643856, hi = 7.228819, out = new Uint16Array(w * h * 4), one = THREE.DataUtils.toHalfFloat(1);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4, j = ((h - 1 - y) * w + x) * 4;   // flip rows: data textures are bottom-up
+        const v = THREE.DataUtils.toHalfFloat(Math.pow(2, d[i] / 255 * (hi - lo) + lo));
+        out[j] = out[j + 1] = out[j + 2] = v; out[j + 3] = one;
+      }
+      const t = new THREE.DataTexture(out, w, h, THREE.RGBAFormat, THREE.HalfFloatType);
+      t.mapping = THREE.EquirectangularReflectionMapping; t.needsUpdate = true;
+      res(t);
+    };
+    img.onerror = rej; img.src = 'env_log.png';
+  });
+}
+
+/* ---------------- spatial lookup on the head surface ---------------- */
+function makeGrid(pts, cell) {
+  const map = new Map(), k = (x, y, z) => `${Math.floor(x / cell)},${Math.floor(y / cell)},${Math.floor(z / cell)}`;
+  for (let i = 0; i < pts.length / 3; i++) {
+    const key = k(pts[i * 3], pts[i * 3 + 1], pts[i * 3 + 2]);
+    let a = map.get(key); if (!a) map.set(key, a = []); a.push(i);
+  }
+  return {
+    nearest(x, y, z) {
+      const cx = Math.floor(x / cell), cy = Math.floor(y / cell), cz = Math.floor(z / cell);
+      let best = -1, bd = Infinity;
+      for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let c = -1; c <= 1; c++) {
+        const list = map.get(`${cx + a},${cy + b},${cz + c}`); if (!list) continue;
+        for (const i of list) {
+          const dx = pts[i * 3] - x, dy = pts[i * 3 + 1] - y, dz = pts[i * 3 + 2] - z, dd = dx * dx + dy * dy + dz * dz;
+          if (dd < bd) { bd = dd; best = i; }
+        }
+      }
+      return [best, Math.sqrt(bd)];
+    },
+  };
+}
+function worldArrays(mesh) {
+  mesh.updateMatrixWorld(true);
+  const p = mesh.geometry.attributes.position, n = mesh.geometry.attributes.normal;
+  const P = new Float32Array(p.count * 3), N = new Float32Array(p.count * 3), v = new THREE.Vector3();
+  const nm = new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld);
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i).applyMatrix4(mesh.matrixWorld); P.set([v.x, v.y, v.z], i * 3);
+    v.fromBufferAttribute(n, i).applyMatrix3(nm).normalize(); N.set([v.x, v.y, v.z], i * 3);
+  }
+  return { P, N, index: mesh.geometry.index.array };
+}
+
+/* ---------------- eyes ---------------- */
+const eyePivots = [];
+const sacc = new THREE.Vector2(); let nextSacc = 1;
+function eyeMaterial(map, height) {
+  const m = new THREE.MeshStandardMaterial({ map, roughness: 0.3, vertexColors: true });
+  m.onBeforeCompile = sh => {
+    sh.uniforms.uHeight = { value: height };
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform sampler2D uHeight;')
+      .replace('#include <map_fragment>', `
+        // parallax: the iris sits about 2.5 mm behind the cornea, so it shifts as the view changes
+        vec3 q0 = dFdx( -vViewPosition ), q1 = dFdy( -vViewPosition );
+        vec2 st0 = dFdx( vMapUv ), st1 = dFdy( vMapUv );
+        vec3 Ne = normalize( vNormal );
+        vec3 q1p = cross( q1, Ne ), q0p = cross( Ne, q0 );
+        vec3 Te = q1p * st0.x + q0p * st1.x, Be = q1p * st0.y + q0p * st1.y;
+        float sc = inversesqrt( max( max( dot( Te, Te ), dot( Be, Be ) ), 1e-12 ) );
+        vec3 Vt = normalize( vec3( dot( Te * sc, vViewPosition ), dot( Be * sc, vViewPosition ), dot( Ne, vViewPosition ) ) );
+        float depth = 1.0 - texture2D( uHeight, vMapUv ).r;
+        vec2 puv = vMapUv - Vt.xy / max( Vt.z, 0.35 ) * depth * 0.045;
+        vec4 eyeTex = texture2D( map, puv );
+        // a real sclera is never paper white
+        eyeTex.rgb *= mix( vec3( 0.86, 0.83, 0.81 ), vec3( 1.0 ), depth );
+        diffuseColor *= eyeTex;`);
+  };
+  return m;
+}
+function setupEyes(parts, headGrid, headP) {
+  for (const side of ['Left', 'Right']) {
+    const eye = parts['eye' + side], lens = parts['lens' + side];
+    if (!eye) continue;
+    eye.updateMatrixWorld(true);
+    eye.geometry.computeBoundingSphere();
+    const c = eye.geometry.boundingSphere.center.clone().applyMatrix4(eye.matrixWorld);
+    const pivot = new THREE.Object3D(); pivot.position.copy(c); group.add(pivot); pivot.updateMatrixWorld(true);
+    pivot.attach(eye); if (lens) pivot.attach(lens);
+    eyePivots.push(pivot);
+    // eyelid occlusion: darken the eyeball where the lids are close, more under the upper lid
+    const pos = eye.geometry.attributes.position, col = new Float32Array(pos.count * 3), v = new THREE.Vector3();
+    eye.updateMatrixWorld(true);
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(eye.matrixWorld);
+      const [, d] = headGrid.nearest(v.x, v.y, v.z);
+      let ao = THREE.MathUtils.smoothstep(d, 0.0006, 0.0042);
+      const upper = v.y > c.y + 0.002 ? 1 : 0.65;
+      ao = 1 - (1 - ao) * 0.82 * upper;
+      col[i * 3] = ao; col[i * 3 + 1] = ao * 0.97; col[i * 3 + 2] = ao * 0.96;
+    }
+    eye.geometry.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  }
+}
+
+/* ---------------- hair: strands grown over the scalp toward a low bun ---------------- */
+const HAIRLINE = [[0, 0.371], [25, 0.362], [45, 0.348], [62, 0.326], [76, 0.302], [92, 0.292], [110, 0.275], [135, 0.238], [180, 0.212]];
+const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+function hairW(x, y, z) {
+  const th = Math.abs(Math.atan2(x, z - 0.02)) * 180 / Math.PI;
+  let hl = HAIRLINE[HAIRLINE.length - 1][1];
+  for (let i = 0; i < HAIRLINE.length - 1; i++) {
+    const [a0, h0] = HAIRLINE[i], [a1, h1] = HAIRLINE[i + 1];
+    if (th <= a1) { hl = h0 + (h1 - h0) * (th - a0) / (a1 - a0); break; }
+  }
+  hl += Math.sin(x * 140 + 0.7) * 0.0012;
+  let w = sstep(-0.004, 0.007, y - hl);
+  for (const s of [1, -1]) {
+    const d = Math.sqrt((x - s * 0.078) ** 2 + (y - 0.272) ** 2 * 0.8 + (z - 0.022) ** 2);
+    w *= sstep(0.026, 0.034, d);
+  }
+  return w;
+}
+const BUN = new THREE.Vector3(0, 0.288, -0.079), BUN_R = [0.034, 0.029, 0.023];
+const HAIR_U = {
+  uHair: U.uHair, uKeyDir: { value: new THREE.Vector3(0, 1, 1).normalize() }, uKeyCol: { value: new THREE.Color(1, 1, 1) },
+  uFillDir: { value: new THREE.Vector3(1, 0, 1).normalize() }, uFillCol: { value: new THREE.Color(0.3, 0.3, 0.3) },
+  uAmb: { value: new THREE.Color(0.25, 0.25, 0.25) }, uFlash: { value: 0 }, uAlpha: { value: 1 },
+};
+const hairMat = new THREE.ShaderMaterial({
+  uniforms: HAIR_U, transparent: true, depthWrite: true,
+  vertexShader: `
+    attribute vec3 aTan; attribute float aT; attribute float aRand;
+    varying vec3 vTan, vWP; varying float vT, vR;
+    void main() {
+      vec4 wp = modelMatrix * vec4( position, 1.0 );
+      vWP = wp.xyz; vTan = normalize( mat3( modelMatrix ) * aTan ); vT = aT; vR = aRand;
+      gl_Position = projectionMatrix * viewMatrix * wp;
+    }`,
+  fragmentShader: `
+    uniform vec3 uHair, uKeyDir, uKeyCol, uFillDir, uFillCol, uAmb; uniform float uFlash, uAlpha;
+    varying vec3 vTan, vWP; varying float vT, vR;
+    float sinTL( vec3 T, vec3 L ) { float d = dot( T, L ); return sqrt( max( 0.0, 1.0 - d * d ) ); }
+    // Kajiya-Kay: hair is a thin cylinder, so light depends on the angle to the strand, not a surface normal
+    vec3 lightHair( vec3 T, vec3 V, vec3 L, vec3 col, vec3 base, float occl ) {
+      vec3 H = normalize( L + V );
+      float diff = sinTL( T, L ) * 0.75 + 0.1;
+      float s1 = pow( sinTL( T, H ), 160.0 ) * 0.36;
+      float s2 = pow( sinTL( T, H ), 22.0 ) * 0.16;
+      return col * occl * ( base * diff + mix( vec3( 1.0 ), base * 4.0, 0.35 ) * s1 + base * 2.2 * s2 );
+    }
+    void main() {
+      vec3 T = normalize( vTan ), V = normalize( cameraPosition - vWP );
+      vec3 out_ = normalize( vWP - vec3( 0.0, 0.28, 0.02 ) );   // rough outward direction from the head's centre
+      vec3 base = uHair * ( 0.72 + 0.56 * vR ) * mix( 1.0, 0.85, vT );
+      vec3 c = base * uAmb * ( 0.6 + 0.4 * max( out_.y, 0.0 ) );
+      c += lightHair( T, V, uKeyDir, uKeyCol, base, sstep( -0.25, 0.45, dot( out_, uKeyDir ) ) );
+      c += lightHair( T, V, uFillDir, uFillCol, base, sstep( -0.25, 0.45, dot( out_, uFillDir ) ) );
+      c += lightHair( T, V, V, vec3( uFlash ), base, 1.0 );
+      gl_FragColor = vec4( c, mix( 0.95, 0.3, vT * vT ) * uAlpha );
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`.replace('uniform vec3 uHair', 'float sstep( float a, float b, float x ) { float t = clamp( ( x - a ) / ( b - a ), 0.0, 1.0 ); return t * t * ( 3.0 - 2.0 * t ); }\n    uniform vec3 uHair'),
+});
+let hairMesh = null, headSurf = null;
+
+function buildHair(count) {
+  if (hairMesh) { group.remove(hairMesh); hairMesh.geometry.dispose(); hairMesh = null; }
+  if (!headSurf) return;
+  const { P, N, index } = headSurf;
+  const rnd = rng(7);
+  // scalp vertices for surface projection, and triangles weighted by area for root sampling
+  const W = new Float32Array(P.length / 3);
+  for (let i = 0; i < W.length; i++) W[i] = hairW(P[i * 3], P[i * 3 + 1], P[i * 3 + 2]);
+  const scalpIdx = []; for (let i = 0; i < W.length; i++) if (W[i] > 0.02) scalpIdx.push(i);
+  const sp = new Float32Array(scalpIdx.length * 3); scalpIdx.forEach((vi, k) => sp.set(P.subarray(vi * 3, vi * 3 + 3), k * 3));
+  const grid = makeGrid(sp, 0.007);
+  const tris = [], cum = []; let total = 0;
+  const A = new THREE.Vector3(), Bv = new THREE.Vector3(), C = new THREE.Vector3();
+  for (let t = 0; t < index.length; t += 3) {
+    const a = index[t], b = index[t + 1], c = index[t + 2];
+    if ((W[a] + W[b] + W[c]) / 3 < 0.35) continue;
+    A.fromArray(P, a * 3); Bv.fromArray(P, b * 3); C.fromArray(P, c * 3);
+    total += Bv.sub(A).cross(C.sub(A)).length() / 2; tris.push(t); cum.push(total);
+  }
+  const pos = [], tan = [], aT = [], aR = [], idx = [];
+  const p = new THREE.Vector3(), d = new THREE.Vector3(), nrm = new THREE.Vector3(), tgt = new THREE.Vector3(), side = new THREE.Vector3(), tmp = new THREE.Vector3();
+  const sv = new THREE.Vector3(), q0 = new THREE.Vector3();
+  function project(q, h) {
+    const [k] = grid.nearest(q.x, q.y, q.z); if (k < 0) return false;
+    const vi = scalpIdx[k];
+    nrm.fromArray(N, vi * 3); sv.fromArray(P, vi * 3);
+    q.addScaledVector(nrm, h - sv.subVectors(q, sv).dot(nrm));
+    return true;
+  }
+  function emit(points, r) {
+    const base = pos.length / 3;
+    for (let i = 0; i < points.length; i++) {
+      const q = points[i], nx = points[Math.min(i + 1, points.length - 1)], pv = points[Math.max(i - 1, 0)];
+      tmp.subVectors(nx, pv).normalize();
+      pos.push(q.x, q.y, q.z); tan.push(tmp.x, tmp.y, tmp.z); aT.push(i / (points.length - 1)); aR.push(r);
+      if (i) idx.push(base + i - 1, base + i);
+    }
+  }
+  function sampleRoot() {
+    const x = rnd() * total; let lo = 0, hi = cum.length - 1;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (cum[m] < x) lo = m + 1; else hi = m; }
+    const t = tris[lo]; let u = rnd(), v = rnd(); if (u + v > 1) { u = 1 - u; v = 1 - v; }
+    const a = index[t], b = index[t + 1], c = index[t + 2];
+    const out = new THREE.Vector3(), n = new THREE.Vector3();
+    for (const [vi, wgt] of [[a, 1 - u - v], [b, u], [c, v]]) { out.addScaledVector(tmp.fromArray(P, vi * 3), wgt); n.addScaledVector(tmp.fromArray(N, vi * 3), wgt); }
+    return [out, n.normalize(), (W[a] + W[b] + W[c]) / 3];
+  }
+  function grow(root, n, w, opts) {
+    const pts = [root.clone()];
+    p.copy(root);
+    // clumps: neighbouring roots share a wave phase, so strands bunch like real hair
+    const ph = Math.floor(root.x / 0.008) * 1.7 + Math.floor(root.y / 0.008) * 2.3 + Math.floor(root.z / 0.008) * 3.1 + rnd() * 0.6;
+    const h0 = opts.h0 * (0.35 + 0.65 * w);
+    d.set(0, 0, 0);
+    for (let s = 1; s <= opts.steps; s++) {
+      tgt.subVectors(BUN, p);
+      if (!project(q0.copy(p), 0)) break;
+      tgt.addScaledVector(nrm, -tgt.dot(nrm)).normalize();
+      side.crossVectors(nrm, tgt).normalize();
+      tgt.addScaledVector(side, Math.sin(s * opts.waveF + ph) * opts.wave);
+      d.lerp(tgt, s === 1 ? 1 : opts.stiff).normalize();
+      p.addScaledVector(d, opts.seg);
+      const h = h0 + s / opts.steps * opts.hGrow;
+      if (!project(p, h)) break;
+      pts.push(p.clone());
+      if (opts.toBun && Math.hypot((p.x - BUN.x) / BUN_R[0], (p.y - BUN.y) / BUN_R[1], (p.z - BUN.z) / BUN_R[2]) < 1.05) break;
+    }
+    if (pts.length > 2) emit(pts, rnd());
+  }
+  // main strands: lie close to the scalp and sweep back into the bun
+  for (let i = 0; i < count; i++) {
+    const [r, n, w] = sampleRoot();
+    grow(r, n, w, { steps: 80, seg: 0.0042, h0: 0.0018, hGrow: 0.0022, wave: 0.18, waveF: 0.22, stiff: 0.45, toBun: true });
+  }
+  // baby hairs at the hairline and a few flyaways on top
+  for (let i = 0; i < count * 0.08; i++) {
+    const [r, n, w] = sampleRoot(); if (w > 0.7) continue;
+    grow(r, n, w, { steps: 4 + (rnd() * 5 | 0), seg: 0.0018, h0: 0.0006, hGrow: 0.0012, wave: 0.9, waveF: 1.3, stiff: 0.35 });
+  }
+  for (let i = 0; i < 0; i++) {   // flyaways off: they read as stray scribbles at this scale
+    const [r, n, w] = sampleRoot(); if (w < 0.9) continue;
+    grow(r, n, w, { steps: 6 + (rnd() * 8 | 0), seg: 0.0035, h0: 0.002, hGrow: 0.0025 + rnd() * 0.0035, wave: 0.6, waveF: 0.7, stiff: 0.4 });
+  }
+  // the bun: strands coiling around its axis from the base toward the outer face
+  const bunCount = Math.round(count * 0.18);
+  for (let i = 0; i < bunCount; i++) {
+    const pts = [], l0 = rnd() * Math.PI * 2, lat0 = -0.5 + rnd() * 0.6, turns = 1.4 + rnd() * 1.2, sc = 1.0 + rnd() * 0.06, steps = 70;
+    for (let s = 0; s <= steps; s++) {
+      const f = s / steps, lam = l0 + f * turns * Math.PI * 2;
+      const lat = Math.min(1.35, lat0 + f * (0.9 + rnd() * 0.02)) + Math.sin(lam * 3 + i) * 0.04;
+      const x = Math.cos(lat) * Math.cos(lam), y = Math.cos(lat) * Math.sin(lam), z = -Math.sin(lat);   // outer face points away from the head (-z)
+      pts.push(new THREE.Vector3(BUN.x + x * BUN_R[0] * sc, BUN.y + y * BUN_R[1] * sc, BUN.z + z * BUN_R[2] * sc));
+    }
+    emit(pts, rnd());
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('aTan', new THREE.Float32BufferAttribute(tan, 3));
+  g.setAttribute('aT', new THREE.Float32BufferAttribute(aT, 1));
+  g.setAttribute('aRand', new THREE.Float32BufferAttribute(aR, 1));
+  g.setIndex(idx.length > 65535 ? new THREE.Uint32BufferAttribute(idx, 1) : new THREE.Uint16BufferAttribute(idx, 1));
+  hairMesh = new THREE.LineSegments(g, hairMat);
+  hairMesh.renderOrder = 4; hairMesh.frustumCulled = false;
+  group.add(hairMesh);
+  return idx.length / 2;
+}
+
+/* ---------------- a small face rig: a sculpted smile and blinking eyelids ----------------
+   The scan has no blendshapes, so the smile is sculpted into the mesh once, and the lids are
+   rotated about each eyeball's centre in the vertex shader. Landmarks were measured on the scan. */
+const MOUTH_L = new THREE.Vector3(0.0242, 0.2333, 0.1221), MOUTH_R = new THREE.Vector3(-0.0243, 0.2333, 0.1221);
+const EYE_L = new THREE.Vector3(0.0297, 0.2982, 0.098), EYE_R = new THREE.Vector3(-0.0296, 0.2985, 0.0978);
+const gauss = (v, c, s) => Math.exp(-v.distanceToSquared(c) / (s * s));
+
+function smoothNormalsByPosition(g) {
+  const p = g.attributes.position, idx = g.index.array, n = p.count;
+  const key = new Array(n), acc = new Map();
+  for (let i = 0; i < n; i++) key[i] = `${Math.round(p.getX(i) * 1e5)},${Math.round(p.getY(i) * 1e5)},${Math.round(p.getZ(i) * 1e5)}`;
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+  for (let f = 0; f < idx.length; f += 3) {
+    a.fromBufferAttribute(p, idx[f]); b.fromBufferAttribute(p, idx[f + 1]); c.fromBufferAttribute(p, idx[f + 2]);
+    const fn = b.sub(a).cross(c.sub(a));
+    for (const i of [idx[f], idx[f + 1], idx[f + 2]]) {
+      let s = acc.get(key[i]); if (!s) acc.set(key[i], s = [0, 0, 0]);
+      s[0] += fn.x; s[1] += fn.y; s[2] += fn.z;
+    }
+  }
+  const out = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const s = acc.get(key[i]), l = Math.hypot(...s) || 1;
+    out[i * 3] = s[0] / l; out[i * 3 + 1] = s[1] / l; out[i * 3 + 2] = s[2] / l;
+  }
+  g.setAttribute('normal', new THREE.BufferAttribute(out, 3));
+}
+
+function sculptSmile(mesh) {
+  mesh.updateMatrixWorld(true);
+  const g = mesh.geometry, pa = g.attributes.position, n = pa.count;
+  const M = mesh.matrixWorld, inv = M.clone().invert(), v = new THREE.Vector3(), out = new Float32Array(n * 3);
+  const cheekL = MOUTH_L.clone().add(new THREE.Vector3(0.011, 0.014, -0.006));
+  const cheekR = MOUTH_R.clone().add(new THREE.Vector3(-0.011, 0.014, -0.006));
+  for (let i = 0; i < n; i++) {
+    v.fromBufferAttribute(pa, i).applyMatrix4(M);
+    // a small, even smile: both corners lift a little and draw back; the cheeks rise a touch
+    for (const [corner, cheek, side] of [[MOUTH_L, cheekL, 1], [MOUTH_R, cheekR, -1]]) {
+      const a = gauss(v, corner, 0.011), ch = gauss(v, cheek, 0.017);
+      v.x += side * (a * 0.0006 + ch * 0.0002);
+      v.y += a * 0.0016 + ch * 0.0006;
+      v.z += -a * 0.0007 + ch * 0.0004;
+    }
+    v.applyMatrix4(inv);
+    out[i * 3] = v.x; out[i * 3 + 1] = v.y; out[i * 3 + 2] = v.z;
+  }
+  g.setAttribute('position', new THREE.BufferAttribute(out, 3));
+  smoothNormalsByPosition(g);
+  g.computeBoundingSphere(); g.computeBoundingBox();
+}
+
+const LID_BLINK = { value: 0 };
+// weight per vertex: + for the upper lid, - for the lower lid, by angle around the eyeball and distance from it
+function rigLids(mesh, radial) {
+  mesh.updateMatrixWorld(true);
+  const g = mesh.geometry, pa = g.attributes.position, n = pa.count, v = new THREE.Vector3(), rel = new THREE.Vector3();
+  const w = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    v.fromBufferAttribute(pa, i).applyMatrix4(mesh.matrixWorld);
+    const c = v.x > 0 ? EYE_L : EYE_R;
+    rel.subVectors(v, c);
+    const el = Math.atan2(rel.y, rel.z) * 180 / Math.PI, d = rel.length();
+    const lat = sstep(0.0205, 0.0125, Math.abs(rel.x));
+    const rad = radial ? sstep(0.0265, 0.0185, d) : sstep(0.03, 0.022, d);
+    const up = sstep(1, 7, el) * sstep(82, 58, el), lo = sstep(-1, -7, el) * sstep(-82, -50, el);
+    w[i] = lat * rad * (up - lo);
+  }
+  g.setAttribute('aLid', new THREE.BufferAttribute(w, 1));
+  const inv = mesh.matrixWorld.clone().invert();
+  const U_ = {
+    uBlink: LID_BLINK,
+    uEyeL: { value: EYE_L.clone().applyMatrix4(inv) }, uEyeR: { value: EYE_R.clone().applyMatrix4(inv) },
+    uMidX: { value: new THREE.Vector3(0, 0.3, 0.1).applyMatrix4(inv).x },
+    uBulge: { value: 0.0012 / mesh.matrixWorld.getMaxScaleOnAxis() },
+  };
+  const mat = mesh.material, prev = mat.onBeforeCompile;
+  mat.onBeforeCompile = (sh, r) => {
+    if (prev) prev.call(mat, sh, r);
+    Object.assign(sh.uniforms, U_);
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', `#include <common>
+        attribute float aLid; uniform float uBlink, uMidX, uBulge; uniform vec3 uEyeL, uEyeR;
+        mat3 lidRot( float a ) { float c = cos( a ), s = sin( a ); return mat3( 1.0, 0.0, 0.0, 0.0, c, s, 0.0, -s, c ); }`)
+      .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+        // upper lid sweeps about 26 degrees down over the eye, lower lid lifts about 4
+        float lidA = uBlink * ( aLid > 0.0 ? 0.46 : 0.075 ) * aLid;
+        objectNormal = lidRot( lidA ) * objectNormal;`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        vec3 eyeC = position.x > uMidX ? uEyeL : uEyeR;
+        transformed = eyeC + lidRot( lidA ) * ( transformed - eyeC );
+        transformed += normalize( transformed - eyeC ) * uBlink * abs( aLid ) * uBulge;   // lids bulge over the cornea`);
+  };
+  mat.customProgramCacheKey = () => 'lid-' + mat.uuid;
+  mat.needsUpdate = true;
+}
+
+let nextBlink3 = 2.5, blinkStart = -1, doubleBlink = false;
+function tickBlink(t) {
+  if (blinkStart < 0 && t > nextBlink3) blinkStart = t;
+  let b = 0;
+  if (blinkStart >= 0) {
+    const e = t - blinkStart;   // close quickly, hold a beat, open a little slower
+    b = e < 0.085 ? e / 0.085 : e < 0.13 ? 1 : e < 0.29 ? 1 - (e - 0.13) / 0.16 : 0;
+    b = b * b * (3 - 2 * b);
+    if (e >= 0.29) {
+      blinkStart = -1;
+      if (!doubleBlink && Math.random() < 0.15) { doubleBlink = true; nextBlink3 = t + 0.1; }
+      else { doubleBlink = false; nextBlink3 = t + 2.5 + Math.random() * 3.5; }
+    }
+  }
+  LID_BLINK.value = b;
+}
+
+const texLoader = new THREE.TextureLoader();
+const loadTex = (url, srgb) => texLoader.loadAsync(url).then(t => { if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; });
+let loaded3D = false;
+function load3D() {
+  if (loaded3D) return;
+  loaded3D = true; $('loading').hidden = false;
+Promise.all([
+  import('./head-model.js').then(m => {
+    const bin = Uint8Array.from(atob(m.default), ch => ch.charCodeAt(0));
+    return new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(bin.buffer, '');
+  }),
+  loadTex('face_albedo.jpg', true), loadTex('face_normal.jpg'), loadTex('face_rough.jpg'),
+  loadTex('face_masks.jpg'), loadTex('micro_normal.jpg'), loadTex('eye_albedo.jpg', true), loadTex('eye_height.jpg'),
+  loadEnv().catch(() => null),
+]).then(([gltf, albedo, normal, rough, masks, micro, eyeAlb, eyeH, envTex]) => {
+  if (envTex) { scene.environment = pmrem.fromEquirectangular(envTex).texture; envTex.dispose(); studioEnv = true; }
+  // the eyeball UVs use two texture tiles (u 0-1 and 1-2)
+  for (const t of [eyeAlb, eyeH]) t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  micro.wrapS = micro.wrapT = THREE.RepeatWrapping;
+  U.uMasks.value = masks; U.uMicro.value = micro;
+  headTex = albedo;
+  const hairColor = U.uHair.value;
+  const mats = {
+    Head: headMaterial({ albedo, normal, rough }),
+    Eyeball: eyeMaterial(eyeAlb, eyeH),
+    // the cornea only adds reflections: black + additive blending leaves just the glossy highlights
+    Lens: new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.03, metalness: 0, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, envMapIntensity: 0.9 }),
+    Eye_Wet: new THREE.MeshStandardMaterial({ color: 0xe9c9c4, roughness: 0.08, transparent: true, opacity: 0.45, depthWrite: false }),
+    Brows: new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.65, side: THREE.DoubleSide }),
+    Lashes: new THREE.MeshStandardMaterial({ color: 0x120c09, roughness: 0.6, side: THREE.DoubleSide }),
+  };
+  const parts = {};
+  gltf.scene.traverse(o => {
+    if (!o.isMesh) return;
+    const n = o.name || o.parent?.name || '';
+    if (n.includes('Eyeball')) parts[n.includes('Left') ? 'eyeLeft' : 'eyeRight'] = o;
+    if (n.includes('Lens')) parts[n.includes('Left') ? 'lensLeft' : 'lensRight'] = o;
+    if (n.includes('Lashes')) parts.lashes = o;
+    if (n.includes('Eye_Wet')) parts.wet = o;
+    if (n.startsWith('Head')) { head = o; o.material = mats.Head; }
+    else if (n.includes('Eyeball')) o.material = mats.Eyeball;
+    else if (n.includes('Lens')) { o.material = mats.Lens; o.renderOrder = 2; }
+    else if (n.includes('Eye_Wet')) { o.material = mats.Eye_Wet; o.renderOrder = 3; }
+    else if (n.includes('Brows')) o.material = mats.Brows;
+    else if (n.includes('Lashes')) o.material = mats.Lashes;
+  });
+  group.add(gltf.scene);
+  group.updateMatrixWorld(true);
+  sculptSmile(head);
+  headSurf = worldArrays(head);
+  setupEyes(parts, makeGrid(headSurf.P, 0.006), headSurf.P);
+  rigLids(head, true);
+  if (parts.lashes) rigLids(parts.lashes, false);
+  if (parts.wet) rigLids(parts.wet, true);
+  console.info('hair segments', buildHair(S.light_mode ? HAIR_LIGHT : HAIR_FULL));
+
+  // a low bun gives the silhouette shape; scans are bald
+  const bunMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(hairColor).multiplyScalar(0.6), roughness: 0.62 });
+  bunMat.onBeforeCompile = sh => {
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vObjP;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObjP = position;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vObjP;')
+      .replace('#include <map_fragment>', `
+        // twisted strands spiralling into the bun
+        float a = atan( vObjP.y, vObjP.x ), r = length( vObjP.xy );
+        float tw = sin( a * 46.0 + r * 9.0 ) * 0.5 + sin( a * 130.0 + r * 21.0 ) * 0.3;
+        diffuseColor.rgb *= 0.55 + 0.4 * ( 0.5 + 0.5 * tw ) - 0.25 * smoothstep( 0.6, 0.0, r );`);
+  };
+  const bun = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 40), bunMat);
+  bun.scale.set(0.032, 0.027, 0.021);
+  bun.position.copy(BUN);
+  group.add(bun);
+
+  // frame the face: the scan is in metres, nose pointing +z
+  target.set(0, 0.285, 0.06);
+  faceH = 0.25;
+  controls.target.copy(target);
+  key.target.position.copy(target); fill.target.position.copy(target); scene.add(key.target, fill.target);
+  fitCamera();
+  $('loading').remove();
+  update();
+}).catch(err => { $('loading').textContent = t('loadFail'); console.error(err); });
+}
+
+const target = new THREE.Vector3(); let faceH = 1;
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enablePan = false; controls.enableDamping = true;
+controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };
+renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+controls.minAzimuthAngle = -1.2; controls.maxAzimuthAngle = 1.2;
+controls.minPolarAngle = 1.1; controls.maxPolarAngle = 2.0;
+
+function fitCamera() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  camera.aspect = w / h;
+  const fov = THREE.MathUtils.degToRad(camera.fov);
+  let dist = (faceH * 0.62) / Math.tan(fov / 2);
+  if (camera.aspect < 0.8) dist /= camera.aspect / 0.8;
+  camera.position.set(target.x, target.y, target.z + dist);
+  controls.minDistance = dist * 0.55; controls.maxDistance = dist * 1.6;
+  camera.updateProjectionMatrix(); controls.update();
+}
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  U.uResX.value = renderer.domElement.width;
+}
+new ResizeObserver(() => { resize(); resize2(); if (head && !touchedCam) fitCamera(); }).observe(stage);
+let touchedCam = false; controls.addEventListener('start', () => { touchedCam = true; });
+
+/* placing details */
+let downAt = null;
+renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!downAt || tool === 'none' || tool === 'brush') return;
+  const moved = Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]); downAt = null;
+  if (moved > 6) return;
+  const uv = faceUV(e); if (!uv) return;
+  if (tool === 'erase') {
+    let bi = -1, bd = 0.012;
+    MARKS.forEach((m, i) => { const d = Math.hypot(m.u - uv[0], m.v - uv[1]); if (d < bd) { bd = d; bi = i; } });
+    if (bi >= 0) MARKS.splice(bi, 1);
+  } else {
+    MARKS.push({ t: tool, u: +uv[0].toFixed(5), v: +uv[1].toFixed(5), s: +($('markSize').value / 100).toFixed(2), seed: (Math.random() * 1e9) | 0 });
+  }
+  drawMarks(); saveMarks();
+});
+$('tools').addEventListener('click', e => {
+  const b = e.target.closest('.tool'); if (!b) return;
+  tool = b.dataset.t;
+  $('tools').querySelectorAll('.tool').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  stage.classList.toggle('placing', tool !== 'none' && tool !== 'brush');
+  $('detailHint').textContent = t('dh_' + tool);
+});
+$('undoMark').addEventListener('click', () => { MARKS.pop(); drawMarks(); saveMarks(); });
+$('clearMarks').addEventListener('click', () => { MARKS.length = 0; drawMarks(); saveMarks(); });
+try { const saved = JSON.parse(localStorage.getItem('sifted-marks-v2') || '[]'); if (Array.isArray(saved)) MARKS.push(...saved.filter(m => RESIST[m.t])); } catch (e) {}
+
+$('quality').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  S.light_mode = b.dataset.v === 'light';
+  applyQuality(); buildHair(S.light_mode ? HAIR_LIGHT : HAIR_FULL); update();
+});
+
+/* ---------------- brush: product is deposited, then blended out by further passes ----------------
+   Modelled on a dense flat brush: the first pass leaves a visible patch with faint bristle streaks,
+   going over it again spreads the product, softens the edge and smooths the streaks. */
+// Each pixel holds how much product is there and what colour it is, so every stroke keeps the shade it was
+// painted with. Stored premultiplied (colour x amount, amount) so edges filter cleanly on the GPU.
+class PowderMask {
+  constructor(w, h) {
+    this.w = w; this.h = h;
+    this.m = new Float32Array(w * h); this.tmp = new Float32Array(w * h);
+    this.c = new Float32Array(w * h * 3); this.tmpc = new Float32Array(w * h * 3);
+    this.bytes = new Uint8Array(w * h * 4);
+    this.tex = new THREE.DataTexture(this.bytes, w, h, THREE.RGBAFormat, THREE.UnsignedByteType);
+    this.tex.minFilter = this.tex.magFilter = THREE.LinearFilter; this.tex.needsUpdate = true;
+    // where product landed recently (drives the brief exaggerated look)
+    this.fresh = new Uint8Array(w * h);
+    this.freshTex = new THREE.DataTexture(this.fresh, w, h, THREE.RedFormat, THREE.UnsignedByteType);
+    this.freshTex.minFilter = this.freshTex.magFilter = THREE.LinearFilter; this.freshTex.needsUpdate = true;
+  }
+  clearFresh() { this.fresh.fill(0); this.freshTex.needsUpdate = true; }
+  clear() { this.m.fill(0); this.c.fill(0); this.bytes.fill(0); this.tex.needsUpdate = true; this.clearFresh(); }
+  fill(v, col) {
+    this.m.fill(v);
+    const b = this.bytes, a = Math.round(v * 255);
+    for (let i = 0; i < this.w * this.h; i++) {
+      this.c.set(col, i * 3);
+      b[i * 4] = col[0] * v * 255; b[i * 4 + 1] = col[1] * v * 255; b[i * 4 + 2] = col[2] * v * 255; b[i * 4 + 3] = a;
+    }
+    this.tex.needsUpdate = true;
+  }
+  stamp(cx, cy, r, dx, dy, o, col) {
+    const { w, h, m, tmp, c, tmpc, bytes } = this;
+    const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r));
+    const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r));
+    if (x0 > x1 || y0 > y1) return;
+    const s = Math.max(1, Math.round(r * 0.08));
+    for (let y = Math.max(0, y0 - s); y <= Math.min(h - 1, y1 + s); y++) {
+      const row = y * w;
+      for (let x = Math.max(0, x0 - s); x <= Math.min(w - 1, x1 + s); x++) {
+        const i = row + x; tmp[i] = m[i]; tmpc[i * 3] = c[i * 3]; tmpc[i * 3 + 1] = c[i * 3 + 1]; tmpc[i * 3 + 2] = c[i * 3 + 2];
+      }
+    }
+    const ir = 1 / r;
+    for (let y = y0; y <= y1; y++) {
+      const ym = Math.max(0, y - s) * w, yp = Math.min(h - 1, y + s) * w, row = y * w;
+      for (let x = x0; x <= x1; x++) {
+        const ux = (x - cx) * ir, uy = (y - cy) * ir, d = Math.sqrt(ux * ux + uy * uy);
+        if (d >= 1) continue;
+        const fall = o.hard ? sstep(1, 0.55, d) : Math.pow(1 - d, 1.6);
+        const i = row + x, nb = [row + Math.max(0, x - s), row + Math.min(w - 1, x + s), ym + x, yp + x];
+        // blending: product spreads into its neighbours, carrying its colour with it
+        let aSum = 2 * tmp[i], r0 = 2 * tmp[i] * tmpc[i * 3], g0 = 2 * tmp[i] * tmpc[i * 3 + 1], b0 = 2 * tmp[i] * tmpc[i * 3 + 2];
+        for (const j of nb) { aSum += tmp[j]; r0 += tmp[j] * tmpc[j * 3]; g0 += tmp[j] * tmpc[j * 3 + 1]; b0 += tmp[j] * tmpc[j * 3 + 2]; }
+        const avg = aSum / 6, t = o.blend * fall;
+        let v = tmp[i] + (avg - tmp[i]) * t;
+        let cr = tmpc[i * 3], cg = tmpc[i * 3 + 1], cb = tmpc[i * 3 + 2];
+        if (aSum > 1e-5) {
+          const k = tmp[i] > 1e-4 ? t : 1;
+          cr += (r0 / aSum - cr) * k; cg += (g0 / aSum - cg) * k; cb += (b0 / aSum - cb) * k;
+        }
+        // deposit: fresh product from the brush, in the brush's shade
+        const across = ux * -dy + uy * dx;
+        const streak = 0.6 + 0.4 * Math.sin(across * o.bristles + o.seed) * Math.sin(across * o.bristles * 0.37 + o.seed * 2.1);
+        const dep = o.flow * fall * streak * (1 - v), nv = v + dep;
+        if (nv > 1e-5) { cr = (cr * v + col[0] * dep) / nv; cg = (cg * v + col[1] * dep) / nv; cb = (cb * v + col[2] * dep) / nv; }
+        m[i] = nv; c[i * 3] = cr; c[i * 3 + 1] = cg; c[i * 3 + 2] = cb;
+        bytes[i * 4] = cr * nv * 255; bytes[i * 4 + 1] = cg * nv * 255; bytes[i * 4 + 2] = cb * nv * 255; bytes[i * 4 + 3] = nv * 255;
+        const f = fall * 255; if (f > this.fresh[i]) this.fresh[i] = f;
+      }
+    }
+    this.tex.needsUpdate = true; this.freshTex.needsUpdate = true;
+  }
+}
+const BRUSH = { hard: true, flow: 0.075, blend: 0.4, bristles: 24 };
+// the shade currently in the pan, as sRGB, picked up by the brush when a stroke starts
+const brushColour = () => labToSrgb(...powderLab(S.shade));
+class Stroke {
+  constructor(mask, jump) { this.mask = mask; this.jump = jump; this.last = null; this.dir = [1, 0]; this.o = { ...BRUSH, seed: Math.random() * 10 }; this.col = brushColour(); }
+  to(x, y, r) {
+    if (!this.last) { this.last = [x, y]; this.mask.stamp(x, y, r, 1, 0, this.o, this.col); return; }
+    const dx = x - this.last[0], dy = y - this.last[1], dist = Math.hypot(dx, dy);
+    if (dist < 0.5) return;
+    if (dist > this.jump) { this.last = [x, y]; return; }   // jumped across a texture seam or off the face
+    const nx = dx / dist, ny = dy / dist;
+    this.dir = [this.dir[0] * 0.6 + nx * 0.4, this.dir[1] * 0.6 + ny * 0.4];
+    const l = Math.hypot(...this.dir) || 1, ddx = this.dir[0] / l, ddy = this.dir[1] / l;
+    const n = Math.ceil(dist / (r * 0.2));
+    for (let k = 1; k <= n; k++) this.mask.stamp(this.last[0] + dx * k / n, this.last[1] + dy * k / n, r, ddx, ddy, this.o, this.col);
+    this.last = [x, y];
+  }
+}
+const brushScale = () => $('brushSize').value / 100;
+
+/* the brush graphic that follows the pointer */
+const brushCur = $('brushCur');
+let curAngle = 26, curX = 0, curY = 0;
+function showBrush(e, on, pressing) {
+  if (!on) { brushCur.hidden = true; return; }
+  const r = stage.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top, vx = x - curX;
+  curX = x; curY = y;
+  curAngle += ((26 + THREE.MathUtils.clamp(vx * 1.4, -16, 16)) - curAngle) * 0.35;
+  const sc = 0.36 + 0.14 * brushScale();
+  brushCur.style.transform = `translate(${x}px, ${y}px) rotate(${curAngle.toFixed(1)}deg) scale(${sc.toFixed(2)}) translate(-22px, -6px)`;
+  brushCur.classList.toggle('pressing', !!pressing);
+  brushCur.hidden = false;
+}
+
+/* ---------------- simple mode: the scan photographed as a 2D portrait ----------------
+   The portrait is lit once; skin tone and powder are applied per pixel with the same ratios as in 3D. */
+const PORTRAIT_SKIN = [0.44698, 0.25033, 0.11483];   // linear skin colour the portrait was rendered with
+const renderer2 = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+renderer2.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer2.domElement.className = 'c2d';
+stage.prepend(renderer2.domElement);
+const scene2 = new THREE.Scene(), cam2 = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const whiteTex = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1); whiteTex.needsUpdate = true;
+const U2 = {
+  uPhoto: { value: null }, uMasks: { value: whiteTex }, uPMask: { value: null },
+  uRatio: { value: new THREE.Vector3(1, 1, 1) }, uPowder: { value: new THREE.Color() }, uSkinRef: { value: new THREE.Color() },
+  uAmt: { value: 0.85 }, uShow: { value: 1 }, uMatte: { value: 1 }, uLift: { value: 0 }, uLod: { value: 4.5 },
+  uFresh: { value: null }, uFreshAmt: { value: 0 },
+};
+const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+  uniforms: U2, transparent: true,
+  vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }',
+  fragmentShader: `
+    uniform sampler2D uPhoto, uMasks, uPMask, uFresh; uniform vec3 uRatio, uPowder, uSkinRef; uniform float uFreshAmt;
+    vec3 s2l( vec3 c ) { return mix( c / 12.92, pow( ( c + 0.055 ) / 1.055, vec3( 2.4 ) ), step( 0.04045, c ) ); }
+    uniform float uAmt, uShow, uMatte, uLift, uLod;
+    varying vec2 vUv;
+    void main() {
+      vec4 ph = texture2D( uPhoto, vUv );
+      vec3 mk = texture2D( uMasks, vUv ).rgb;
+      vec3 base = ph.rgb * mix( vec3( 1.0 ), uRatio, mk.r );
+      // a blurred copy is the skin's tone without its pores, freckles and shine
+      vec3 blur = textureLod( uPhoto, vUv, uLod ).rgb * mix( vec3( 1.0 ), uRatio, textureLod( uMasks, vUv, uLod ).r );
+      float a = textureLod( uPhoto, vUv, uLod ).a;
+      blur /= max( a, 0.05 );
+      vec4 pmk = texture2D( uPMask, vUv );
+      float k = clamp( pmk.a * mk.g * uShow * uAmt, 0.0, 1.0 );
+      vec3 pcol = s2l( pmk.rgb / max( pmk.a, 1e-3 ) );
+        // fresh product: for a moment it looks chalkier and further from the skin, so a new stroke is easy to see
+        float fr = texture2D( uFresh, vUv ).r * uFreshAmt;
+        vec3 pfx = clamp( pcol + ( pcol - uSkinRef ) * 1.6, 0.0, 1.0 );
+        pfx = mix( pfx, vec3( dot( pfx, vec3( 0.2126, 0.7152, 0.0722 ) ) ), 0.3 ) * 1.22 + 0.015;
+        pcol = mix( pcol, pfx, fr );
+      k = mix( k, min( 1.0, k * 1.8 + 0.12 * step( 0.01, k ) ), fr * mk.g * uShow );
+      // the shade, lit the way the skin is lit: colour from the powder, light and shadow from the skin underneath
+      float lumR = dot( uSkinRef, vec3( 0.2126, 0.7152, 0.0722 ) ), lumB = dot( blur, vec3( 0.2126, 0.7152, 0.0722 ) );
+      vec3 even = pcol * ( lumB / max( lumR, 1e-4 ) );
+      vec3 detail = vec3( dot( base - blur, vec3( 0.2126, 0.7152, 0.0722 ) ) );
+      vec3 shine = max( base - blur * 1.1, vec3( 0.0 ) );
+      vec3 res = mix( base, ( even + detail * 0.35 * ( pcol / max( lumR, 1e-4 ) ) - shine * uMatte * 0.65 ) * ( 1.0 + uLift ), k );
+      gl_FragColor = vec4( max( res, vec3( 0.0 ) ), ph.a );
+      #include <colorspace_fragment>
+    }`,
+}));
+scene2.add(quad);
+let pm2 = null, imgAspect = 0.8, subject = 'model', photoSkinLin = null, sampling = false;
+let portraitTex = null, portraitMask = null, photoTex = null;
+function setPicture(tex, masks, aspect) {
+  U2.uPhoto.value = tex; U2.uMasks.value = masks; imgAspect = aspect;
+  const mw = 1024, mh = Math.round(1024 / aspect);
+  if (!pm2 || pm2.w !== mw || pm2.h !== mh) { pm2?.tex.dispose(); pm2 = new PowderMask(mw, mh); U2.uPMask.value = pm2.tex; U2.uFresh.value = pm2.freshTex; }
+  else pm2.clear();
+  resize2();
+}
+function resize2() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer2.setSize(w, h, false);
+  const A = w / h, pad = 0.94;
+  if (imgAspect > A) quad.scale.set(pad, pad * A / imgAspect, 1); else quad.scale.set(pad * imgAspect / A, pad, 1);
+}
+function picUV(e) {
+  const r = renderer2.domElement.getBoundingClientRect();
+  const nx = (e.clientX - r.left) / r.width * 2 - 1, ny = -((e.clientY - r.top) / r.height * 2 - 1);
+  const u = nx / quad.scale.x * 0.5 + 0.5, v = ny / quad.scale.y * 0.5 + 0.5;
+  return u < 0 || u > 1 || v < 0 || v > 1 ? null : [u, v];
+}
+texLoader.loadAsync('portrait.webp').then(t => {
+  t.colorSpace = THREE.SRGBColorSpace; portraitTex = t;
+  return texLoader.loadAsync('portrait_mask.webp');
+}).then(m => {
+  portraitMask = m;
+  if (subject === 'model') setPicture(portraitTex, portraitMask, portraitTex.image.width / portraitTex.image.height);
+});
+
+/* ---------------- painting, in either mode ---------------- */
+const pm3 = new PowderMask(1024, 1024);
+U.uPMask = { value: pm3.tex }; U.uShow = { value: 1 };
+U.uFresh = { value: pm3.freshTex }; U.uFreshAmt = { value: 0 };
+let painting = null, freshEnd = -1e9;
+// strength of the fresh look: full while brushing, then it settles over about a second and a half
+function freshAmt() { return painting ? 1 : 1 - sstep(0.5, 1.9, (performance.now() - freshEnd) / 1000); }
+function tickFresh() { U.uFreshAmt.value = U2.uFreshAmt.value = freshAmt(); }
+const MM_PER_TEXEL_3D = 0.47;   // the scan's texture at 1024 px
+stage.addEventListener('pointerdown', e => {
+  if (e.target.tagName !== 'CANVAS' || e.button > 0) return;
+  if (S.mode === 'simple') {
+    const uv = picUV(e); if (!uv || !U2.uPhoto.value) return;
+    if (sampling) { sampleFromPicture(uv); return; }
+    painting = { mask: pm2, stroke: new Stroke(pm2, 200), map: q => [q[0] * pm2.w, q[1] * pm2.h], r: () => pm2.w * 0.024 * brushScale(), uv: picUV };
+  } else {
+    if (tool !== 'brush' || spaceHeld) return;
+    const uv = faceUV(e); if (!uv) return;   // off the face: let the drag turn the head
+    controls.enabled = false;
+    painting = { mask: pm3, stroke: new Stroke(pm3, 60), map: q => [q[0] * 1024, q[1] * 1024], r: () => 8 / MM_PER_TEXEL_3D * brushScale(), uv: faceUV };
+  }
+  if (freshAmt() <= 0) painting.mask.clearFresh();   // earlier strokes have settled; start a new reveal
+  e.target.setPointerCapture(e.pointerId);
+  painting.stroke.to(...painting.map(painting.uv(e)), painting.r());
+  showBrush(e, true, true);
+}, true);
+stage.addEventListener('pointermove', e => {
+  const overPic = e.target.tagName === 'CANVAS';
+  const brushOn = overPic && !sampling && !(S.mode === 'studio' && spaceHeld) && (S.mode === 'simple' || tool === 'brush');
+  showBrush(e, brushOn, !!painting);
+  if (!painting) return;
+  const uv = painting.uv(e);
+  if (uv) painting.stroke.to(...painting.map(uv), painting.r());
+});
+stage.addEventListener('pointerleave', () => { if (!painting) brushCur.hidden = true; });
+window.addEventListener('pointerup', () => { if (painting) { painting = null; freshEnd = performance.now(); controls.enabled = true; brushCur.classList.remove('pressing'); } });
+
+const activeMask = () => S.mode === 'simple' ? pm2 : pm3;
+$('applyAll').addEventListener('click', () => {
+  const m = activeMask(); if (!m) return;
+  m.fill(0.9, brushColour()); m.fresh.fill(255); m.freshTex.needsUpdate = true; freshEnd = performance.now();
+});
+$('wipe').addEventListener('click', () => activeMask()?.clear());
+const hold = $('holdCompare');
+const setShow = v => { U.uShow.value = U2.uShow.value = v; hold.toggleAttribute('data-active', !v); };
+hold.addEventListener('pointerdown', e => { e.preventDefault(); setShow(0); });
+['pointerup', 'pointerleave', 'pointercancel'].forEach(t => hold.addEventListener(t, () => setShow(1)));
+hold.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setShow(0); } });
+hold.addEventListener('keyup', () => setShow(1));
+
+/* ---------------- your own photo in simple mode ---------------- */
+function setStageHint(text) { const h = $('stageHint'); h.textContent = text || ''; h.hidden = !text; }
+function useModel() {
+  subject = 'model'; sampling = false; setStageHint('');
+  if (portraitTex) setPicture(portraitTex, portraitMask, portraitTex.image.width / portraitTex.image.height);
+  pressGroup($('subject'), 'model'); update();
+}
+function usePhoto() {
+  const img = $('photoImg');
+  if (photoTex) photoTex.dispose();
+  photoTex = new THREE.Texture(img); photoTex.colorSpace = THREE.SRGBColorSpace; photoTex.needsUpdate = true;
+  subject = 'me'; photoSkinLin = null; sampling = true;
+  setPicture(photoTex, whiteTex, img.naturalWidth / img.naturalHeight);
+  setStageHint(t('tapCheek'));
+  pressGroup($('subject'), 'me'); update();
+}
+function sampleFromPicture([u, v]) {
+  const s = samplePatch(Math.round(u * P.canvas.width), Math.round((1 - v) * P.canvas.height));
+  if (!s.lin || s.clipped > 0.35) { setStageHint(t('tapCheekBad')); return; }
+  P.skin = [{ fx: u, fy: 1 - v, lin: s.lin }]; P.white = null;
+  drawDots(); readSkin();
+  photoSkinLin = new THREE.Color(...s.lin);
+  sampling = false;
+  setStageHint('');
+  update();
+}
+$('subject').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.v === 'me' && S.mode === 'studio') setViewMode('simple');
+  if (b.dataset.v === 'model') useModel();
+  else if ($('photoImg').getAttribute('src')) usePhoto();
+  else $('selfieIn').click();
+});
+$('selfieIn').addEventListener('change', e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  loadPhoto(f);
+  $('photoImg').addEventListener('load', () => usePhoto(), { once: true });
+});
+
+/* ---------------- modes ---------------- */
+function setViewMode(m) {
+  S.mode = m;
+  document.body.classList.toggle('simple', m === 'simple');
+  pressGroup($('modes'), m);
+  renderer.domElement.hidden = m !== 'studio';
+  renderer2.domElement.hidden = m !== 'simple';
+  brushCur.hidden = true;
+  if (m === 'studio') { load3D(); renderer.setAnimationLoop(loop3D); renderer2.setAnimationLoop(null); setStageHint(''); }
+  else { renderer.setAnimationLoop(null); renderer2.setAnimationLoop(() => { tickFresh(); renderer2.render(scene2, cam2); }); if (sampling) setStageHint(t('tapCheek')); }
+  resize(); resize2();
+  update();
+}
+$('modes').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setViewMode(b.dataset.v); });
+
+
+function update() {
+  const { skin, pl } = renderUI();
+  const toLin = lab => new THREE.Color().setRGB(...labToSrgb(...lab), THREE.SRGBColorSpace);
+  U.uSkin.value.copy(toLin(skin));
+  U.uPowder.value.copy(toLin(pl));
+  const skinLin = toLin(skin);
+  U2.uPowder.value.copy(toLin(pl));
+  if (subject === 'model') { U2.uRatio.value.set(skinLin.r / PORTRAIT_SKIN[0], skinLin.g / PORTRAIT_SKIN[1], skinLin.b / PORTRAIT_SKIN[2]); U2.uSkinRef.value.copy(skinLin); }
+  else { U2.uRatio.value.set(1, 1, 1); U2.uSkinRef.value.copy(photoSkinLin || skinLin); }
+  const f = FINISH[S.finish];
+  const kind = S.shade.kind;
+  U.uAmt.value = kind === 'loose' ? 0.25 + S.cov * 0.45 : 0.12 + S.cov * 0.68;
+  U.uPowRough.value = f.rough; U.uLift.value = f.lift;
+  U2.uMatte.value = { matte: 1, satin: 0.55, radiant: 0.15 }[S.finish]; U2.uLift.value = f.lift;
+  U2.uAmt.value = kind === 'loose' ? 0.55 : 0.85;
+  U.uRoughScale.value = TYPE_ROUGH[S.stype];
+  U.uFlashback.value = S.shade.flash;
+  const L = LIGHTS[S.light];
+  key.color.set(L.key[0]); key.intensity = L.key[1];
+  fill.color.set(L.fill[0]); fill.intensity = L.fill[1];
+  hemi.color.set(L.hemi[0]); hemi.groundColor.set(L.hemi[1]); hemi.intensity = L.hemi[2];
+  U.uSSS.value = L.sss; scene.environmentIntensity = L.env; flash.intensity = L.flash;
+  if (studioEnv) scene.environmentIntensity = L.env * 1.6;
+  HAIR_U.uKeyCol.value.copy(key.color).multiplyScalar(key.intensity * 0.55);
+  HAIR_U.uFillCol.value.copy(fill.color).multiplyScalar(fill.intensity * 0.55);
+  HAIR_U.uAmb.value.copy(hemi.color).multiplyScalar(hemi.intensity * 0.5 + L.env * 0.6);
+  HAIR_U.uFlash.value = L.flash * 0.18; U.uFlash.value = L.flash > 0 ? 1 : 0;
+  drawMarks();
+  try { localStorage.setItem('sifted', JSON.stringify({ mode: S.mode, light_mode: S.light_mode, depth: S.depth, under: S.under, stype: S.stype, finish: S.finish, cov: S.cov })); } catch (e) {}
+}
+
+try {
+  const saved = JSON.parse(localStorage.getItem('sifted') || 'null');
+  if (saved) Object.assign(S, saved);
+} catch (e) {}
+$('cov').value = Math.round(S.cov * 100);
+applyQuality();
+let initLang = 'en';
+try { initLang = localStorage.getItem('sifted-lang') || ((navigator.language || '').toLowerCase().startsWith('fa') ? 'fa' : 'en'); } catch (e) {}
+applyLang(initLang);
+$('detailHint').textContent = t('dh_' + tool);
+S.shade = ranked()[0].s;
+renderUI();
+
+/* each step shows the essentials; More opens the professional controls */
+document.querySelectorAll('.step').forEach(st => {
+  const btn = st.querySelector('.more'), body = st.querySelector('.more-body');
+  const set = open => {
+    st.classList.toggle('open', open); body.hidden = !open;
+    btn.setAttribute('aria-expanded', String(open)); btn.textContent = t(open ? 'less' : 'more');
+    try { localStorage.setItem('sifted-open-' + st.id, open ? '1' : ''); } catch (e) {}
+  };
+  btn.addEventListener('click', () => set(!st.classList.contains('open')));
+  let saved = ''; try { saved = localStorage.getItem('sifted-open-' + st.id) || ''; } catch (e) {}
+  set(saved === '1');
+});
+$('open3d').addEventListener('click', () => setViewMode('studio'));
+// About us lives at #about so it can be linked to directly
+function route() { $('about').hidden = location.hash !== '#about'; document.documentElement.classList.toggle('covered', !$('about').hidden || !$('intro').hidden); }
+window.addEventListener('hashchange', route); route();
+$('aboutBack').addEventListener('click', e => { e.preventDefault(); location.hash = ''; route(); });
+function setIntro(on) {
+  $('intro').hidden = !on;
+  document.documentElement.classList.toggle('covered', on || !$('about').hidden);
+  if (!on) { try { localStorage.setItem('sifted-intro', '1'); } catch (e) {} }
+}
+$('beginBtn').addEventListener('click', () => setIntro(false));
+$('brandBtn').addEventListener('click', () => setIntro(true));
+$('showIntro').addEventListener('click', e => { e.preventDefault(); setIntro(true); });
+window.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!$('intro').hidden) setIntro(false);
+  else if (!$('about').hidden) { location.hash = ''; route(); }
+});
+let introSeen = ''; try { introSeen = localStorage.getItem('sifted-intro') || ''; } catch (e) {}
+if (!introSeen && location.hash !== '#about') setIntro(true);
+$('langIntro').addEventListener('click', e => { const b = e.target.closest('button'); if (b) $('lang').querySelector(`[data-v="${b.dataset.v}"]`).click(); });
+$('lang').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  applyLang(b.dataset.v);
+  renderUI(); drawMarks();
+  $('detailHint').textContent = t('dh_' + tool);
+  if (sampling && S.mode === 'simple') setStageHint(t('tapCheek'));
+});
+
+/* lights follow the camera loosely so the face stays lit from the front */
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let nextBlink = 2, blinkT = -1;
+const clock = new THREE.Clock();
+/* ---------------- camera: a game-style stick, photographer's angles, keys ---------------- */
+const sph = new THREE.Spherical(), camOff = new THREE.Vector3();
+let stickV = { x: 0, y: 0 }, camTween = null, spaceHeld = false;
+const keysHeld = new Set();
+function setCam(theta, phi, radius) {
+  sph.theta = THREE.MathUtils.clamp(theta, controls.minAzimuthAngle, controls.maxAzimuthAngle);
+  sph.phi = THREE.MathUtils.clamp(phi, controls.minPolarAngle, controls.maxPolarAngle);
+  sph.radius = THREE.MathUtils.clamp(radius, controls.minDistance, controls.maxDistance);
+  camera.position.copy(controls.target).add(camOff.setFromSpherical(sph));
+  camera.lookAt(controls.target); touchedCam = true;
+}
+function camNow() { return new THREE.Spherical().setFromVector3(camOff.subVectors(camera.position, controls.target)); }
+function orbitBy(dTheta, dPhi, zoom = 1) { const c = camNow(); setCam(c.theta + dTheta, c.phi + dPhi, c.radius * zoom); }
+function goAngle(theta) { const c = camNow(); camTween = { t: 0, th0: c.theta, ph0: c.phi, th1: theta, ph1: Math.PI / 2 - 0.04, r: c.radius }; }
+function tickCamera(dt) {
+  if (camTween) {
+    camTween.t = Math.min(1, camTween.t + dt / 0.6);
+    const e = 1 - Math.pow(1 - camTween.t, 3);
+    setCam(camTween.th0 + (camTween.th1 - camTween.th0) * e, camTween.ph0 + (camTween.ph1 - camTween.ph0) * e, camTween.r);
+    if (camTween.t >= 1) camTween = null;
+  }
+  // push right and the camera swings right; push up and it rises, like a game's camera stick
+  const kx = (keysHeld.has('right') ? 1 : 0) - (keysHeld.has('left') ? 1 : 0);
+  const ky = (keysHeld.has('down') ? 1 : 0) - (keysHeld.has('up') ? 1 : 0);
+  const vx = stickV.x + kx, vy = stickV.y + ky;
+  if (vx || vy) { camTween = null; orbitBy(vx * 1.7 * dt, vy * 1.1 * dt); }
+  const th = camNow().theta;
+  $('angles').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(Math.abs(+b.dataset.az - th) < 0.09)));
+}
+const stick = $('stick'), knob = $('stickKnob');
+function moveStick(e) {
+  const r = stick.getBoundingClientRect();
+  let x = (e.clientX - (r.left + r.width / 2)) / (r.width / 2), y = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+  const l = Math.hypot(x, y); if (l > 1) { x /= l; y /= l; }
+  stickV = { x: Math.abs(x) < 0.08 ? 0 : x, y: Math.abs(y) < 0.08 ? 0 : y };
+  knob.style.transform = `translate(${(x * r.width * 0.3).toFixed(1)}px, ${(y * r.height * 0.3).toFixed(1)}px)`;
+}
+stick.addEventListener('pointerdown', e => { stick.setPointerCapture(e.pointerId); camTween = null; stick.classList.add('active'); moveStick(e); });
+stick.addEventListener('pointermove', e => { if (stick.hasPointerCapture(e.pointerId)) moveStick(e); });
+const endStick = () => { stickV = { x: 0, y: 0 }; knob.style.transform = ''; stick.classList.remove('active'); };
+stick.addEventListener('pointerup', endStick); stick.addEventListener('pointercancel', endStick);
+$('zoomIn').addEventListener('click', () => orbitBy(0, 0, 0.85));
+$('zoomOut').addEventListener('click', () => orbitBy(0, 0, 1.18));
+$('angles').addEventListener('click', e => { const b = e.target.closest('button'); if (b) goAngle(+b.dataset.az); });
+const KEYMAP = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down' };
+const typing = el => el && (el.tagName === 'INPUT' && el.type !== 'range' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+window.addEventListener('keydown', e => {
+  if (S.mode !== 'studio' || typing(e.target) || e.target.closest?.('[role=slider], input[type=range]')) return;
+  if (KEYMAP[e.code]) { keysHeld.add(KEYMAP[e.code]); e.preventDefault(); }
+  else if (e.key === '+' || e.key === '=') orbitBy(0, 0, 0.9);
+  else if (e.key === '-' || e.key === '_') orbitBy(0, 0, 1.12);
+  else if (e.code === 'Space' && !e.target.closest?.('button')) { spaceHeld = true; stage.classList.add('orbiting'); brushCur.hidden = true; e.preventDefault(); }
+});
+window.addEventListener('keyup', e => {
+  if (KEYMAP[e.code]) keysHeld.delete(KEYMAP[e.code]);
+  if (e.code === 'Space') { spaceHeld = false; stage.classList.remove('orbiting'); }
+});
+window.addEventListener('blur', () => { keysHeld.clear(); spaceHeld = false; stage.classList.remove('orbiting'); });
+
+function loop3D() {
+  tickFresh();
+  const dt = clock.getDelta(), t = clock.elapsedTime;
+  tickCamera(Math.min(dt, 0.05));
+  controls.update();
+  const fwd = camera.position.clone().sub(controls.target).normalize();
+  const side = new THREE.Vector3(-fwd.z, 0, fwd.x);
+  key.position.copy(controls.target).addScaledVector(fwd, 3).addScaledVector(side, -1.6).add(new THREE.Vector3(0, 2.2, 0));
+  fill.position.copy(controls.target).addScaledVector(fwd, 3).addScaledVector(side, 2).add(new THREE.Vector3(0, -0.4, 0));
+  HAIR_U.uKeyDir.value.subVectors(key.position, controls.target).normalize();
+  HAIR_U.uFillDir.value.subVectors(fill.position, controls.target).normalize();
+  // eyes: look straight ahead with tiny involuntary flicks, and blink every few seconds
+  if (eyePivots.length) {
+    if (t > nextSacc) { sacc.set((Math.random() - .5) * 0.022, (Math.random() - .5) * 0.014); nextSacc = t + 0.5 + Math.random() * 2.2; }
+    for (const pv of eyePivots) {
+      const yaw = sacc.x, pitch = sacc.y;
+      const k = reduce ? 1 : Math.min(1, dt * 22);
+      pv.rotation.y += (yaw - pv.rotation.y) * k; pv.rotation.x += (pitch - pv.rotation.x) * k;
+    }
+  }
+  if (!reduce) tickBlink(t);
+  for (const pv of eyePivots) for (const ch of pv.children) if (ch.material?.blending === THREE.AdditiveBlending) ch.visible = LID_BLINK.value < 0.5;
+  if (head && !reduce) {
+    group.rotation.y = Math.sin(t * 0.35) * 0.04;
+    group.rotation.x = Math.sin(t * 0.5) * 0.012;
+    if (t > nextBlink && blinkT < 0) blinkT = 0;
+    if (blinkT >= 0) {
+      blinkT += dt;
+      const v = Math.max(0, 1 - Math.abs(blinkT - 0.08) / 0.08);
+      blinkIdx.forEach(i => head.morphTargetInfluences[i] = v);
+      if (blinkT > 0.16) { blinkT = -1; nextBlink = t + 2.5 + Math.random() * 3.5; }
+    }
+  }
+  renderer.render(scene, camera);
+}
+setViewMode(S.mode === 'studio' ? 'studio' : 'simple');
+</script>
+
+</body>
+</html>

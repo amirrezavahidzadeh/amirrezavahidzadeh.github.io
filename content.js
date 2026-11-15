@@ -34,9 +34,38 @@ window.AV_DEFAULT = {
     { id: 'crew', hidden: false, name: 'On set', fa: 'سر صحنه', game: 'Echo', how: 'Repeat the director’s cues.', color: '#b06bff' },
     { id: 'chess', hidden: false, name: 'The burning board', fa: 'شطرنج', game: 'Mate in one', how: 'Find checkmate in one move. Three boards.', color: '#ff5a1f' },
     { id: 'maker', hidden: false, name: 'Make a game', fa: 'بازی بساز', game: 'Level maker', how: 'Build a level and send it as a link.', color: '#ff2bd6' },
+    { id: 'sifted', hidden: false, name: 'Sifted', fa: 'سیفتد', game: 'Web app', how: 'Find your powder shade and brush it on.', color: '#ffb48a' },
     { id: 'beat', hidden: false, name: 'Beat lab', fa: 'آزمایشگاه ضرب', game: 'Sequencer', how: 'Rewrite the drums of this soundtrack.', color: '#ff4d6d' },
   ],
   files: {
+    sifted: {
+      kicker: 'Web app',
+      title: 'Sifted',
+      fa: 'سیفتد',
+      tagline: 'The powder shade studio',
+      credit: 'Created by Fateme Mohsenzadeh and Amirreza Vahidzadeh',
+      hero: 'img/sifted-brush.webp',
+      heroAlt: 'Sifted in the browser: a photoreal woman’s face with a makeup brush applying powder to her cheek, beside the shade panel',
+      lede: 'Sifted helps you find the face powder that matches your skin, then lets you brush it on to see how it sits. It runs in the browser, in English and Persian.',
+      steps: [
+        { title: 'Your skin', text: 'Pick your skin tone and undertone, or upload a selfie and tap your cheek to read it.' },
+        { title: 'Your shade', text: 'Sifted compares your skin with 26 shades and shows the closest, with a plain-language note on each.' },
+        { title: 'Try it on', text: 'Brush the powder onto the face. The first pass shows, more passes blend it in. Hold to compare shows before and after.' },
+      ],
+      features: [
+        { title: 'Simple or 3D', text: 'A clean portrait for a quick check, or a photoreal scanned head you can turn and relight.' },
+        { title: 'Your own photo', text: 'Brush powder onto your own selfie. The photo never leaves your device.' },
+        { title: 'Skin details', text: 'Add your moles, freckles, redness or dark circles in 3D and see what powder hides and what it doesn’t.' },
+        { title: 'Lighting tests', text: 'Daylight, office, evening and camera flash, to catch shades that turn ashy or flash back white.' },
+      ],
+      shots: [
+        { image: 'img/sifted-intro.webp', caption: 'The opening screen' },
+        { image: 'img/sifted-3d.webp', caption: 'The 3D studio, with camera angles and lighting' },
+      ],
+      footnote: 'Desktop and phone · English and فارسی · The 3D studio is best on a computer · Head scan: 3D Scan Store free female head, non-commercial use',
+      link: 'sifted/',
+      source: 'https://github.com/amirrezavahidzadeh/amirrezavahidzadeh.github.io/tree/main/sifted',
+    },
     about: {
       kicker: 'Player one',
       title: 'Amirreza Vahidzadeh',
