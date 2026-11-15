@@ -154,7 +154,12 @@
         if (i < N) { const o = i * 2; idx.push(o, o + 1, o + 2, o + 1, o + 3, o + 2); }
       });
       const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(new Float32Array(pos), 3)); geo.setAttribute('uv', new T.BufferAttribute(new Float32Array(uv), 2)); geo.setIndex(idx);
-      const edgeGeo = edges.map(e => new T.TubeGeometry(new T.CatmullRomCurve3(e.filter((_, i) => i % 2 === 0)), 160, .016, 5, false));
+      // both neon edges in one geometry, so each arch draws them in one go
+      const tubes = edges.map(e => new T.TubeGeometry(new T.CatmullRomCurve3(e.filter((_, i) => i % 2 === 0)), 160, .016, 5, false));
+      const edgeGeo = new T.BufferGeometry(), at = {};
+      ['position', 'normal', 'uv'].forEach(n => { const a = tubes.map(t => t.getAttribute(n).array), m = new Float32Array(a.reduce((s, x) => s + x.length, 0)); let o = 0; a.forEach(x => { m.set(x, o); o += x.length; }); edgeGeo.setAttribute(n, new T.BufferAttribute(m, tubes[0].getAttribute(n).itemSize)); });
+      const nv = tubes[0].getAttribute('position').count, ix = [...tubes[0].index.array, ...Array.from(tubes[1].index.array, v => v + nv)];
+      edgeGeo.setIndex(ix); edgeGeo.computeBoundingSphere(); tubes.forEach(t => t.dispose());
       return { geo, edgeGeo };
     })();
     // a soft glow texture shared by sprites
@@ -201,14 +206,14 @@
     const nArch = Math.ceil((2 - END) / AS);
     for (let i = 0; i < nArch; i++) {
       const col = archColors[i % archColors.length], grp = new T.Group(), band = new T.Mesh(archBand.geo, marginMat(col)), em = glowMat(col);
-      grp.add(band); archBand.edgeGeo.forEach(eg => grp.add(new T.Mesh(eg, em)));
+      grp.add(band); grp.add(new T.Mesh(archBand.edgeGeo, em));
       const lan = new T.Sprite(new T.SpriteMaterial({ map: lanternTex(col), transparent: true, depthWrite: false, fog: true }));
       lan.center.set(.5, 1); lan.scale.set(LANTERN_W, LANTERN_H, 1); lan.position.set(0, apexY - BW * .35, 0); grp.add(lan);
       const lglow = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: 0xffb04a, transparent: true, opacity: .5, blending: T.AdditiveBlending, depthWrite: false, fog: true }));
       lglow.scale.set(.92, .92, 1); grp.add(lglow);
       const ly = lan.position.y, hang = LANTERN_H * .62;   // the glass sits about here below the hook
       grp.position.z = 2 - i * AS; scene.add(grp);
-      arches.push({ set(o, t) {
+      arches.push({ grp, set(o, t) {
         em.opacity = Math.min(1, o); band.material.uniforms.uO.value = o;
         const sw = RM ? 0 : Math.sin(t * 1.15 + i * .9) * .07 + Math.sin(t * 2.3 + i * 2.1) * .015;   // a gentle sway
         lan.material.rotation = sw; lglow.position.set(Math.sin(sw) * hang, ly - Math.cos(sw) * hang, .02);
@@ -580,7 +585,9 @@
         f.mat.uniforms.uReveal.value = f.reveal >= 1 ? 1.05 : f.reveal; f.mat.uniforms.uHover.value = f.hover;
         f.halo.material.opacity = (.18 + f.reveal * .25 + f.hover * .25) * (1 + p * .3);
       }
-      arches.forEach((a, i) => a.set(.65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2, t));
+      // arches and their lanterns more than 60 m away have fully melted into the haze (they're fogged, unlike the
+      // frames), so they're simply not drawn: nothing on screen changes, and it halves the work per frame
+      arches.forEach((a, i) => { const v = Math.abs(a.grp.position.z - camZ) < 60; a.grp.visible = v; if (v) a.set(.65 + .35 * Math.max(0, Math.sin(t * 1.6 - i * .5)) + p * .2, t); });
       floorMat.uniforms.uTime.value = t; floorMat.uniforms.uPulse.value = p;
       rainMat.uniforms.uTime.value = t; starMat.uniforms.uTime.value = t;
       // film runs at 24 frames a second: the grain and the flicker change on that beat, whatever the screen's rate
