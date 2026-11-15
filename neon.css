@@ -696,3 +696,29 @@ html.vscroll #corridorTrack{display:none}
 
 /* the 3D corridor carries its own 35 mm grain (in WebGL), so the CSS grain sits that one out */
 body.corridor .grain{display:none}
+
+/* ── contact: the email address, easy to find ── */
+.ct-card{--c:#7dff6a;position:relative;max-width:720px;margin:56px auto;padding:34px clamp(14px,4vw,28px) 30px;text-align:center;border:1.5px solid var(--c);border-radius:6px;
+  background:linear-gradient(180deg,rgba(125,255,106,.08),rgba(8,4,18,.86));box-shadow:0 0 0 1px rgba(125,255,106,.18) inset,0 0 26px rgba(125,255,106,.22),0 0 70px rgba(125,255,106,.08)}
+.ct-k{font:400 .9rem/1 "Share Tech Mono",monospace;letter-spacing:.25em;text-transform:uppercase;color:var(--c);margin:0 0 12px}
+.ct-k span{letter-spacing:0;font-family:Sahand,Vazirmatn,sans-serif;font-size:1.05rem}
+.ct-h{font:900 clamp(2rem,6vw,3.2rem)/1 var(--disp);text-transform:uppercase;color:#fff;margin:0 0 10px;text-shadow:0 0 .09em #fff,0 0 .35em var(--c)}
+.ct-sub{color:#cfcbd8;margin:0 0 18px;font:500 1rem/1.4 var(--ui)}
+.ct-mail{display:inline-block;max-width:100%;font:700 clamp(.9rem,4.1vw,1.7rem)/1.25 "Share Tech Mono",monospace;color:#fff;text-decoration:none;
+  padding:.35em .6em;border-radius:4px;background:rgba(125,255,106,.1);border:1px dashed rgba(125,255,106,.55);text-shadow:0 0 12px rgba(125,255,106,.75);user-select:all;-webkit-user-select:all}
+.ct-mail:hover,.ct-mail:focus-visible{background:rgba(125,255,106,.2);outline:none}
+.ct-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:20px}
+.ct-btn{font:700 .95rem var(--ui);letter-spacing:.1em;text-transform:uppercase;color:#fff;text-decoration:none;cursor:pointer;padding:.75em 1.2em;border-radius:4px;
+  border:1.5px solid var(--c);background:rgba(125,255,106,.12);box-shadow:0 0 14px rgba(125,255,106,.25)}
+.ct-btn:hover{background:rgba(125,255,106,.26)}
+.contact .ct-mail{margin:4px 0 6px}
+body.corridor .ct-card:not(.ct-pop){display:none}
+/* the corridor's pop-up */
+#ct{position:fixed;inset:0;z-index:55;display:grid;place-items:center;padding:16px;background:rgba(4,2,10,.72);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#ct[hidden]{display:none}
+#ct .ct-pop{margin:0;width:min(560px,100%);animation:ctIn .28s cubic-bezier(.2,.9,.3,1.2)}
+.ct-x{position:absolute;top:8px;right:8px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.4);color:#fff;font-size:1.1rem;cursor:pointer}
+@keyframes ctIn{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#ct .ct-pop{animation:none}}
+html.vscroll #ct,html.vscroll #ct *{touch-action:auto}
+body.ct-open{overflow:hidden}

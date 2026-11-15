@@ -12,7 +12,9 @@
     const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
     const C = AV.content, FILES = AV.files, CABS = AV.cabs;
     const FREE = CABS.filter(c => !c.file);
-    const ROOMS = [...FILES, ...FREE];
+    // the second stop is Contact: right after Player One, so everyone walks past the email address early
+    const CONTACT = { id: 'contact', name: 'Contact', fa: 'تماس با من', c: '#7dff6a', contact: true };
+    const ROOMS = [...FILES.slice(0, 1), CONTACT, ...FILES.slice(1), ...FREE];
 
     // ── renderer ──
     const cv = document.getElementById('corridor');
@@ -290,7 +292,32 @@
     const F = C.files;
     const posterPic = c => ({ bazar: F.bazar && F.bazar.hero, siavash: F.siavash && F.siavash.hero }[c.id]);
     ROOMS.forEach(c => { const p = posterPic(c); if (p) loadImg(p).then(i => { img[p].el = i; img[p].done = true; }); });
+    // the Contact frame: the address itself, big, with an envelope in neon
+    const contactPoster = c => {
+      const cw = 1024, ch = 640, cnv = document.createElement('canvas'); cnv.width = cw; cnv.height = ch; const g = cnv.getContext('2d');
+      if (!g) return null;
+      const col = c.c, mail = AV.mail || 'vahidstudioaccdontuse@gmail.com';
+      g.fillStyle = '#07030f'; g.fillRect(0, 0, cw, ch);
+      const bg = g.createRadialGradient(cw * .78, ch * .3, 10, cw * .78, ch * .3, cw * .8); bg.addColorStop(0, col + '38'); bg.addColorStop(1, 'transparent'); g.fillStyle = bg; g.fillRect(0, 0, cw, ch);
+      g.fillStyle = col; g.font = '400 26px "Share Tech Mono", monospace'; g.fillText('CONTACT // WRITE TO ME', 56, 78);
+      g.shadowColor = col; g.shadowBlur = 24; g.fillStyle = '#fff'; g.font = '900 108px "Big Shoulders Display", Impact, sans-serif'; g.fillText("LET'S MAKE", 52, 196); g.fillText('SOMETHING', 52, 300); g.shadowBlur = 0;
+      g.fillStyle = col; g.font = '60px Sahand, Vazirmatn, sans-serif'; g.fillText('تماس با من', 56, 380);
+      // the envelope
+      const ex = 760, ey = 150, ew = 200, eh = 136;
+      g.save(); g.strokeStyle = col; g.lineJoin = 'round'; g.shadowColor = col; g.shadowBlur = 18; g.lineWidth = 5;
+      g.strokeRect(ex, ey, ew, eh); g.beginPath(); g.moveTo(ex, ey); g.lineTo(ex + ew / 2, ey + eh * .58); g.lineTo(ex + ew, ey); g.stroke();
+      g.lineWidth = 3; g.beginPath(); g.moveTo(ex, ey + eh); g.lineTo(ex + ew * .38, ey + eh * .45); g.moveTo(ex + ew, ey + eh); g.lineTo(ex + ew * .62, ey + eh * .45); g.stroke(); g.restore();
+      // the address, as large as fits
+      let fs = 56; g.font = `700 ${fs}px "Share Tech Mono", monospace`; while (g.measureText(mail).width > cw - 140 && fs > 26) { fs -= 2; g.font = `700 ${fs}px "Share Tech Mono", monospace`; }
+      const mw = g.measureText(mail).width;
+      g.fillStyle = col + '22'; g.fillRect(48, 432, mw + 32, fs + 34); g.strokeStyle = col; g.lineWidth = 2; g.setLineDash([8, 6]); g.strokeRect(48, 432, mw + 32, fs + 34); g.setLineDash([]);
+      g.shadowColor = col; g.shadowBlur = 14; g.fillStyle = '#fff'; g.fillText(mail, 64, 432 + fs + 6); g.shadowBlur = 0;
+      g.fillStyle = col; g.font = '700 26px "Chakra Petch", sans-serif'; g.fillText('TAP TO WRITE  ·  COPY THE ADDRESS', 56, 590);
+      g.fillStyle = col; g.fillRect(0, ch - 10, cw, 10);
+      const t = new T.CanvasTexture(cnv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = Math.min(8, R.capabilities.getMaxAnisotropy()); return t;
+    };
     const poster = (c, im) => {
+      if (c.contact) return contactPoster(c);
       const cw = 1024, ch = 640, cnv = document.createElement('canvas'); cnv.width = cw; cnv.height = ch; const g = cnv.getContext('2d');
       if (!g) return null;
       const col = c.c || '#22f3ff';
@@ -392,7 +419,7 @@
     document.body.append(nav);
 
     const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'near-open'; chip.hidden = true; chip.innerHTML = '<span>Open</span><b></b><i>→</i>';
-    chip.addEventListener('click', () => { const f = chip.__f; if (!f) return; if (f.c.file) AV.openFile(f.c.id); else AV.open(f.c.id, { play: true }); });
+    chip.addEventListener('click', () => { const f = chip.__f; if (!f) return; if (f.c.contact) AV.contact(); else if (f.c.file) AV.openFile(f.c.id); else AV.open(f.c.id, { play: true }); });
     document.body.append(chip);
 
     // ── scroll → walk ──
@@ -454,14 +481,14 @@
     cv.addEventListener('pointerup', e => {
       if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 8) return; downAt = null;
       const f = pick(e.clientX, e.clientY); if (!f) return;
-      if (f.c.file) AV.openFile(f.c.id); else AV.open(f.c.id, { play: true });
+      if (f.c.contact) AV.contact(); else if (f.c.file) AV.openFile(f.c.id); else AV.open(f.c.id, { play: true });
     });
     addEventListener('keydown', e => { if (!$('#ov').hidden || e.target.closest && e.target.closest('input,textarea')) return; if (e.key === 'ArrowDown' || e.key === 'PageDown') { /* native scroll */ } });
 
     // touch: drag to walk, flick for momentum. Panels, the top bar and buttons keep their own touches.
     if (VIRTUAL) {
       let ly = 0, lt = 0, vel = 0, sy0 = 0, moved = false;
-      const skipT = t => t.closest && t.closest('#ov, #hud, #zoom, .near-open, .rooms, button, a, input, textarea');
+      const skipT = t => t.closest && t.closest('#ov, #ct, #hud, #zoom, .near-open, .rooms, button, a, input, textarea');
       addEventListener('touchstart', e => { if (!document.body.classList.contains('corridor') || skipT(e.target) || e.touches.length > 1) return; dragging = true; moved = false; ly = sy0 = e.touches[0].clientY; lt = performance.now(); vel = 0; vv = 0; vTarget = null; }, { passive: true });
       addEventListener('touchmove', e => {
         if (!dragging) return;
@@ -531,7 +558,7 @@
       yaw *= 1 - .9 * upNow;
       // a button for the frame you are looking at
       const show = near && w > .45 ? near : null;
-      if (chip.__f !== show) { chip.__f = show; chip.hidden = !show; if (show) { chip.style.setProperty('--c', show.c.c); chip.querySelector('b').textContent = show.c.name; chip.querySelector('span').textContent = show.c.file ? 'Open' : 'Play'; } }
+      if (chip.__f !== show) { chip.__f = show; chip.hidden = !show; if (show) { chip.style.setProperty('--c', show.c.c); chip.querySelector('b').textContent = show.c.name; chip.querySelector('span').textContent = show.c.contact ? 'Write' : show.c.file ? 'Open' : 'Play'; } }
       cam.position.set(Math.sin(t * .4) * .06 + lookX * .25, 1.75 + Math.sin(t * .9) * .02 - lookY * .08, camZ);
       cam.rotation.set(-lookY * .08, yaw, 0, 'YXZ');
       // place the lifted frame: centred a little low (clear of the top bar), sized to sit comfortably in the screen
