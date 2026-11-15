@@ -127,6 +127,15 @@
       "color": "#ffb48a"
     },
     {
+      "id": "temple",
+      "hidden": false,
+      "name": "The Temple of the Ten",
+      "fa": "معبد ده",
+      "game": "3D world",
+      "how": "Walk a cathedral for Messi, with friends.",
+      "color": "#e2bd62"
+    },
+    {
       "id": "beat",
       "hidden": false,
       "name": "Beat lab",
