@@ -10,22 +10,24 @@
 <meta property="og:description" content="Writer and director from Tehran. Films, games, and AI for both.">
 <meta property="og:image" content="../img/og.jpg">
 <meta name="theme-color" content="#fbfaf6">
-<link rel="preload" href="../fonts/newsreader-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/libre-caslon-text-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/courier-prime-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-@font-face{font-family:Newsreader;font-weight:400;font-display:swap;src:url(../fonts/newsreader-latin-400-normal.woff2) format("woff2")}
-@font-face{font-family:Newsreader;font-weight:400;font-style:italic;font-display:swap;src:url(../fonts/newsreader-latin-400-italic.woff2) format("woff2")}
-@font-face{font-family:Newsreader;font-weight:500;font-display:swap;src:url(../fonts/newsreader-latin-500-normal.woff2) format("woff2")}
-@font-face{font-family:Plex;font-weight:400;font-display:swap;src:url(../fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Caslon;font-weight:400;font-display:swap;src:url(../fonts/libre-caslon-text-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Caslon;font-weight:400;font-style:italic;font-display:swap;src:url(../fonts/libre-caslon-text-latin-400-italic.woff2) format("woff2")}
+@font-face{font-family:Caslon;font-weight:700;font-display:swap;src:url(../fonts/libre-caslon-text-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:Courier;font-weight:400;font-display:swap;src:url(../fonts/courier-prime-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Courier;font-weight:700;font-display:swap;src:url(../fonts/courier-prime-latin-700-normal.woff2) format("woff2")}
 @font-face{font-family:Vazirmatn;font-weight:800;font-display:swap;src:url(../fonts/vz-800.woff2) format("woff2")}
 :root{--bg:#fbfaf6;--ink:#141414;--grey:#77736b;--rule:#e2ded5;--red:#c8361d}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 19px/1.5 Newsreader,Georgia,serif;-webkit-font-smoothing:antialiased;padding:0 clamp(16px,4vw,48px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 18px/1.6 Caslon,Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased;padding:0 clamp(16px,4vw,48px)}
 a{color:inherit;text-decoration-thickness:1px;text-underline-offset:.18em}
 a:hover{color:var(--red)}
 :focus-visible{outline:2px solid var(--red);outline-offset:2px}
 img{display:block;width:100%;height:auto;background:#eeeae2}
-.mono{font:400 12.5px/1.5 Plex,ui-monospace,monospace;letter-spacing:.01em}
+.mono{font:400 14px/1.45 Courier,"Courier New",monospace}
 .grey{color:var(--grey)}
 .fa{font-family:Vazirmatn,Tahoma,sans-serif;font-weight:800;font-size:.95em}
 
@@ -35,21 +37,23 @@ img{display:block;width:100%;height:auto;background:#eeeae2}
 
 .col{max-width:700px}
 .intro{padding:clamp(56px,9vw,110px) 0 clamp(40px,6vw,64px)}
-.intro p{font-size:clamp(23px,3vw,31px);line-height:1.32;margin:0 0 .7em;letter-spacing:-.005em}
+.intro p{font-size:clamp(21px,2.6vw,27px);line-height:1.42;margin:0 0 .7em}
+.slug{font:700 15px/1.4 Courier,"Courier New",monospace;text-transform:uppercase;margin:0 0 22px}
 .intro p:last-child{margin:0}
+.intro p.slug{font-size:15px}
 
 /* the index */
 .index{border-top:1px solid var(--ink);margin:0 0 clamp(64px,10vw,120px);padding:0;list-style:none;max-width:1040px}
 .index li{border-bottom:1px solid var(--rule)}
 .index a{display:grid;grid-template-columns:2.2em 1fr auto;gap:12px;padding:11px 0;text-decoration:none;align-items:baseline}
 .index a:hover{color:var(--red)}
-.index b{font-weight:500;font-size:20px}
+.index b{font-weight:700;font-size:15px;text-transform:uppercase}
 .index .what{text-align:right}
 @media (max-width:560px){.index a{grid-template-columns:2em 1fr}.index .what{grid-column:2;text-align:left;margin-top:-6px}}
 
 /* projects */
 .proj{max-width:1040px;margin:0 0 clamp(80px,12vw,150px);scroll-margin-top:16px}
-.proj h2{font-weight:500;font-size:clamp(30px,4.4vw,44px);line-height:1.05;letter-spacing:-.015em;margin:6px 0 4px}
+.proj h2{font-weight:400;font-size:clamp(30px,4.4vw,44px);line-height:1.1;margin:6px 0 6px}
 .proj h2 .fa{font-size:.6em;color:var(--grey);margin-left:.4em;vertical-align:.15em}
 .proj .role{margin:0 0 22px}
 .proj .col p{margin:0 0 1em}
@@ -66,7 +70,7 @@ ul.plain li span:last-child{color:var(--grey);text-align:right}
 
 /* contact */
 .contact{max-width:1040px;border-top:1px solid var(--ink);padding:clamp(40px,6vw,64px) 0 clamp(60px,9vw,110px)}
-.contact h2{font-weight:400;font-style:italic;font-size:clamp(40px,7vw,76px);line-height:1;letter-spacing:-.02em;margin:0 0 24px}
+.contact h2{font-weight:400;font-style:italic;font-size:clamp(38px,6.4vw,68px);line-height:1.05;margin:0 0 24px}
 .contact .mail{font-size:clamp(20px,3.2vw,28px);overflow-wrap:anywhere}
 .contact button{font:inherit;background:none;border:0;padding:0;color:var(--grey);text-decoration:underline;text-underline-offset:.18em;cursor:pointer}
 .contact button:hover{color:var(--red)}
@@ -82,6 +86,7 @@ footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;pa
 
 <main>
   <section class="intro col">
+    <p class="slug">Int. A studio in Tehran. Day.</p>
     <p>Hi, I’m Amirreza. I’m a writer and director from Tehran. I studied cinema at the Art University of Tehran, I write for film and series, and most days now I work with AI, for video and for games.</p>
     <p>A few things I’ve made are below. If you want to make something together, <a href="#contact">write to me</a>.</p>
   </section>
@@ -156,6 +161,7 @@ footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;pa
 </main>
 
 <section class="contact" id="contact" aria-labelledby="c-h">
+  <p class="slug">Cut to: you, writing to me.</p>
   <h2 id="c-h">Let’s make magic!</h2>
   <p class="mail"><a href="mailto:vahidstudioaccdontuse@gmail.com">vahidstudioaccdontuse@gmail.com</a></p>
   <p class="mono"><button type="button" id="copy">copy the address</button></p>
