@@ -72,7 +72,7 @@ window.MAKER = (() => {
       if (a === 'share') {
         const url = location.href.split('#')[0] + '#lvl=' + encode(grid);
         try { await navigator.clipboard.writeText(url); say('Link copied. Send it to someone.', 2.4); } catch (err) { say('Copy this link: ' + url, 6); }
-        try { history.replaceState(null, '', '#lvl=' + encode(grid)); } catch (err) { }
+        try { history.replaceState(null, '', location.pathname + '#lvl=' + encode(grid)); } catch (err) { }
       }
     });
     const pad = el.querySelector('.mk-pad');

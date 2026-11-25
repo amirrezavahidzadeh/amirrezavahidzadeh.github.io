@@ -3,106 +3,194 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Amirreza Vahidzadeh: writer, filmmaker, director, game maker</title>
-<meta name="description" content="Amirreza Vahidzadeh is a film and series writer, filmmaker, director, game maker and AI specialist from Tehran. Creator of Prompt Bazar and the Siavash game. Win the arcade games to decrypt his files.">
-<meta name="google-site-verification" content="y5Y0LzfdGNJ94DYzWidHDbn3xKrPmIOudibrhRyv6VI">
+<title>Amirreza Vahidzadeh</title>
+<meta name="description" content="Amirreza Vahidzadeh is a writer, filmmaker, director, game maker and AI specialist from Tehran. Creator of Prompt Bazar and the Siavash game.">
 <meta name="author" content="Amirreza Vahidzadeh">
-<meta property="og:type" content="profile">
-<meta property="og:title" content="Amirreza Vahidzadeh">
-<meta property="og:description" content="Filmmaker, director, game maker and AI specialist. A neon arcade: win the games to decrypt the files.">
-<meta property="og:image" content="https://amirrezavahidzadeh.github.io/img/og.jpg">
-<meta property="og:url" content="https://amirrezavahidzadeh.github.io/">
-<meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://amirrezavahidzadeh.github.io/">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Amirreza Vahidzadeh","alternateName":"امیررضا وحیدزاده","birthDate":"2001-02","jobTitle":["Writer","Filmmaker","Director","Game maker","AI specialist"],"alumniOf":{"@type":"CollegeOrUniversity","name":"Art University of Tehran"},"knowsAbout":["Screenwriting","Filmmaking","Directing","Game development","Generative AI video"],"url":"https://amirrezavahidzadeh.github.io/","image":"https://amirrezavahidzadeh.github.io/img/og.jpg"}</script>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%2307030d%22/%3E%3Ctext x=%2232%22 y=%2244%22 font-family=%22Impact,sans-serif%22 font-size=%2234%22 text-anchor=%22middle%22 fill=%22%23fff%22 stroke=%22%23ff2bd6%22 stroke-width=%221.5%22%3EAV%3C/text%3E%3C/svg%3E">
-<meta name="theme-color" content="#07030d">
-<link rel="modulepreload" href="vendor/three.min.js">
-<link rel="preload" href="fonts/bsd.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/sahand.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="neon.css?v=41cc8523">
+<meta property="og:url" content="https://amirrezavahidzadeh.github.io/">
+<meta property="og:title" content="Amirreza Vahidzadeh">
+<meta property="og:description" content="Writer and director from Tehran. Films, games, and AI for both.">
+<meta property="og:image" content="https://amirrezavahidzadeh.github.io/img/og.jpg">
+<meta name="theme-color" content="#fbfaf6">
+<link rel="preload" href="fonts/libre-caslon-text-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/courier-prime-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:Caslon;font-weight:400;font-display:swap;src:url(fonts/libre-caslon-text-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Caslon;font-weight:400;font-style:italic;font-display:swap;src:url(fonts/libre-caslon-text-latin-400-italic.woff2) format("woff2")}
+@font-face{font-family:Caslon;font-weight:700;font-display:swap;src:url(fonts/libre-caslon-text-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:Courier;font-weight:400;font-display:swap;src:url(fonts/courier-prime-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Courier;font-weight:700;font-display:swap;src:url(fonts/courier-prime-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"B Nazanin";font-weight:400;font-display:swap;src:url(fonts/b-nazanin.woff2) format("woff2")}
+:root{--bg:#fbfaf6;--ink:#141414;--grey:#77736b;--rule:#e2ded5;--red:#c8361d}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 18px/1.6 Caslon,Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased;padding:0 clamp(16px,4vw,48px)}
+a{color:inherit;text-decoration-thickness:1px;text-underline-offset:.18em}
+a:hover{color:var(--red)}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+img{display:block;width:100%;height:auto;background:#eeeae2}
+.mono{font:400 14px/1.45 Courier,"Courier New",monospace}
+.grey{color:var(--grey)}
+.num{font:400 15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+.fa{font-family:"B Nazanin",Tahoma,sans-serif;font-weight:400;font-size:1.15em}
+
+/* top line */
+.top{display:flex;justify-content:space-between;gap:12px;padding:18px 0;border-bottom:1px solid var(--rule)}
+.top a{text-decoration:none}
+
+.col{max-width:700px}
+.intro{padding:clamp(56px,9vw,110px) 0 clamp(40px,6vw,64px)}
+.intro p{font-size:clamp(21px,2.6vw,27px);line-height:1.42;margin:0 0 .7em}
+.slug{font:700 15px/1.4 Courier,"Courier New",monospace;text-transform:uppercase;margin:0 0 22px}
+.intro p:last-child{margin:0}
+.intro p.slug{font-size:15px}
+
+/* the index */
+.index{border-top:1px solid var(--ink);margin:0 0 clamp(64px,10vw,120px);padding:0;list-style:none;max-width:1040px}
+.index li{border-bottom:1px solid var(--rule)}
+.index a{display:grid;grid-template-columns:2.2em 1fr auto;gap:12px;padding:11px 0;text-decoration:none;align-items:baseline}
+.index a:hover{color:var(--red)}
+.index b{font-weight:700;font-size:15px;text-transform:uppercase}
+.index .what{text-align:right}
+@media (max-width:560px){.index a{grid-template-columns:2em 1fr}.index .what{grid-column:2;text-align:left;margin-top:-6px}}
+
+/* projects */
+.proj{max-width:1040px;margin:0 0 clamp(80px,12vw,150px);scroll-margin-top:16px}
+.proj h2{font-weight:400;font-size:clamp(30px,4.4vw,44px);line-height:1.1;margin:6px 0 6px}
+.proj h2 .fa{font-size:.6em;color:var(--grey);margin-left:.4em;vertical-align:.15em}
+.proj .role{margin:0 0 22px}
+.proj .col p{margin:0 0 1em}
+.figs{display:grid;gap:clamp(12px,2vw,20px);margin-top:28px}
+.figs.two{grid-template-columns:1fr 1fr}
+@media (max-width:640px){.figs.two{grid-template-columns:1fr}}
+figure{margin:0}
+figcaption{margin-top:7px}
+.note{margin-top:18px}
+ul.plain{list-style:none;margin:0;padding:0}
+ul.plain li{padding:9px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;gap:16px}
+ul.plain li:first-child{border-top:1px solid var(--rule)}
+ul.plain li span:last-child{color:var(--grey);text-align:right}
+
+/* contact */
+.contact{max-width:1040px;border-top:1px solid var(--ink);padding:clamp(40px,6vw,64px) 0 clamp(60px,9vw,110px)}
+.contact h2{font-weight:400;font-style:italic;font-size:clamp(38px,6.4vw,68px);line-height:1.05;margin:0 0 24px}
+.contact .mail{font-size:clamp(20px,3.2vw,28px);overflow-wrap:anywhere}
+.contact button{font:inherit;background:none;border:0;padding:0;color:var(--grey);text-decoration:underline;text-underline-offset:.18em;cursor:pointer}
+.contact button:hover{color:var(--red)}
+footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;padding:18px 0 calc(22px + env(safe-area-inset-bottom));border-top:1px solid var(--rule)}
+</style>
 </head>
-<body class="corridor">
-<canvas id="city" aria-hidden="true"></canvas>
-<canvas id="corridor" aria-label="A neon corridor. Scroll to walk, click a frame to open it."></canvas>
+<body>
 
-<div id="boot" role="dialog" aria-label="Start">
-  <div class="boot-in">
-    <p class="boot-tag">AV://NIGHT-CITY <span>v2.099</span></p>
-    <h1 class="boot-name glitch" data-t="AMIRREZA">AMIRREZA</h1>
-    <pre class="boot-log" id="bootLog" aria-hidden="true"></pre>
-    <div class="boot-go">
-      <button type="button" id="jackIn" class="btn-neon big">Jack in <span>sound on ♪</span></button>
-      <button type="button" id="jackSilent" class="btn-ghost">Enter silent</button>
-    </div>
-    <p class="boot-hint">Best with headphones. The soundtrack is generated live in your browser.</p>
-  </div>
+<div class="top mono">
+  <a href="#">Amirreza Vahidzadeh <span class="fa" lang="fa" dir="rtl">امیررضا وحیدزاده</span></a>
+  <span class="grey">Tehran <span id="clock"></span></span>
 </div>
-<script>/* remember a tap on the start buttons made before the scripts are ready; main.js acts on it */document.getElementById("boot").addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("button");if(b&&!window.AV_BOOTED)window.AV_PICK=b.id;});</script>
 
-<header id="hud">
-  <a class="hud-logo" href="#" aria-label="Amirreza Vahidzadeh, top"><b>AV</b><span>// amirreza.vahidzadeh</span></a>
-  <div class="deck" aria-label="Music">
-    <button type="button" id="dPlay" class="d-btn" aria-label="Play or pause the music"><i class="ic-play"></i></button>
-    <button type="button" id="dTrack" class="d-track" aria-label="Next track"><span class="d-now">NOW PLAYING</span><b id="dName">SHUR · NIGHT</b><span id="dBpm">92 BPM</span></button>
-    <canvas id="dViz" width="96" height="28" aria-hidden="true"></canvas>
-    <button type="button" id="dMute" class="d-btn" aria-label="Mute"><i class="ic-snd"></i></button>
-  </div>
-  <button type="button" class="hud-view" id="viewToggle" aria-pressed="false">Classic view</button>
-  <a class="hud-about" href="about/">About me</a>
-  <button type="button" id="hudShards" class="hud-shards" aria-label="Games won. Open the printable résumé"><span class="hs-gems" id="gems"></span><b><span id="shardN">0</span>/<span id="shardT">7</span></b><span class="hs-l">Games</span></button>
-</header>
-
-<noscript><p style="position:relative;z-index:20;padding:120px 20px;color:#fff">Amirreza Vahidzadeh: film and series writer, filmmaker, director, game maker and AI specialist. This site is an arcade and needs JavaScript.</p></noscript>
-<main id="main">
-  <section class="hero" aria-label="Amirreza Vahidzadeh">
-    <p class="hero-k">Player one <span class="blink">▮</span></p>
-    <h1 class="hero-name" id="heroName" aria-label="Amirreza Vahidzadeh"></h1>
-    <p class="hero-fa" lang="fa" dir="rtl">امیررضا وحیدزاده</p>
-    <ul class="hero-roles" id="roles">
-      <li><button type="button" data-c="#22f3ff">Filmmaker</button></li>
-      <li><button type="button" data-c="#ff2bd6">Director</button></li>
-      <li><button type="button" data-c="#7dff6a">Game maker</button></li>
-      <li><button type="button" data-c="#ffe14d">AI specialist</button></li>
-    </ul>
-    <p class="hero-brief"><b>Scroll to walk the hall.</b> Every frame on the wall is a part of my résumé. Click one to open it; each has a small optional game. <span class="hero-play">Hover the name, tap anywhere, or press <kbd>A</kbd> to <kbd>L</kbd> to play along.</span></p>
-    <a class="scroll-cue" href="#resume" aria-label="Scroll to the résumé"><span></span></a>
+<main>
+  <section class="intro col">
+    <p class="slug">Int. A studio in Tehran. Day.</p>
+    <p>Hi, I’m Amirreza. I’m a writer and director from Tehran. I studied cinema at the Art University of Tehran, I write for film and series, and most days now I work with AI, for video and for games.</p>
+    <p>A few things I’ve made are below. If you want to make something together, <a href="#contact">write to me</a>.</p>
   </section>
 
-  <div class="resume" id="resume"></div>
-  <h2 class="arc-h">Free play <span>Make a game, or remix the soundtrack</span></h2>
-  <section class="arcade" id="arcade" aria-label="Arcade"></section>
+  <ol class="index mono" aria-label="Index">
+    <li><a href="#prompt-bazar"><span class="grey num">1.</span><b>Prompt Bazar</b><span class="what grey">AI product, design and build</span></a></li>
+    <li><a href="#siavash"><span class="grey num">2.</span><b>Siavash</b><span class="what grey">Game, chapter one</span></a></li>
+    <li><a href="#film"><span class="grey num">3.</span><b>Writing and directing</b><span class="what grey">Film, series, music videos</span></a></li>
+    <li><a href="#neon"><span class="grey num">4.</span><b>The Neon City</b><span class="what grey">Side project, the loud version of this site</span></a></li>
+  </ol>
+
+  <article class="proj" id="prompt-bazar">
+    <p class="grey num">1.</p>
+    <h2>Prompt Bazar <span class="fa" lang="fa" dir="rtl">بازار پرامپت</span></h2>
+    <p class="role mono grey">Concept, UX/UI direction, development with AI</p>
+    <div class="col">
+      <p>A workspace for AI filmmakers to find, understand and reuse prompts, tools and workflows. You can search prompts by model, genre and visual style, take one apart in the Prompt Scholar to see how it’s built, keep references in projects, and plan scripts and shots in Director Mode.</p>
+      <p>I gave it a Persian look on purpose: Al-Khwarizmi sits on the front page among his astrolabes. Then I kept prototyping and testing until it felt right.</p>
+    </div>
+    <div class="figs">
+      <figure><img src="img/pb-home.webp" alt="The Prompt Bazar homepage: a search bar for AI video prompts above Al-Khwarizmi seated among astrolabes and books" width="1348" height="926" loading="lazy" decoding="async"><figcaption class="mono grey">The front page</figcaption></figure>
+    </div>
+    <div class="figs two">
+      <figure><img src="img/pb-pahlewan.webp" alt="Pahlewan AI, the AI skills directory in Prompt Bazar" width="1325" height="790" loading="lazy" decoding="async"><figcaption class="mono grey">Pahlewan AI, the skills directory</figcaption></figure>
+      <figure><img src="img/pb-comfy.webp" alt="Comfy Library, the ComfyUI workflow directory in Prompt Bazar" width="1348" height="926" loading="lazy" decoding="async"><figcaption class="mono grey">Comfy Library, ComfyUI workflows</figcaption></figure>
+    </div>
+    <p class="note mono grey">Screenshots from a local preview of the current interface.</p>
+  </article>
+
+  <article class="proj" id="siavash">
+    <p class="grey num">2.</p>
+    <h2>Siavash <span class="fa" lang="fa" dir="rtl">سیاوش</span></h2>
+    <p class="role mono grey">Game, in the browser, English and Persian. Chapter one is done.</p>
+    <div class="col">
+      <p>A page of the Shahnameh that comes alive. You play young Siavash: stalk game across the page, read the wind, and face the beasts of the old stories. You can switch the whole painting between four looks, including one after Kiarostami.</p>
+    </div>
+    <div class="figs">
+      <figure><img src="img/sia-title.webp" alt="The Siavash title screen: a Persian miniature landscape with a river, cypress trees and a city on the hill" width="1600" height="900" loading="lazy" decoding="async"><figcaption class="mono grey">Title screen</figcaption></figure>
+    </div>
+    <div class="figs two">
+      <figure><img src="img/sia-hunt.webp" alt="Siavash hunting a stag across a stream, bow drawn" width="1600" height="900" loading="lazy" decoding="async"><figcaption class="mono grey">The hunt. Read the wind, then loose.</figcaption></figure>
+      <figure><img src="img/sia-sense.webp" alt="The hunter’s sense: the page fades to ink and only animals and trails show" width="1600" height="900" loading="lazy" decoding="async"><figcaption class="mono grey">The hunter’s sense. Only what matters shows.</figcaption></figure>
+      <figure><img src="img/sia-boss.webp" alt="Azhdaha, the serpent of the falls, rearing over Siavash" width="1600" height="900" loading="lazy" decoding="async"><figcaption class="mono grey">Azhdaha, the serpent of the falls</figcaption></figure>
+      <figure><img src="img/sia-merchant.webp" alt="The merchant of Zabol’s stall, with crafted goods for trade" width="1600" height="900" loading="lazy" decoding="async"><figcaption class="mono grey">The merchant of Zabol</figcaption></figure>
+    </div>
+  </article>
+
+  <article class="proj" id="film">
+    <p class="grey num">3.</p>
+    <h2>Writing and directing</h2>
+    <p class="role mono grey">Film, series, short films, music videos</p>
+    <div class="col">
+      <p>I write mostly for film and series. I’ve written on Mohammad Davoodi’s projects and on Lahze Studio’s, and I’ve made short films and music videos of my own.</p>
+      <ul class="plain">
+        <li><span>AI director and writer assistant</span><span>Lahze Studio</span></li>
+        <li><span>Assistant to the director and writer</span><span>Mohammad Davoodi</span></li>
+        <li><span>International Secretary</span><span>18th Nahal Student Film Festival</span></li>
+        <li><span>B.A. in Cinema</span><span>Art University of Tehran</span></li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="proj" id="neon">
+    <p class="grey num">4.</p>
+    <h2>The Neon City</h2>
+    <p class="role mono grey">Web, 3D, sound</p>
+    <div class="col">
+      <p>The other version of this site: a corridor through a neon Tehran with Persian carpets on the floor, lanterns under the arches and music that’s made live in your browser. Same person, more noise. <a href="neon/">Walk through it</a>.</p>
+    </div>
+    <div class="figs"><figure><a href="neon/" aria-label="Open The Neon City"><img src="img/og.jpg" alt="The Neon City: Amirreza’s name in neon over a synthwave Tehran" width="1200" height="630" loading="lazy" decoding="async"></a></figure></div>
+  </article>
 </main>
 
-<div id="corridorTrack" aria-hidden="true"></div>
-<footer id="ticker" aria-hidden="true"><div class="tk-in" id="tkIn"></div></footer>
+<section class="contact" id="contact" aria-labelledby="c-h">
+  <p class="slug">Cut to: you, writing to me.</p>
+  <h2 id="c-h">Let’s make magic!</h2>
+  <p class="mail"><a href="mailto:vahidstudioaccdontuse@gmail.com">vahidstudioaccdontuse@gmail.com</a></p>
+  <p class="mono"><button type="button" id="copy">copy the address</button></p>
+</section>
 
-<div id="ov" hidden role="dialog" aria-modal="true" aria-labelledby="ovTitle">
-  <div class="ov-panel" id="ovPanel">
-    <header class="ov-top">
-      <div class="ov-id"><span class="ov-k" id="ovKick"></span><h2 id="ovTitle"></h2></div>
-      <p class="ov-stat" id="ovStat" role="status"></p>
-      <button type="button" class="ov-skip" id="ovSkip" hidden>Skip game ⏭</button>
-      <button type="button" class="ov-x" id="ovX" aria-label="Close">✕<kbd>Esc</kbd></button>
-    </header>
-    <div class="ov-body" id="ovBody"></div>
-  </div>
-</div>
-<canvas id="fx" aria-hidden="true"></canvas>
-<div class="grain" aria-hidden="true"></div>
+<footer class="mono grey">
+  <span>Made in Tehran, 2026.</span>
+  <span>Or play me at chess: <a href="https://www.chess.com/member/mayor_of_nerd_city" rel="noopener">mayor_of_nerd_city</a>, rapid around 2000.</span>
+</footer>
 
-<script src="audio.js?v=85a3d081"></script>
-<script src="city.js?v=43cc2566"></script>
-<script src="games.js?v=295af45d"></script>
-<script src="maker.js?v=15e0d402"></script>
-<script src="content.js?v=45720099"></script>
-<script src="main.js?v=ed56b530"></script>
-<script src="scroll.js?v=35f545b2"></script>
-<script type="module">import * as THREE from "./vendor/three.min.js"; window.THREE = THREE; dispatchEvent(new Event("three-ready"));</script>
-<script src="carpet.js?v=a9d3aa3c"></script>
-<script src="tehranwall.js?v=517e039e"></script>
-<script src="corridor.js?v=8c7d7fb4"></script>
-<script src="view.js?v=06ac03e8"></script>
-<script src="ornament.js?v=653bcb25"></script>
+<script>
+(() => {
+  // the time in Tehran, so people know when I'm awake
+  const c = document.getElementById('clock');
+  const tick = () => { try { c.textContent = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tehran', hour: '2-digit', minute: '2-digit' }).format(new Date()); } catch (e) { } };
+  tick(); setInterval(tick, 20000);
+  const b = document.getElementById('copy'), mail = 'vahidstudioaccdontuse@gmail.com';
+  b.addEventListener('click', async () => {
+    let ok = false;
+    try { await navigator.clipboard.writeText(mail); ok = true; } catch (e) {
+      const t = document.createElement('textarea'); t.value = mail; t.style.cssText = 'position:fixed;opacity:0'; document.body.append(t); t.select();
+      try { ok = document.execCommand('copy'); } catch (e2) { } t.remove();
+    }
+    b.textContent = ok ? 'copied' : 'select it above and copy'; setTimeout(() => b.textContent = 'copy the address', 1800);
+  });
+})();
+</script>
 </body>
 </html>
