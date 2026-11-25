@@ -3,217 +3,183 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Amirreza Vahidzadeh: films, games and AI worlds</title>
+<title>Amirreza Vahidzadeh</title>
 <meta name="description" content="Amirreza Vahidzadeh is a writer, filmmaker, director, game maker and AI specialist from Tehran. Creator of Prompt Bazar and the Siavash game.">
 <meta name="author" content="Amirreza Vahidzadeh">
 <meta property="og:title" content="Amirreza Vahidzadeh">
-<meta property="og:description" content="Films, games and AI worlds, made in Tehran.">
+<meta property="og:description" content="Writer and director from Tehran. Films, games, and AI for both.">
 <meta property="og:image" content="../img/og.jpg">
-<meta name="theme-color" content="#f4efe6">
-<link rel="preload" href="../fonts/inter-tight-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#fbfaf6">
+<link rel="preload" href="../fonts/newsreader-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-@font-face{font-family:"Inter Tight";font-weight:400;font-display:swap;src:url(../fonts/inter-tight-latin-400-normal.woff2) format("woff2")}
-@font-face{font-family:"Inter Tight";font-weight:500;font-display:swap;src:url(../fonts/inter-tight-latin-500-normal.woff2) format("woff2")}
-@font-face{font-family:"Inter Tight";font-weight:800;font-display:swap;src:url(../fonts/inter-tight-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:Newsreader;font-weight:400;font-display:swap;src:url(../fonts/newsreader-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Newsreader;font-weight:400;font-style:italic;font-display:swap;src:url(../fonts/newsreader-latin-400-italic.woff2) format("woff2")}
+@font-face{font-family:Newsreader;font-weight:500;font-display:swap;src:url(../fonts/newsreader-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:Plex;font-weight:400;font-display:swap;src:url(../fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2")}
 @font-face{font-family:Vazirmatn;font-weight:800;font-display:swap;src:url(../fonts/vz-800.woff2) format("woff2")}
-:root{
-  --bg:#f4efe6;        /* paper */
-  --ink:#16130f;       /* text */
-  --mute:#6d655a;      /* secondary text */
-  --line:#d9d0c2;      /* hairlines */
-  --card:#ebe4d7;      /* image placeholders, text cards */
-  --acc:#d8432a;       /* saffron red, from Persian miniatures */
-  --r:14px;
-  --w:1240px;
-  --pad:clamp(16px,4vw,40px);
-}
+:root{--bg:#fbfaf6;--ink:#141414;--grey:#77736b;--rule:#e2ded5;--red:#c8361d}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 1.0625rem/1.55 "Inter Tight",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-a{color:inherit}
-img{display:block;max-width:100%;height:auto}
-.wrap{max-width:var(--w);margin:0 auto;padding:0 var(--pad)}
-:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:4px}
-.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:var(--bg);padding:8px 12px;border-radius:6px;z-index:9}
-.skip:focus{left:8px}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 19px/1.5 Newsreader,Georgia,serif;-webkit-font-smoothing:antialiased;padding:0 clamp(16px,4vw,48px)}
+a{color:inherit;text-decoration-thickness:1px;text-underline-offset:.18em}
+a:hover{color:var(--red)}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+img{display:block;width:100%;height:auto;background:#eeeae2}
+.mono{font:400 12.5px/1.5 Plex,ui-monospace,monospace;letter-spacing:.01em}
+.grey{color:var(--grey)}
+.fa{font-family:Vazirmatn,Tahoma,sans-serif;font-weight:800;font-size:.95em}
 
-/* header */
-header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid transparent}
-header.scrolled{border-bottom-color:var(--line)}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
-.logo{font-weight:800;letter-spacing:-.02em;text-decoration:none;font-size:1.05rem;white-space:nowrap}
-nav{display:flex;gap:clamp(14px,3vw,28px);align-items:center}
-nav a{text-decoration:none;font-weight:500;font-size:.95rem;color:var(--mute)}
-nav a:hover{color:var(--ink)}
-nav .full{color:var(--ink);border:1px solid var(--ink);border-radius:999px;padding:.35em .9em}
-nav .full:hover{background:var(--ink);color:var(--bg)}
-@media (max-width:620px){nav .hide-s{display:none}}
+/* top line */
+.top{display:flex;justify-content:space-between;gap:12px;padding:18px 0;border-bottom:1px solid var(--rule)}
+.top a{text-decoration:none}
 
-/* hero */
-.hero{padding-top:clamp(56px,11vw,140px);padding-bottom:clamp(48px,8vw,96px)}
-.eyebrow{font-weight:500;color:var(--mute);margin:0 0 18px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
-.eyebrow .fa{font-family:Vazirmatn,sans-serif;font-weight:800;color:var(--ink)}
-h1{font-weight:800;font-size:clamp(2.7rem,8.4vw,7.2rem);line-height:.95;letter-spacing:-.045em;margin:0;max-width:13ch}
-h1 em{font-style:normal;color:var(--acc)}
-.sub{font-size:clamp(1.05rem,2vw,1.3rem);color:var(--mute);max-width:46ch;margin:26px 0 34px}
-.btn{display:inline-flex;align-items:center;gap:.5em;background:var(--ink);color:var(--bg);text-decoration:none;font-weight:500;padding:.9em 1.4em;border-radius:999px;border:0;font:inherit;font-weight:500;cursor:pointer}
-.btn:hover{background:var(--acc)}
-.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
-.btn.ghost:hover{background:var(--ink);color:var(--bg)}
-.ctas{display:flex;flex-wrap:wrap;gap:12px}
+.col{max-width:700px}
+.intro{padding:clamp(56px,9vw,110px) 0 clamp(40px,6vw,64px)}
+.intro p{font-size:clamp(23px,3vw,31px);line-height:1.32;margin:0 0 .7em;letter-spacing:-.005em}
+.intro p:last-child{margin:0}
 
-/* section heads */
-section{scroll-margin-top:72px}
-.head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid var(--ink);padding-top:16px;margin-bottom:clamp(24px,4vw,40px)}
-.head h2{font-weight:800;font-size:clamp(1.5rem,3vw,2.1rem);letter-spacing:-.03em;margin:0}
-.head span{color:var(--mute);font-size:.95rem}
+/* the index */
+.index{border-top:1px solid var(--ink);margin:0 0 clamp(64px,10vw,120px);padding:0;list-style:none;max-width:1040px}
+.index li{border-bottom:1px solid var(--rule)}
+.index a{display:grid;grid-template-columns:2.2em 1fr auto;gap:12px;padding:11px 0;text-decoration:none;align-items:baseline}
+.index a:hover{color:var(--red)}
+.index b{font-weight:500;font-size:20px}
+.index .what{text-align:right}
+@media (max-width:560px){.index a{grid-template-columns:2em 1fr}.index .what{grid-column:2;text-align:left;margin-top:-6px}}
 
-/* work */
-.work{display:grid;gap:clamp(36px,5vw,56px) clamp(20px,3vw,32px);grid-template-columns:1fr}
-@media (min-width:820px){.work{grid-template-columns:1fr 1fr}.work .wide{grid-column:1/-1}}
-.item{text-decoration:none;display:block}
-.pic{border-radius:var(--r);overflow:hidden;background:var(--card);aspect-ratio:16/10}
-.wide .pic{aspect-ratio:21/9}
-.pic img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
-.item:hover .pic img{transform:scale(1.035)}
-.meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:16px}
-.meta h3{font-weight:800;font-size:clamp(1.35rem,2.4vw,1.75rem);letter-spacing:-.03em;margin:0}
-.tags{color:var(--mute);font-size:.9rem;white-space:nowrap}
-.item p{margin:6px 0 0;color:var(--mute);max-width:52ch}
-/* a text-only card where there's no picture */
-.type{display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(20px,3vw,32px);border-radius:var(--r);background:var(--ink);color:var(--bg);aspect-ratio:16/10}
-.type b{font-weight:800;font-size:clamp(2rem,5vw,3.6rem);line-height:.95;letter-spacing:-.04em}
-.type b i{font-style:normal;color:var(--acc)}
-.type small{color:#b9b0a3;margin-top:10px;font-size:.95rem}
+/* projects */
+.proj{max-width:1040px;margin:0 0 clamp(80px,12vw,150px);scroll-margin-top:16px}
+.proj h2{font-weight:500;font-size:clamp(30px,4.4vw,44px);line-height:1.05;letter-spacing:-.015em;margin:6px 0 4px}
+.proj h2 .fa{font-size:.6em;color:var(--grey);margin-left:.4em;vertical-align:.15em}
+.proj .role{margin:0 0 22px}
+.proj .col p{margin:0 0 1em}
+.figs{display:grid;gap:clamp(12px,2vw,20px);margin-top:28px}
+.figs.two{grid-template-columns:1fr 1fr}
+@media (max-width:640px){.figs.two{grid-template-columns:1fr}}
+figure{margin:0}
+figcaption{margin-top:7px}
+.note{margin-top:18px}
+ul.plain{list-style:none;margin:0;padding:0}
+ul.plain li{padding:9px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;gap:16px}
+ul.plain li:first-child{border-top:1px solid var(--rule)}
+ul.plain li span:last-child{color:var(--grey);text-align:right}
 
-/* about */
-.about{display:grid;gap:28px;grid-template-columns:1fr}
-@media (min-width:820px){.about{grid-template-columns:1.1fr 1fr;gap:56px}}
-.about p.big{font-size:clamp(1.25rem,2.4vw,1.6rem);line-height:1.35;letter-spacing:-.015em;margin:0}
-.creds{list-style:none;margin:0;padding:0}
-.creds li{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
-.creds li:first-child{border-top:1px solid var(--line)}
-.creds b{font-weight:500}
-.creds span{color:var(--mute);text-align:right}
-
-/* closing */
-.end{padding-top:clamp(80px,12vw,160px);padding-bottom:clamp(80px,12vw,160px)}
-.end h2{font-weight:800;font-size:clamp(2.6rem,8vw,6.6rem);line-height:.95;letter-spacing:-.045em;margin:0 0 26px}
-.end h2 em{font-style:normal;color:var(--acc)}
-.mail{display:inline-block;font-weight:500;font-size:clamp(1.05rem,3.2vw,1.6rem);text-decoration:none;border-bottom:2px solid var(--acc);padding-bottom:2px;margin-bottom:28px;overflow-wrap:anywhere}
-.mail:hover{color:var(--acc)}
-
-footer{border-top:1px solid var(--line);padding:24px 0 calc(24px + env(safe-area-inset-bottom));color:var(--mute);font-size:.9rem}
-footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 24px}
-footer nav{gap:18px}
-footer a{text-decoration:none}
-footer a:hover{color:var(--ink)}
-.gap{height:clamp(72px,10vw,128px)}
+/* contact */
+.contact{max-width:1040px;border-top:1px solid var(--ink);padding:clamp(40px,6vw,64px) 0 clamp(60px,9vw,110px)}
+.contact h2{font-weight:400;font-style:italic;font-size:clamp(40px,7vw,76px);line-height:1;letter-spacing:-.02em;margin:0 0 24px}
+.contact .mail{font-size:clamp(20px,3.2vw,28px);overflow-wrap:anywhere}
+.contact button{font:inherit;background:none;border:0;padding:0;color:var(--grey);text-decoration:underline;text-underline-offset:.18em;cursor:pointer}
+.contact button:hover{color:var(--red)}
+footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;padding:18px 0 calc(22px + env(safe-area-inset-bottom));border-top:1px solid var(--rule)}
 </style>
 </head>
 <body>
-<a class="skip" href="#work">Skip to work</a>
 
-<header id="top"><div class="wrap bar">
-  <a class="logo" href="#top">Amirreza Vahidzadeh</a>
-  <nav aria-label="Main">
-    <a class="hide-s" href="#work">Work</a>
-    <a class="hide-s" href="#about">About</a>
-    <a href="#contact">Contact</a>
-    <a class="full" href="../">Neon city ↗</a>
-  </nav>
-</div></header>
+<div class="top mono">
+  <a href="#">Amirreza Vahidzadeh <span class="fa" lang="fa" dir="rtl">امیررضا وحیدزاده</span></a>
+  <span class="grey">Tehran <span id="clock"></span></span>
+</div>
 
 <main>
-  <section class="hero wrap" aria-label="Introduction">
-    <p class="eyebrow"><span>Writer · Filmmaker · Director · Game maker · AI specialist</span><span class="fa" lang="fa" dir="rtl">امیررضا وحیدزاده</span></p>
-    <h1>I make films, games and <em>AI&nbsp;worlds.</em></h1>
-    <p class="sub">A cinema graduate from Tehran who writes for film and series, directs with AI, and builds games and products people play with.</p>
-    <div class="ctas">
-      <a class="btn" href="mailto:vahidstudioaccdontuse@gmail.com">Let’s make magic <span aria-hidden="true">→</span></a>
-      <a class="btn ghost" href="#work">See the work</a>
-    </div>
+  <section class="intro col">
+    <p>Hi, I’m Amirreza. I’m a writer and director from Tehran. I studied cinema at the Art University of Tehran, I write for film and series, and most days now I work with AI, for video and for games.</p>
+    <p>A few things I’ve made are below. If you want to make something together, <a href="#contact">write to me</a>.</p>
   </section>
 
-  <section id="work" class="wrap" aria-labelledby="work-h">
-    <div class="head"><h2 id="work-h">Selected work</h2><span>2023 – now</span></div>
-    <div class="work">
-      <a class="item wide" href="../">
-        <div class="pic"><img src="../img/pb-home.webp" alt="The Prompt Bazar homepage: a search bar for AI video prompts above Al-Khwarizmi seated among astrolabes and books" width="1348" height="926" loading="lazy" decoding="async"></div>
-        <div class="meta"><h3>Prompt Bazar</h3><span class="tags">AI product | UX/UI | Development</span></div>
-        <p>A workspace for AI filmmakers to find, understand and reuse prompts, tools and workflows, with a Persian-inspired identity.</p>
-      </a>
-      <a class="item" href="../">
-        <div class="pic"><img src="../img/sia-title.webp" alt="The Siavash title screen: a Persian miniature landscape with a river, cypress trees and a city on the hill" width="1600" height="900" loading="lazy" decoding="async"></div>
-        <div class="meta"><h3>Siavash</h3><span class="tags">Game</span></div>
-        <p>A game painted like a page of the Shahnameh that comes alive: stalk game across the page, read the wind, face the beasts.</p>
-      </a>
-      <a class="item" href="../">
-        <div class="pic"><img src="../img/og.jpg" alt="Amirreza's interactive résumé: a neon corridor through Tehran" width="1200" height="630" loading="lazy" decoding="async"></div>
-        <div class="meta"><h3>The Neon City</h3><span class="tags">Web | 3D</span></div>
-        <p>My interactive résumé: a walkable neon corridor through Tehran, with Persian carpets, lanterns and a soundtrack made live in the browser.</p>
-      </a>
-      <div class="item">
-        <div class="type"><b>Feature films<br>&amp; <i>series.</i></b><small>Writer for Mohammad Davoodi and Lahze Studio</small></div>
-        <div class="meta"><h3>Writing</h3><span class="tags">Film | Series</span></div>
-        <p>I write mostly for film and series, on Mohammad Davoodi’s projects and the studio’s.</p>
-      </div>
-      <div class="item">
-        <div class="type"><b>Short films &amp; <i>music videos.</i></b><small>Directed, with AI in the pipeline</small></div>
-        <div class="meta"><h3>Directing</h3><span class="tags">Short film | Music video | AI video</span></div>
-        <p>Short films and music videos, and AI direction at Lahze Studio.</p>
-      </div>
+  <ol class="index mono" aria-label="Index">
+    <li><a href="#prompt-bazar"><span class="grey">01</span><b>Prompt Bazar</b><span class="what grey">AI product, design and build</span></a></li>
+    <li><a href="#siavash"><span class="grey">02</span><b>Siavash</b><span class="what grey">Game, chapter one</span></a></li>
+    <li><a href="#film"><span class="grey">03</span><b>Writing and directing</b><span class="what grey">Film, series, music videos</span></a></li>
+    <li><a href="#neon"><span class="grey">04</span><b>The Neon City</b><span class="what grey">This site, the loud version</span></a></li>
+  </ol>
+
+  <article class="proj" id="prompt-bazar">
+    <p class="mono grey">01</p>
+    <h2>Prompt Bazar <span class="fa" lang="fa" dir="rtl">بازار پرامپت</span></h2>
+    <p class="role mono grey">Concept, UX/UI direction, development with AI</p>
+    <div class="col">
+      <p>A workspace for AI filmmakers to find, understand and reuse prompts, tools and workflows. You can search prompts by model, genre and visual style, take one apart in the Prompt Scholar to see how it’s built, keep references in projects, and plan scripts and shots in Director Mode.</p>
+      <p>I gave it a Persian look on purpose: Al-Khwarizmi sits on the front page among his astrolabes. Then I kept prototyping and testing until it felt right.</p>
     </div>
-  </section>
+    <div class="figs">
+      <figure><img src="../img/pb-home.webp" alt="The Prompt Bazar homepage: a search bar for AI video prompts above Al-Khwarizmi seated among astrolabes and books" width="1348" height="926" loading="lazy" decoding="async"><figcaption class="mono grey">The front page</figcaption></figure>
+    </div>
+    <div class="figs two">
+      <figure><img src="../img/pb-pahlewan.webp" alt="Pahlewan AI, the AI skills directory in Prompt Bazar" width="1325" height="790" loading="lazy" decoding="async"><figcaption class="mono grey">Pahlewan AI, the skills directory</figcaption></figure>
+      <figure><img src="../img/pb-comfy.webp" alt="Comfy Library, the ComfyUI workflow directory in Prompt Bazar" width="1348" height="926" loading="lazy" decoding="async"><figcaption class="mono grey">Comfy Library, ComfyUI workflows</figcaption></figure>
+    </div>
+    <p class="note mono grey">Screenshots from a local preview of the current interface.</p>
+  </article>
 
-  <div class="gap"></div>
+  <article class="proj" id="siavash">
+    <p class="mono grey">02</p>
+    <h2>Siavash <span class="fa" lang="fa" dir="rtl">سیاوش</span></h2>
+    <p class="role mono grey">Game, in the browser, English and Persian. Chapter one is done.</p>
+    <div class="col">
+      <p>A page of the Shahnameh that comes alive. You play young Siavash: stalk game across the page, read the wind, and face the beasts of the old stories. You can switch the whole painting between four looks, including one after Kiarostami.</p>
+    </div>
+    <div class="figs">
+      <figure><img src="../img/sia-title.webp" alt="The Siavash title screen: a Persian miniature landscape with a river, cypress trees and a city on the hill" width="1600" height="900" loading="lazy" decoding="async"><figcaption class="mono grey">Title screen</figcaption></figure>
+    </div>
+    <div class="figs two">
+      <figure><img src="../img/sia-hunt.webp" alt="Siavash hunting a stag across a stream, bow drawn" width="1600" height="900" loading="lazy" decoding="async"><figcaption class="mono grey">The hunt. Read the wind, then loose.</figcaption></figure>
+      <figure><img src="../img/sia-sense.webp" alt="The hunter’s sense: the page fades to ink and only animals and trails show" width="1600" height="900" loading="lazy" decoding="async"><figcaption class="mono grey">The hunter’s sense. Only what matters shows.</figcaption></figure>
+      <figure><img src="../img/sia-boss.webp" alt="Azhdaha, the serpent of the falls, rearing over Siavash" width="1600" height="900" loading="lazy" decoding="async"><figcaption class="mono grey">Azhdaha, the serpent of the falls</figcaption></figure>
+      <figure><img src="../img/sia-merchant.webp" alt="The merchant of Zabol’s stall, with crafted goods for trade" width="1600" height="900" loading="lazy" decoding="async"><figcaption class="mono grey">The merchant of Zabol</figcaption></figure>
+    </div>
+  </article>
 
-  <section id="about" class="wrap" aria-labelledby="about-h">
-    <div class="head"><h2 id="about-h">About</h2><span>Tehran</span></div>
-    <div class="about">
-      <p class="big">I studied cinema at the Art University of Tehran. Today I write, direct and build, and my main craft is AI for video and games.</p>
-      <ul class="creds">
-        <li><b>AI director &amp; writer assistant</b><span>Lahze Studio</span></li>
-        <li><b>Assistant to the director &amp; writer</b><span>Mohammad Davoodi</span></li>
-        <li><b>B.A. Cinema</b><span>Art University of Tehran</span></li>
-        <li><b>International Secretary</b><span>18th Nahal Student Film Festival</span></li>
+  <article class="proj" id="film">
+    <p class="mono grey">03</p>
+    <h2>Writing and directing</h2>
+    <p class="role mono grey">Film, series, short films, music videos</p>
+    <div class="col">
+      <p>I write mostly for film and series. I’ve written on Mohammad Davoodi’s projects and on Lahze Studio’s, and I’ve made short films and music videos of my own.</p>
+      <ul class="plain">
+        <li><span>AI director and writer assistant</span><span>Lahze Studio</span></li>
+        <li><span>Assistant to the director and writer</span><span>Mohammad Davoodi</span></li>
+        <li><span>International Secretary</span><span>18th Nahal Student Film Festival</span></li>
+        <li><span>B.A. in Cinema</span><span>Art University of Tehran</span></li>
       </ul>
     </div>
-  </section>
+  </article>
 
-  <section id="contact" class="end wrap" aria-labelledby="contact-h">
-    <h2 id="contact-h">Let’s make <em>magic!</em></h2>
-    <a class="mail" href="mailto:vahidstudioaccdontuse@gmail.com">vahidstudioaccdontuse@gmail.com</a>
-    <div class="ctas">
-      <a class="btn" href="mailto:vahidstudioaccdontuse@gmail.com">Write to me <span aria-hidden="true">→</span></a>
-      <button class="btn ghost" type="button" id="copy">Copy address</button>
+  <article class="proj" id="neon">
+    <p class="mono grey">04</p>
+    <h2>The Neon City</h2>
+    <p class="role mono grey">Web, 3D, sound</p>
+    <div class="col">
+      <p>The other version of this site: a corridor through a neon Tehran with Persian carpets on the floor, lanterns under the arches and music that’s made live in your browser. Same person, more noise. <a href="../">Walk through it</a>.</p>
     </div>
-  </section>
+    <div class="figs"><figure><a href="../" aria-label="Open The Neon City"><img src="../img/og.jpg" alt="The Neon City: Amirreza’s name in neon over a synthwave Tehran" width="1200" height="630" loading="lazy" decoding="async"></a></figure></div>
+  </article>
 </main>
 
-<footer><div class="wrap">
-  <span>© <span id="yr">2026</span> Amirreza Vahidzadeh</span>
-  <nav aria-label="Elsewhere">
-    <a href="../">The Neon City</a>
-    <a href="../about/">About me</a>
-    <a href="https://www.chess.com/member/mayor_of_nerd_city" rel="noopener">Chess</a>
-  </nav>
-</div></footer>
+<section class="contact" id="contact" aria-labelledby="c-h">
+  <h2 id="c-h">Let’s make magic!</h2>
+  <p class="mail"><a href="mailto:vahidstudioaccdontuse@gmail.com">vahidstudioaccdontuse@gmail.com</a></p>
+  <p class="mono"><button type="button" id="copy">copy the address</button></p>
+</section>
+
+<footer class="mono grey">
+  <span>Made in Tehran, 2026.</span>
+  <span>Or play me at chess: <a href="https://www.chess.com/member/mayor_of_nerd_city" rel="noopener">mayor_of_nerd_city</a>, rapid around 2000.</span>
+</footer>
 
 <script>
 (() => {
-  const h = document.querySelector('header'), on = () => h.classList.toggle('scrolled', scrollY > 8);
-  addEventListener('scroll', on, { passive: true }); on();
-  document.getElementById('yr').textContent = new Date().getFullYear();
+  // the time in Tehran, so people know when I'm awake
+  const c = document.getElementById('clock');
+  const tick = () => { try { c.textContent = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tehran', hour: '2-digit', minute: '2-digit' }).format(new Date()); } catch (e) { } };
+  tick(); setInterval(tick, 20000);
   const b = document.getElementById('copy'), mail = 'vahidstudioaccdontuse@gmail.com';
   b.addEventListener('click', async () => {
     let ok = false;
     try { await navigator.clipboard.writeText(mail); ok = true; } catch (e) {
       const t = document.createElement('textarea'); t.value = mail; t.style.cssText = 'position:fixed;opacity:0'; document.body.append(t); t.select();
-      try { ok = document.execCommand('copy'); } catch (e2) {} t.remove();
+      try { ok = document.execCommand('copy'); } catch (e2) { } t.remove();
     }
-    b.textContent = ok ? 'Copied ✓' : 'Select the address above'; setTimeout(() => b.textContent = 'Copy address', 1800);
+    b.textContent = ok ? 'copied' : 'select it above and copy'; setTimeout(() => b.textContent = 'copy the address', 1800);
   });
 })();
 </script>
